@@ -1,0 +1,17 @@
+:root {
+  --green-900: #0f5c3e;
+  --green-800: #146449;
+  --green-100: #e7f2ec;
+  --gold-700: #8a6a1f;
+  --gold-100: #fbf1de;
+  --paper: #f7f8f7;
+  --card: #ffffff;
+  --ink: #222b25;
+  --ink-soft: #5c6b60;
+  --ink-faint: #8a968e;
+  --line: #dde3de;
+  --red: #b24a3b;
+
+  --font-sans: 'Inter', Arial, Helvetica, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+}
