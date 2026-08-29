@@ -1,8 +1,15 @@
 import { Box, Button, TextField } from "@mui/material";
-import logo from "../../assets/icons/lawcollegelogo.png";
+import { useNavigate } from "react-router-dom";
+import logo from "../../assets/icons/law-college-logo.png";
 import background from "../../assets/images/lawcollegeimage1.webp";
 
 const LoginPage = () => {
+  const navigate = useNavigate();
+
+  const handleLogin = () => {
+    navigate("/");
+  };
+
   return (
     <Box
       sx={{
@@ -92,9 +99,10 @@ const LoginPage = () => {
           />
 
           <Button
-            type="submit"
+            type="button"
             variant="contained"
             fullWidth
+            onClick={handleLogin}
             sx={{
               mt: 1,
               backgroundColor: "#017348",

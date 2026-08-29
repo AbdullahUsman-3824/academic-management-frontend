@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom'
-import { studentRoutes } from '../../../app/router/routes'
+import { Link } from "react-router-dom";
+import { studentRoutes } from "../data/navData";
 import {
   student,
   subjects,
@@ -8,16 +8,18 @@ import {
   feeStatus,
   announcements,
   marks,
-} from '../data/mockStudent'
+} from "../data/mockStudent";
 
-const recentAssessments = marks.slice(0, 3)
-const recentAnnouncements = announcements.slice(0, 3)
-const lastFinalizedSemester = semesterResults.filter((s) => s.status === 'finalized').at(-1)
+const recentAssessments = marks.slice(0, 3);
+const recentAnnouncements = announcements.slice(0, 3);
+const lastFinalizedSemester = semesterResults
+  .filter((s) => s.status === "finalized")
+  .at(-1);
 const academicStanding = [
-  { label: 'Last Sem GPA', value: lastFinalizedSemester?.gpa ?? '—' },
-  { label: 'CGPA', value: academicHistory.cgpa },
-  { label: 'Credits earned', value: academicHistory.creditsEarned },
-]
+  { label: "Last Sem GPA", value: lastFinalizedSemester?.gpa ?? "—" },
+  { label: "CGPA", value: academicHistory.cgpa },
+  { label: "Credits earned", value: academicHistory.creditsEarned },
+];
 
 function DashboardPage() {
   return (
@@ -48,7 +50,9 @@ function DashboardPage() {
           <div className="card">
             <div className="card-head">
               <h2>Enrolled Subjects</h2>
-              <span className="meta">{subjects.length} subjects · 15 credit hrs</span>
+              <span className="meta">
+                {subjects.length} subjects · 15 credit hrs
+              </span>
             </div>
             {/* table-scroll wrapper enables horizontal scroll on narrow screens */}
             <div className="table-scroll">
@@ -66,7 +70,9 @@ function DashboardPage() {
                     <tr key={subject.code}>
                       <td className="code">{subject.code}</td>
                       <td className="subj-title">{subject.title}</td>
-                      <td className="subj-sub col-hide-sm">{subject.faculty}</td>
+                      <td className="subj-sub col-hide-sm">
+                        {subject.faculty}
+                      </td>
                       <td>
                         <span className="credit-pill">{subject.credits}</span>
                       </td>
@@ -98,14 +104,18 @@ function DashboardPage() {
                       <td>
                         <div className="subj-title">{item.title}</div>
                         {/* Subject shown inline on mobile since col is hidden */}
-                        <div className="subj-sub col-show-sm">{item.subjectCode}</div>
+                        <div className="subj-sub col-show-sm">
+                          {item.subjectCode}
+                        </div>
                       </td>
                       <td className="subj-sub col-hide-sm">
                         {item.subjectCode} — {item.subjectTitle}
                       </td>
                       <td>{item.score}</td>
                       <td>
-                        <span className={`status ${item.status}`}>{item.statusLabel}</span>
+                        <span className={`status ${item.status}`}>
+                          {item.statusLabel}
+                        </span>
                       </td>
                     </tr>
                   ))}
@@ -121,7 +131,9 @@ function DashboardPage() {
               <h2>Fee Status</h2>
             </div>
             <div className="card-body">
-              <div style={{ fontSize: 12, color: 'var(--ink-soft)' }}>Outstanding — Semester 3</div>
+              <div style={{ fontSize: 12, color: "var(--ink-soft)" }}>
+                Outstanding — Semester 3
+              </div>
               <div className="fee-amount">
                 {feeStatus.outstanding} <small>due</small>
               </div>
@@ -167,7 +179,7 @@ function DashboardPage() {
         </div>
       </div>
     </>
-  )
+  );
 }
 
-export default DashboardPage
+export default DashboardPage;
