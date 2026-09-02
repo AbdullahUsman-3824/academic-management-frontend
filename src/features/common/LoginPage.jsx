@@ -1,14 +1,29 @@
-import { Box, Button, TextField } from "@mui/material";
+import { useState } from "react";
+import { Box, Button, TextField, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import logo from "../../assets/icons/law-college-logo.png";
+import { useAuth } from "../../hooks/useAuth";
+import logo from "../../assets/icons/lawcollegelogo.png";
 import background from "../../assets/images/lawcollegeimage1.webp";
 
 const LoginPage = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const { login, isLoggingIn, loginError } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    navigate("/");
-  };
+ const handleSubmit = (e) => {
+  e.preventDefault();
+
+  login(
+    { username, password },
+    {
+      onSuccess: () => {
+        navigate("/");
+      },
+    }
+  );
+};
 
   return (
     <Box
@@ -23,6 +38,7 @@ const LoginPage = () => {
         position: "relative",
       }}
     >
+      {/* Blur Overlay */}
       <Box
         sx={{
           position: "absolute",
@@ -32,8 +48,10 @@ const LoginPage = () => {
         }}
       />
 
+      {/* Login Card */}
       <Box
         component="form"
+        onSubmit={handleSubmit}
         sx={{
           height: 420,
           width: 370,
@@ -56,6 +74,7 @@ const LoginPage = () => {
             width: 280,
           }}
         >
+          {/* Logo */}
           <Box
             component="img"
             src={logo}
@@ -68,10 +87,14 @@ const LoginPage = () => {
             }}
           />
 
+          {/* Username */}
           <TextField
             label="Username"
             variant="standard"
             fullWidth
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
             sx={{
               "& .MuiInputLabel-root.Mui-focused": {
                 color: "#017348",
@@ -82,12 +105,16 @@ const LoginPage = () => {
             }}
           />
 
+          {/* Password */}
           <TextField
             label="Password"
             type="password"
             variant="standard"
             fullWidth
             autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
             sx={{
               "& .MuiInputLabel-root.Mui-focused": {
                 color: "#017348",
@@ -98,11 +125,19 @@ const LoginPage = () => {
             }}
           />
 
+          {/* Error Message */}
+          {loginError && (
+            <Typography color="error" variant="body2" sx={{ mt: -1 }}>
+              Invalid username or password
+            </Typography>
+          )}
+
+          {/* Login Button */}
           <Button
             type="button"
             variant="contained"
             fullWidth
-            onClick={handleLogin}
+            disabled={isLoggingIn}
             sx={{
               mt: 1,
               backgroundColor: "#017348",
@@ -112,7 +147,7 @@ const LoginPage = () => {
               height: 42,
             }}
           >
-            Login
+            {isLoggingIn ? "Logging in..." : "Login"}
           </Button>
         </Box>
       </Box>
