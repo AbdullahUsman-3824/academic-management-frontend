@@ -134,7 +134,7 @@ const LoginPage = () => {
 
           {/* Login Button */}
           <Button
-            type="submit"
+            type="button"
             variant="contained"
             fullWidth
             disabled={isLoggingIn}

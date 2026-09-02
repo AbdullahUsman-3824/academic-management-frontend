@@ -1,6 +1,7 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import LoginPage from "../../features/common/LoginPage";
-import PortalProvider from "../providers/PortalProvider";
+import { PortalProvider } from "../providers/PortalProvider";
+import { PortalRoutes } from "./PortalRoutes";
 
 export const router = createBrowserRouter([
   {
@@ -8,11 +9,12 @@ export const router = createBrowserRouter([
     element: <LoginPage />,
   },
   {
-    path: "/",
     element: <PortalProvider />,
-  },
-  {
-    path: "*",
-    element: <Navigate to="/" replace />,
+    children: [
+      {
+        path: "/*",
+        element: <PortalRoutes />,
+      },
+    ],
   },
 ]);
