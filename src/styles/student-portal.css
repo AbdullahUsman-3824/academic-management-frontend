@@ -1,0 +1,790 @@
+.student-portal {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--paper);
+  min-height: 100vh;
+}
+
+.student-portal :focus-visible {
+  outline: 2px solid var(--green-800);
+  outline-offset: 2px;
+}
+
+/* ---------- Shell (sidebar + main) ---------- */
+.student-portal .shell {
+  display: grid;
+  grid-template-columns: 222px 1fr;
+  min-height: 100vh;
+}
+
+/* ---------- Sidebar ---------- */
+.student-portal .sidebar {
+  background: var(--green-900);
+  color: #fff;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  /* Smooth scroll for long nav lists */
+  scrollbar-width: none;
+}
+.student-portal .sidebar::-webkit-scrollbar { display: none; }
+
+/* ---------- Brand ---------- */
+.student-portal .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(255,255,255,.2);
+}
+
+.student-portal .mark {
+  width: 50px;
+  height: 50px;
+  flex: none;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.student-portal .mark svg { width: 18px; height: 18px; }
+
+.student-portal .brand-text {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.student-portal .brand-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,.7);
+  margin-top: 2px;
+}
+
+/* ---------- Nav ---------- */
+.student-portal nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.student-portal .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 5px;
+  font-size: 13.5px;
+  color: rgba(255,255,255,.85);
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.student-portal .nav-item svg {
+  width: 16px;
+  height: 16px;
+  opacity: .8;
+  flex: none;
+}
+.student-portal .nav-item:hover  { background: rgba(255,255,255,.1); }
+.student-portal .nav-item.active {
+  background: rgba(255,255,255,.16);
+  color: #fff;
+  font-weight: 700;
+}
+.student-portal .nav-item.active svg { opacity: 1; }
+
+.student-portal .spacer { flex: 1; }
+
+.student-portal .logout-item {
+  border-top: 1px solid rgba(255,255,255,.2);
+  margin-top: 8px;
+  padding-top: 14px;
+  border-radius: 0;
+}
+
+/* ---------- Sidebar profile card ---------- */
+.student-portal .sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  text-decoration: none;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15);
+  transition: background 0.15s;
+  margin-top: 8px;
+  /* Prevent overflow on narrow sidebar */
+  min-width: 0;
+}
+.student-portal .sidebar-profile:hover  { background: rgba(255,255,255,.15); }
+.student-portal .sidebar-profile.active { background: rgba(255,255,255,.2); border-color: rgba(255,255,255,.3); }
+
+.student-portal .sidebar-profile__avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--green-900);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex: none;
+}
+
+.student-portal .sidebar-profile__info {
+  min-width: 0;
+}
+
+.student-portal .sidebar-profile__name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.student-portal .sidebar-profile__reg {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: rgba(255,255,255,.65);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Mobile top bar (hidden on desktop) ---------- */
+.student-portal .mobile-topbar {
+  display: none; /* shown via media query below */
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: var(--green-900);
+  color: #fff;
+  padding: 0 16px;
+  height: 56px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.student-portal .mobile-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.student-portal .mark--sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.student-portal .mark--sm svg { width: 15px; height: 15px; }
+
+.student-portal .mobile-brand-text {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.student-portal .hamburger {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.student-portal .hamburger:hover { background: rgba(255,255,255,.15); }
+.student-portal .hamburger svg   { width: 22px; height: 22px; }
+
+/* ---------- Off-canvas drawer (mobile only) ---------- */
+.student-portal .sidebar--drawer {
+  display: none; /* mounted in DOM but hidden by default */
+}
+
+/* ---------- Drawer backdrop ---------- */
+.student-portal .drawer-backdrop {
+  display: none;
+}
+
+/* ---------- Main content ---------- */
+.student-portal main {
+  padding: 28px 32px 50px;
+  min-width: 0; /* prevent grid blowout */
+}
+
+/* ---------- Topbar (page header row) ---------- */
+.student-portal .topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.student-portal h1 {
+  font-size: 20px;
+  margin: 0 0 4px;
+  font-weight: 700;
+}
+.student-portal .today {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+/* Right side of topbar: tags + profile link */
+.student-portal .topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.student-portal .tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.student-portal .tag {
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  background: var(--green-100);
+  color: var(--green-800);
+  border: 1px solid #cfe4d9;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ---------- Profile link (in topbar) ---------- */
+.student-portal .profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.student-portal .profile .avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--green-900);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex: none;
+}
+.student-portal .profile .name {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+}
+.student-portal .profile .reg {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  margin-top: 1px;
+}
+
+/* ---------- Two-column page layout ---------- */
+.student-portal .layout {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ---------- Cards ---------- */
+.student-portal .card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden; /* keeps table-scroll border-radius intact */
+}
+.student-portal .card + .card { margin-top: 20px; }
+
+.student-portal .card-head {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.student-portal .card-head h2 {
+  font-size: 14.5px;
+  margin: 0;
+  font-weight: 700;
+}
+.student-portal .card-head .meta {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.student-portal .card-body { padding: 16px 18px; }
+
+/* ---------- Table scroll wrapper ---------- */
+/* Every table sits inside .table-scroll so it can scroll horizontally on
+   narrow screens without breaking the card's border/border-radius. */
+.student-portal .table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ---------- Tables ---------- */
+.student-portal table {
+  width: 100%;
+  border-collapse: collapse;
+  /* Ensure table doesn't shrink below its content */
+  min-width: 360px;
+}
+
+.student-portal th {
+  text-align: left;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  font-weight: 500;
+  padding: 8px 18px;
+  border-bottom: 1px solid var(--line);
+  background: #fbfbfa;
+  white-space: nowrap;
+}
+.student-portal td {
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  vertical-align: middle;
+}
+.student-portal tr:last-child td { border-bottom: none; }
+
+/* Responsive column helpers — applied directly to th/td in markup */
+/* col-hide-sm: hidden on mobile, visible on tablet+ */
+/* col-show-sm: visible only on mobile (used for inline fallback content) */
+.student-portal .col-hide-sm { /* visible by default on desktop */ }
+.student-portal .col-show-sm { display: none; } /* hidden by default on desktop */
+
+/* ---------- Table cell helpers ---------- */
+.student-portal .code {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.student-portal .subj-title { font-weight: 700; }
+.student-portal .subj-sub {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 1px;
+}
+.student-portal .credit-pill {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green-800);
+  background: var(--green-100);
+  padding: 2px 9px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+
+/* ---------- Status badges ---------- */
+.student-portal .status {
+  font-size: 11.5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.student-portal .status.ok      { background: var(--green-100); color: var(--green-800); }
+.student-portal .status.pending { background: var(--gold-100);  color: var(--gold-700);  }
+.student-portal .status.overdue { background: #fbe9e6;          color: var(--red);        }
+
+/* ---------- Subjects page grid ---------- */
+.student-portal .subjects-grid {
+  display: grid;
+  /* Fixed 3-col on desktop so all cards are the same width regardless of
+     how many items are in the last row */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+/* The global `card + card` rule adds margin-top between sibling cards.
+   Inside a grid that already has `gap`, that extra margin mis-aligns cards
+   in the same row — suppress it here. */
+.student-portal .subjects-grid .card + .card {
+  margin-top: 0;
+}
+
+.student-portal .subject-card {
+  height: fit-content;
+}
+.student-portal .subject-card .card-head { align-items: flex-start; }
+.student-portal .subject-card .card-head h2 {
+  font-size: 14px;
+  margin: 4px 0 0;
+  line-height: 1.35;
+}
+.student-portal .subject-card__description {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin: 8px 0 0;
+  line-height: 1.5;
+}
+
+/* ---------- Results / Marks — tab row ---------- */
+.student-portal .results-tabs {
+  gap: 6px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--line);
+  padding: 12px 14px;
+}
+.student-portal .tab-btn {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 5px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.student-portal .tab-btn:hover  { background: var(--green-100); }
+.student-portal .tab-btn.active {
+  background: var(--green-900);
+  border-color: var(--green-900);
+  color: #fff;
+}
+
+/* ---------- Results — academic history list ---------- */
+.student-portal .semester-history-list {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+}
+.student-portal .semester-history-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 12.5px;
+}
+.student-portal .semester-history-list li:last-child { border-bottom: none; }
+
+/* ---------- Stats row ---------- */
+.student-portal .stats { display: flex; text-align: center; }
+.student-portal .stat {
+  flex: 1;
+  padding: 8px 4px;
+  border-right: 1px solid var(--line);
+}
+.student-portal .stat:last-child { border-right: none; }
+.student-portal .stat .num {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--green-900);
+}
+.student-portal .stat .lbl {
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+
+/* ---------- Fees page ---------- */
+.student-portal .voucher-meta {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+.student-portal .voucher-meta .lbl {
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-bottom: 2px;
+}
+.student-portal .fee-amount {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 4px 0 0;
+}
+.student-portal .fee-amount small {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+.student-portal .fee-due {
+  font-size: 12.5px;
+  color: var(--red);
+  margin-top: 6px;
+}
+
+/* ---------- Buttons ---------- */
+.student-portal .btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 9px 14px;
+  background: var(--green-900);
+  color: #fff;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  margin-top: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.student-portal .btn:hover { background: var(--green-800); }
+.student-portal .btn.secondary {
+  background: #fff;
+  color: var(--green-900);
+  border: 1px solid var(--line);
+  font-weight: 500;
+  margin-top: 8px;
+}
+.student-portal .btn.secondary:hover { background: var(--green-100); }
+
+/* ---------- Announcements ---------- */
+.student-portal .announce {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.student-portal .announce:last-child { border-bottom: none; }
+.student-portal .announce .tag-label {
+  font-size: 11px;
+  color: var(--green-800);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.student-portal .announce h3 {
+  font-size: 13px;
+  margin: 5px 0 3px;
+  font-weight: 700;
+}
+.student-portal .announce p {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin: 0;
+}
+.student-portal .announce .date {
+  font-size: 11.5px;
+  color: var(--ink-faint);
+  margin-top: 5px;
+}
+
+/* ---------- Profile page ---------- */
+.student-portal .profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.student-portal .profile-fields { padding: 4px 0; }
+.student-portal .profile-field {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 8px;
+  padding: 9px 18px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.student-portal .profile-field:last-child { border-bottom: none; }
+.student-portal .profile-field__label {
+  color: var(--ink-soft);
+  font-size: 12px;
+  padding-top: 1px;
+}
+.student-portal .profile-field__value {
+  font-weight: 500;
+  word-break: break-word;
+}
+.student-portal .profile-note {
+  margin-top: 20px;
+  font-size: 12px;
+  color: var(--ink-faint);
+}
+
+/* ---------- Placeholder (unstyled pages) ---------- */
+.student-portal .page-placeholder h1 { margin: 0 0 6px; }
+.student-portal .page-placeholder__description {
+  color: var(--ink-soft);
+  margin: 0 0 20px;
+}
+.student-portal .page-placeholder__body {
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  padding: 2rem;
+  color: var(--ink-faint);
+  background: var(--card);
+}
+.student-portal .page-placeholder__todo {
+  margin: 0;
+  font-style: italic;
+}
+
+/* ==========================================================================
+   RESPONSIVE OVERRIDES
+   ========================================================================== */
+
+/* ---- Tablet: 769px – 1024px ---- */
+@media (max-width: 1024px) {
+  .student-portal .shell {
+    grid-template-columns: 200px 1fr;
+  }
+  .student-portal main {
+    padding: 24px 24px 40px;
+  }
+  .student-portal .layout {
+    grid-template-columns: 1.4fr 1fr;
+  }
+  /* Subjects: drop to 2 cols at tablet width */
+  .student-portal .subjects-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ---- Mobile: ≤ 768px ---- */
+@media (max-width: 768px) {
+
+  /* Show the mobile topbar, hide the desktop sidebar */
+  .student-portal .mobile-topbar {
+    display: flex;
+  }
+
+  /* Shell becomes single column; sidebar removed from flow */
+  .student-portal .shell {
+    grid-template-columns: 1fr;
+  }
+
+  /* Desktop sidebar — visually hidden but still in the grid (zero-width) */
+  .student-portal .sidebar:not(.sidebar--drawer) {
+    display: none;
+  }
+
+  /* Drawer sidebar — off-screen by default, slides in when .is-open */
+  .student-portal .sidebar--drawer {
+    display: flex;
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 260px;
+    height: 100dvh;
+    z-index: 300;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    overflow-y: auto;
+    /* shadow to separate from page content */
+    box-shadow: 4px 0 24px rgba(0,0,0,.25);
+  }
+  .student-portal .sidebar--drawer.is-open {
+    transform: translateX(0);
+  }
+
+  /* Backdrop */
+  .student-portal .drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 299;
+    animation: fadeIn 0.2s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* Main padding */
+  .student-portal main {
+    padding: 20px 16px 40px;
+  }
+
+  /* Page heading */
+  .student-portal h1 { font-size: 18px; }
+
+  /* Topbar: stack vertically if needed */
+  .student-portal .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  /* Two-column layouts → single column */
+  .student-portal .layout        { grid-template-columns: 1fr; }
+  .student-portal .profile-grid  { grid-template-columns: 1fr; }
+
+  /* Profile field: narrower label column */
+  .student-portal .profile-field {
+    grid-template-columns: 120px 1fr;
+  }
+
+  /* Subjects grid: single column on mobile */
+  .student-portal .subjects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Tables: hide less-critical columns, show inline fallback */
+  .student-portal .col-hide-sm { display: none; }
+  .student-portal .col-show-sm { display: block; }
+
+  /* Tab buttons: allow wrapping and fill available space */
+  .student-portal .results-tabs {
+    padding: 10px 12px;
+  }
+  .student-portal .tab-btn {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+
+  /* Voucher meta: single column on very small screens */
+  .student-portal .voucher-meta {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Tags: allow wrapping */
+  .student-portal .tags { gap: 6px; }
+  .student-portal .tag  { font-size: 11.5px; padding: 4px 8px; }
+
+  /* Stats: keep row but compress */
+  .student-portal .stat .num  { font-size: 15px; }
+  .student-portal .stat .lbl  { font-size: 10px; }
+}
+
+/* ---- Very small screens: ≤ 400px ---- */
+@media (max-width: 400px) {
+  .student-portal main { padding: 16px 12px 32px; }
+
+  .student-portal .profile-field {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  .student-portal .profile-field__label { font-size: 11px; }
+}
