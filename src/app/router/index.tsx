@@ -1,7 +1,8 @@
 import { createBrowserRouter } from "react-router-dom";
 import LoginPage from "../../features/common/LoginPage";
-import {PortalProvider} from "../providers/PortalProvider";
+import { PortalProvider } from "../providers/PortalProvider";
 import { PortalRoutes } from "./PortalRoutes";
+import ProtectedRoute from "./ProtectedRoute";
 
 export const router = createBrowserRouter([
   {
@@ -9,11 +10,16 @@ export const router = createBrowserRouter([
     element: <LoginPage />,
   },
   {
-    element: <PortalProvider />,
+    element: <ProtectedRoute />,
     children: [
       {
-        path: "/*",
-        element: <PortalRoutes />,
+        element: <PortalProvider />,
+        children: [
+          {
+            path: "/*",
+            element: <PortalRoutes />,
+          },
+        ],
       },
     ],
   },

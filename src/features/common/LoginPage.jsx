@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Box, Button, TextField, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import logo from "../../assets/icons/lawcollegelogo.png";
+import logo from "../../assets/icons/law-college-logo.png";
 import background from "../../assets/images/lawcollegeimage1.webp";
 
 const LoginPage = () => {
@@ -12,18 +12,18 @@ const LoginPage = () => {
   const { login, isLoggingIn, loginError } = useAuth();
   const navigate = useNavigate();
 
- const handleSubmit = (e) => {
-  e.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-  login(
-    { username, password },
-    {
-      onSuccess: () => {
-        navigate("/");
+    login(
+      { username, password },
+      {
+        onSuccess: () => {
+          navigate("/");
+        },
       },
-    }
-  );
-};
+    );
+  };
 
   return (
     <Box
@@ -134,7 +134,7 @@ const LoginPage = () => {
 
           {/* Login Button */}
           <Button
-            type="button"
+            type="submit"
             variant="contained"
             fullWidth
             disabled={isLoggingIn}

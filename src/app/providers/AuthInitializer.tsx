@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useSelector } from "react-redux";
 import { RootState } from "../store";
@@ -8,18 +8,29 @@ interface AuthInitializerProps {
 }
 
 const AuthInitializer = ({ children }: AuthInitializerProps) => {
-  const { refetchUser, isLoadingUser } = useAuth();
+  const { refetchUser } = useAuth();
   const user = useSelector((state: RootState) => state.auth.user);
+  const [hasChecked, setHasChecked] = useState(false);
 
   useEffect(() => {
-    // Only call /auth/me if we don't already have the user in Redux
-    if (!user) {
-      refetchUser();
+    if (user) {
+      setHasChecked(true);
+      return;
     }
-  }, [user, refetchUser]);
 
-  // Optional: Show a loading screen while checking authentication
-  if (!user && isLoadingUser) {
+    let isMounted = true;
+
+    Promise.resolve(refetchUser()).finally(() => {
+      if (isMounted) setHasChecked(true);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // sirf mount py ek dafa chalayen
+
+  if (!hasChecked) {
     return (
       <div
         style={{
