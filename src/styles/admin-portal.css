@@ -1,0 +1,642 @@
+.admin-portal {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--paper);
+  min-height: 100vh;
+}
+
+.admin-portal :focus-visible {
+  outline: 2px solid var(--green-800);
+  outline-offset: 2px;
+}
+
+/* ---------- Shell (sidebar + main) ---------- */
+.admin-portal .shell {
+  display: grid;
+  grid-template-columns: 222px 1fr;
+  min-height: 100vh;
+}
+
+/* ---------- Sidebar ---------- */
+.admin-portal .sidebar {
+  background: var(--green-900);
+  color: #fff;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.admin-portal .sidebar::-webkit-scrollbar { display: none; }
+
+/* ---------- Brand ---------- */
+.admin-portal .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(255,255,255,.2);
+}
+
+.admin-portal .mark {
+  width: 50px;
+  height: 50px;
+  flex: none;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-portal .brand-text {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.admin-portal .brand-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,.7);
+  margin-top: 2px;
+}
+
+/* ---------- Nav ---------- */
+.admin-portal nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-portal .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 5px;
+  font-size: 13.5px;
+  color: rgba(255,255,255,.85);
+  text-decoration: none;
+  transition: background 0.15s;
+  cursor: pointer;
+}
+.admin-portal .nav-item svg {
+  width: 16px;
+  height: 16px;
+  opacity: .8;
+  flex: none;
+}
+.admin-portal .nav-item:hover  { background: rgba(255,255,255,.1); }
+.admin-portal .nav-item.active {
+  background: rgba(255,255,255,.16);
+  color: #fff;
+  font-weight: 700;
+}
+.admin-portal .nav-item.active svg { opacity: 1; }
+
+.admin-portal .spacer { flex: 1; }
+
+.admin-portal .logout-item {
+  border-top: 1px solid rgba(255,255,255,.2);
+  margin-top: 8px;
+  padding-top: 14px;
+  border-radius: 0;
+}
+
+/* ---------- Mobile top bar (hidden on desktop) ---------- */
+.admin-portal .mobile-topbar {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: var(--green-900);
+  color: #fff;
+  padding: 0 16px;
+  height: 56px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-portal .mobile-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-portal .mark--sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.admin-portal .mobile-brand-text {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.admin-portal .hamburger {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.admin-portal .hamburger:hover { background: rgba(255,255,255,.15); }
+
+/* ---------- Off-canvas drawer (mobile only) ---------- */
+.admin-portal .sidebar--drawer {
+  display: none;
+}
+
+/* ---------- Drawer backdrop ---------- */
+.admin-portal .drawer-backdrop {
+  display: none;
+}
+
+/* ---------- Main content ---------- */
+.admin-portal main {
+  padding: 28px 32px 50px;
+  min-width: 0;
+}
+
+/* ---------- Topbar (page header row) ---------- */
+.admin-portal .topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.admin-portal h1 {
+  font-size: 20px;
+  margin: 0 0 4px;
+  font-weight: 700;
+}
+.admin-portal .today {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.admin-portal .topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-portal .tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.admin-portal .tag {
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  background: var(--green-100);
+  color: var(--green-800);
+  border: 1px solid #cfe4d9;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ---------- Two-column page layout ---------- */
+.admin-portal .layout {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ---------- Cards ---------- */
+.admin-portal .card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.admin-portal .card + .card { margin-top: 20px; }
+
+.admin-portal .card-head {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.admin-portal .card-head h2 {
+  font-size: 14.5px;
+  margin: 0;
+  font-weight: 700;
+}
+.admin-portal .card-head .meta {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.admin-portal .card-body { padding: 16px 18px; }
+
+/* ---------- KPI stat cards row ---------- */
+.admin-portal .kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.admin-portal .kpi-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 16px 18px;
+}
+.admin-portal .kpi-card .kpi-label {
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+.admin-portal .kpi-card .kpi-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--green-900);
+  line-height: 1.1;
+}
+.admin-portal .kpi-card .kpi-sub {
+  font-size: 11px;
+  color: var(--ink-faint);
+  margin-top: 4px;
+}
+
+/* ---------- Table scroll wrapper ---------- */
+.admin-portal .table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ---------- Tables ---------- */
+.admin-portal table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 360px;
+}
+
+.admin-portal th {
+  text-align: left;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  font-weight: 500;
+  padding: 8px 18px;
+  border-bottom: 1px solid var(--line);
+  background: #fbfbfa;
+  white-space: nowrap;
+}
+.admin-portal td {
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  vertical-align: middle;
+}
+.admin-portal tr:last-child td { border-bottom: none; }
+
+.admin-portal .col-hide-sm { /* visible by default on desktop */ }
+.admin-portal .col-show-sm { display: none; }
+
+/* ---------- Table cell helpers ---------- */
+.admin-portal .code {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.admin-portal .subj-title { font-weight: 700; }
+.admin-portal .subj-sub {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 1px;
+}
+.admin-portal .credit-pill {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green-800);
+  background: var(--green-100);
+  padding: 2px 9px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+
+/* ---------- Status badges ---------- */
+.admin-portal .status {
+  font-size: 11.5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  white-space: nowrap;
+  font-weight: 500;
+}
+/* generic green = ok/active/paid/finalized */
+.admin-portal .status.ok,
+.admin-portal .status.active,
+.admin-portal .status.paid,
+.admin-portal .status.finalized  { background: var(--green-100); color: var(--green-800); }
+/* gold = pending/partial/on-leave/submitted */
+.admin-portal .status.pending,
+.admin-portal .status.partial,
+.admin-portal .status.submitted,
+.admin-portal .status.on-leave   { background: var(--gold-100);  color: var(--gold-700);  }
+/* red = overdue/suspended/inactive/withdrawn */
+.admin-portal .status.overdue,
+.admin-portal .status.suspended,
+.admin-portal .status.inactive,
+.admin-portal .status.withdrawn  { background: #fbe9e6;          color: var(--red);        }
+/* neutral = graduated/deferred/closed/upcoming */
+.admin-portal .status.graduated,
+.admin-portal .status.deferred,
+.admin-portal .status.closed,
+.admin-portal .status.upcoming   { background: #f0f0ee;          color: var(--ink-soft);   }
+/* blue-ish = enrolled/current */
+.admin-portal .status.enrolled,
+.admin-portal .status.current    { background: #e6eeff;          color: #3058c4;            }
+
+/* ---------- Tab row (shared with results/marks pattern) ---------- */
+.admin-portal .tabs-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--line);
+  padding: 12px 14px;
+}
+.admin-portal .tab-btn {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 5px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.admin-portal .tab-btn:hover  { background: var(--green-100); }
+.admin-portal .tab-btn.active {
+  background: var(--green-900);
+  border-color: var(--green-900);
+  color: #fff;
+}
+
+/* ---------- Stats row ---------- */
+.admin-portal .stats { display: flex; text-align: center; }
+.admin-portal .stat {
+  flex: 1;
+  padding: 8px 4px;
+  border-right: 1px solid var(--line);
+}
+.admin-portal .stat:last-child { border-right: none; }
+.admin-portal .stat .num {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--green-900);
+}
+.admin-portal .stat .lbl {
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+
+/* ---------- Activity list (dashboard) ---------- */
+.admin-portal .activity-list { list-style: none; margin: 0; padding: 0; }
+.admin-portal .activity-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.admin-portal .activity-list li:last-child { border-bottom: none; }
+.admin-portal .activity-action { font-weight: 700; }
+.admin-portal .activity-detail { font-size: 12px; color: var(--ink-soft); margin-top: 1px; }
+.admin-portal .activity-date   { font-size: 11.5px; color: var(--ink-faint); white-space: nowrap; flex-shrink: 0; }
+
+/* ---------- Buttons ---------- */
+.admin-portal .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--green-900);
+  color: #fff;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.admin-portal .btn:hover { background: var(--green-800); }
+.admin-portal .btn.secondary {
+  background: #fff;
+  color: var(--green-900);
+  border: 1px solid var(--line);
+  font-weight: 500;
+}
+.admin-portal .btn.secondary:hover { background: var(--green-100); }
+.admin-portal .btn.danger {
+  background: var(--red);
+}
+.admin-portal .btn.danger:hover { background: #9c3e30; }
+
+/* ---------- Profile field grid (student / faculty detail) ---------- */
+.admin-portal .profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.admin-portal .profile-fields { padding: 4px 0; }
+.admin-portal .profile-field {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 8px;
+  padding: 9px 18px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.admin-portal .profile-field:last-child { border-bottom: none; }
+.admin-portal .profile-field__label {
+  color: var(--ink-soft);
+  font-size: 12px;
+  padding-top: 1px;
+}
+.admin-portal .profile-field__value {
+  font-weight: 500;
+  word-break: break-word;
+}
+
+/* ---------- Placeholder (unstyled pages) ---------- */
+.admin-portal .page-placeholder h1 { margin: 0 0 6px; }
+.admin-portal .page-placeholder__description {
+  color: var(--ink-soft);
+  margin: 0 0 20px;
+}
+.admin-portal .page-placeholder__body {
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  padding: 2rem;
+  color: var(--ink-faint);
+  background: var(--card);
+}
+.admin-portal .page-placeholder__todo {
+  margin: 0;
+  font-style: italic;
+}
+
+/* ---------- Subject chip list ---------- */
+.admin-portal .chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.admin-portal .chip {
+  font-size: 11.5px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  background: var(--green-100);
+  color: var(--green-800);
+  border: 1px solid #cfe4d9;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   RESPONSIVE OVERRIDES
+   ========================================================================== */
+
+/* ---- Tablet: 769px – 1024px ---- */
+@media (max-width: 1024px) {
+  .admin-portal .shell {
+    grid-template-columns: 200px 1fr;
+  }
+  .admin-portal main {
+    padding: 24px 24px 40px;
+  }
+  .admin-portal .layout {
+    grid-template-columns: 1.4fr 1fr;
+  }
+  .admin-portal .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ---- Mobile: ≤ 768px ---- */
+@media (max-width: 768px) {
+
+  .admin-portal .mobile-topbar {
+    display: flex;
+  }
+
+  .admin-portal .shell {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-portal .sidebar:not(.sidebar--drawer) {
+    display: none;
+  }
+
+  .admin-portal .sidebar--drawer {
+    display: flex;
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 260px;
+    height: 100dvh;
+    z-index: 300;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    overflow-y: auto;
+    box-shadow: 4px 0 24px rgba(0,0,0,.25);
+  }
+  .admin-portal .sidebar--drawer.is-open {
+    transform: translateX(0);
+  }
+
+  .admin-portal .drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 299;
+    animation: apFadeIn 0.2s ease;
+  }
+  @keyframes apFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .admin-portal main {
+    padding: 20px 16px 40px;
+  }
+
+  .admin-portal h1 { font-size: 18px; }
+
+  .admin-portal .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .admin-portal .layout       { grid-template-columns: 1fr; }
+  .admin-portal .profile-grid { grid-template-columns: 1fr; }
+  .admin-portal .kpi-grid     { grid-template-columns: repeat(2, 1fr); }
+
+  .admin-portal .profile-field {
+    grid-template-columns: 120px 1fr;
+  }
+
+  .admin-portal .col-hide-sm { display: none; }
+  .admin-portal .col-show-sm { display: block; }
+
+  .admin-portal .tab-btn {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+
+  .admin-portal .tags { gap: 6px; }
+  .admin-portal .tag  { font-size: 11.5px; padding: 4px 8px; }
+
+  .admin-portal .stat .num { font-size: 15px; }
+  .admin-portal .stat .lbl { font-size: 10px; }
+}
+
+/* ---- Very small screens: ≤ 400px ---- */
+@media (max-width: 400px) {
+  .admin-portal main { padding: 16px 12px 32px; }
+  .admin-portal .kpi-grid { grid-template-columns: 1fr; }
+
+  .admin-portal .profile-field {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  .admin-portal .profile-field__label { font-size: 11px; }
+}
