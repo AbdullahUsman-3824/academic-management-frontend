@@ -530,6 +530,118 @@
   white-space: nowrap;
 }
 
+/* ---------- Form and toolbar helpers ---------- */
+.admin-portal .inline-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-portal .toolbar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-portal .form-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-portal .form-grid.two-col {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-portal .span-2 { grid-column: span 2; }
+
+.admin-portal .field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.admin-portal .field-label.narrow {
+  max-width: 180px;
+}
+
+.admin-portal .field-control {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--ink);
+  background: #fff;
+}
+
+.admin-portal .field-control:focus {
+  outline: 1px solid #9dc8b1;
+  border-color: #9dc8b1;
+}
+
+.admin-portal .field-control:disabled {
+  background: #f6f6f4;
+  color: var(--ink-soft);
+}
+
+.admin-portal .action-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-portal .pager-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-portal .notice {
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.admin-portal .notice.success {
+  background: #ecf8f0;
+  color: var(--green-800);
+  border-color: #cfe4d9;
+}
+
+.admin-portal .notice.error {
+  background: #fdecea;
+  color: #9f3526;
+  border-color: #f0c8c2;
+}
+
+.admin-portal .bulk-result {
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px;
+  background: #fcfcfb;
+}
+
+.admin-portal .bulk-errors {
+  margin: 0;
+  padding-left: 20px;
+  color: #9f3526;
+  font-size: 12px;
+}
+
+.admin-portal .empty-note {
+  margin-top: 0;
+  color: var(--ink-soft);
+}
+
 /* ==========================================================================
    RESPONSIVE OVERRIDES
    ========================================================================== */
@@ -609,6 +721,14 @@
   .admin-portal .layout       { grid-template-columns: 1fr; }
   .admin-portal .profile-grid { grid-template-columns: 1fr; }
   .admin-portal .kpi-grid     { grid-template-columns: repeat(2, 1fr); }
+  .admin-portal .toolbar-grid { grid-template-columns: 1fr; }
+  .admin-portal .form-grid.two-col { grid-template-columns: 1fr; }
+  .admin-portal .span-2 { grid-column: auto; }
+  .admin-portal .field-label.narrow { max-width: none; }
+  .admin-portal .pager-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
   .admin-portal .profile-field {
     grid-template-columns: 120px 1fr;
