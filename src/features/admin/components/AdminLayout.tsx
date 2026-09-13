@@ -14,6 +14,7 @@ import {
   LogoutRounded as LogoutIcon,
   MenuRounded as MenuIcon,
   CloseRounded as CloseIcon,
+  AssessmentRounded as AcademicIcon
 } from '@mui/icons-material'
 
 const navIcons: Record<string, ReactNode> = {
@@ -22,6 +23,7 @@ const navIcons: Record<string, ReactNode> = {
   [adminPaths.students]:  <PeopleIcon    fontSize="small" />,
   [adminPaths.faculty]:   <BadgeIcon     fontSize="small" />,
   [adminPaths.courses]:   <CoursesIcon   fontSize="small" />,
+  [adminPaths.academics]:  <AcademicIcon  fontSize="small" />,
 }
 
 function AdminLayout() {
