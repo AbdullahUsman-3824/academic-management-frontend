@@ -1,9 +1,9 @@
-import { useState, useEffect, type ReactNode } from 'react'
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { adminNavItems, adminPaths } from '../data/navData'
-import '../../../styles/admin-portal.css'
-import logo from '../../../assets/icons/law-college-logo.png'
-import { useAuth } from '../../../hooks/useAuth'
+import { useState, useEffect, type ReactNode } from "react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { adminNavItems, adminPaths } from "../data/navData";
+import "../../../styles/admin-portal.css";
+import logo from "../../../assets/icons/law-college-logo.png";
+import { useAuth } from "../../../hooks/useAuth";
 
 import {
   DashboardRounded as DashboardIcon,
@@ -14,49 +14,50 @@ import {
   LogoutRounded as LogoutIcon,
   MenuRounded as MenuIcon,
   CloseRounded as CloseIcon,
-  AssessmentRounded as AcademicIcon
-} from '@mui/icons-material'
+  AssessmentRounded as AcademicIcon,
+} from "@mui/icons-material";
 
 const navIcons: Record<string, ReactNode> = {
   [adminPaths.dashboard]: <DashboardIcon fontSize="small" />,
-  [adminPaths.academic]:  <SchoolIcon    fontSize="small" />,
-  [adminPaths.students]:  <PeopleIcon    fontSize="small" />,
-  [adminPaths.faculty]:   <BadgeIcon     fontSize="small" />,
-  [adminPaths.courses]:   <CoursesIcon   fontSize="small" />,
-  [adminPaths.academics]:  <AcademicIcon  fontSize="small" />,
-}
+  [adminPaths.academics]: <SchoolIcon fontSize="small" />,
+  [adminPaths.students]: <PeopleIcon fontSize="small" />,
+  [adminPaths.faculty]: <BadgeIcon fontSize="small" />,
+  [adminPaths.courses]: <CoursesIcon fontSize="small" />,
+};
 
 function AdminLayout() {
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const location = useLocation()
-  const navigate = useNavigate()
-  const { logout, user } = useAuth()
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { logout, user } = useAuth();
 
   // Close drawer on navigation
   useEffect(() => {
-    setDrawerOpen(false)
-  }, [location.pathname])
+    setDrawerOpen(false);
+  }, [location.pathname]);
 
   // Close drawer on Escape
   useEffect(() => {
-    if (!drawerOpen) return
+    if (!drawerOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setDrawerOpen(false)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [drawerOpen])
+      if (e.key === "Escape") setDrawerOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [drawerOpen]);
 
   // Lock body scroll while drawer is open
   useEffect(() => {
-    document.body.style.overflow = drawerOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
-  }, [drawerOpen])
+    document.body.style.overflow = drawerOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [drawerOpen]);
 
   const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
+    logout();
+    navigate("/login");
+  };
 
   const sidebarContent = (
     <>
@@ -68,7 +69,7 @@ function AdminLayout() {
             width={48}
             height={48}
             decoding="async"
-            style={{ objectFit: 'contain', display: 'block' }}
+            style={{ objectFit: "contain", display: "block" }}
           />
         </div>
         <div>
@@ -87,7 +88,7 @@ function AdminLayout() {
             key={item.path}
             to={item.path}
             end={item.path === adminPaths.dashboard}
-            className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+            className={({ isActive }) => `nav-item${isActive ? " active" : ""}`}
           >
             {navIcons[item.path]}
             {item.label}
@@ -101,17 +102,23 @@ function AdminLayout() {
       {user && (
         <div
           style={{
-            padding: '10px',
-            borderRadius: '6px',
-            background: 'rgba(255,255,255,.08)',
-            border: '1px solid rgba(255,255,255,.15)',
-            marginBottom: '8px',
+            padding: "10px",
+            borderRadius: "6px",
+            background: "rgba(255,255,255,.08)",
+            border: "1px solid rgba(255,255,255,.15)",
+            marginBottom: "8px",
           }}
         >
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>
             {user.username}
           </div>
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,.6)', marginTop: 2 }}>
+          <div
+            style={{
+              fontSize: 11,
+              color: "rgba(255,255,255,.6)",
+              marginTop: 2,
+            }}
+          >
             Administrator
           </div>
         </div>
@@ -121,13 +128,19 @@ function AdminLayout() {
         type="button"
         className="nav-item logout-item"
         onClick={handleLogout}
-        style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}
+        style={{
+          background: "none",
+          border: "none",
+          width: "100%",
+          textAlign: "left",
+          cursor: "pointer",
+        }}
       >
         <LogoutIcon sx={{ fontSize: 22 }} />
         Log out
       </button>
     </>
-  )
+  );
 
   return (
     <div className="admin-portal">
@@ -141,7 +154,7 @@ function AdminLayout() {
               width={32}
               height={32}
               decoding="async"
-              style={{ objectFit: 'contain', display: 'block' }}
+              style={{ objectFit: "contain", display: "block" }}
             />
           </div>
           <span className="mobile-brand-text">MLC Admin Portal</span>
@@ -149,14 +162,18 @@ function AdminLayout() {
         <button
           className="hamburger"
           type="button"
-          aria-label={drawerOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-label={
+            drawerOpen ? "Close navigation menu" : "Open navigation menu"
+          }
           aria-expanded={drawerOpen}
           aria-controls="admin-mobile-drawer"
           onClick={() => setDrawerOpen((v) => !v)}
         >
-          {drawerOpen
-            ? <CloseIcon sx={{ fontSize: 24 }} />
-            : <MenuIcon  sx={{ fontSize: 24 }} />}
+          {drawerOpen ? (
+            <CloseIcon sx={{ fontSize: 24 }} />
+          ) : (
+            <MenuIcon sx={{ fontSize: 24 }} />
+          )}
         </button>
       </header>
 
@@ -177,7 +194,7 @@ function AdminLayout() {
         {/* Mobile drawer */}
         <aside
           id="admin-mobile-drawer"
-          className={`sidebar sidebar--drawer${drawerOpen ? ' is-open' : ''}`}
+          className={`sidebar sidebar--drawer${drawerOpen ? " is-open" : ""}`}
           aria-label="Admin portal navigation drawer"
           aria-hidden={!drawerOpen}
         >
@@ -189,7 +206,7 @@ function AdminLayout() {
         </main>
       </div>
     </div>
-  )
+  );
 }
 
-export default AdminLayout
+export default AdminLayout;
