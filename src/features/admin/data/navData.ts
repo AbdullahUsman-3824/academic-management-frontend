@@ -5,6 +5,7 @@ export const adminPaths = {
   students:  '/students',
   faculty:   '/faculty',
   courses:   '/courses',
+  academics: '/academics',
 }
 
 export const adminNavItems = [
@@ -13,4 +14,5 @@ export const adminNavItems = [
   { label: 'Student Management',  path: adminPaths.students  },
   { label: 'Faculty Management',  path: adminPaths.faculty   },
   { label: 'Course Management',   path: adminPaths.courses   },
+  { label: 'Sessions & Years',    path: adminPaths.academics },
 ]
