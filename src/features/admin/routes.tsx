@@ -3,17 +3,31 @@ import DashboardPage from "./pages/DashboardPage";
 import StudentManagementPage from "./pages/StudentManagementPage";
 import FacultyManagementPage from "./pages/FacultyManagementPage";
 import CourseManagementPage from "./pages/CourseManagementPage";
-import AcademicPage from "./pages/academics/AcademicsPage";
+import AcademicsLayout from "./pages/academics/AcademicsLayout";
+import AcademicsOverviewPage from "./pages/academics/AcademicsOverviewPage";
+import AcademicsYearsPage from "./pages/academics/AcademicsYearsPage";
+import AcademicsSessionsPage from "./pages/academics/AcademicsSessionsPage";
+import AcademicsBatchesPage from "./pages/academics/AcademicsBatchesPage";
+import AcademicsSetupPage from "./pages/academics/AcademicsSetupPage";
 
 // Route config consumed by PortalRoutes — mirrors the same shape as studentRoutes
 export const adminRoutes = {
   layout: AdminLayout,
   children: [
     { index: true, element: <DashboardPage /> },
-    { path: "academics", element: <AcademicPage /> },
-    // { path: 'academic',      element: <AcademicManagementPage /> },
+    {
+      path: "academics",
+      element: <AcademicsLayout />,
+      children: [
+        { index: true,        element: <AcademicsOverviewPage /> },
+        { path: "years",      element: <AcademicsYearsPage /> },
+        { path: "sessions",   element: <AcademicsSessionsPage /> },
+        { path: "batches",    element: <AcademicsBatchesPage /> },
+        { path: "setup",      element: <AcademicsSetupPage /> },
+      ],
+    },
     { path: "students", element: <StudentManagementPage /> },
-    { path: "faculty", element: <FacultyManagementPage /> },
-    { path: "courses", element: <CourseManagementPage /> },
+    { path: "faculty",  element: <FacultyManagementPage /> },
+    { path: "courses",  element: <CourseManagementPage /> },
   ],
 };
