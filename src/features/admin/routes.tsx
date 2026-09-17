@@ -1,6 +1,6 @@
 import AdminLayout from "./components/AdminLayout";
 import DashboardPage from "./pages/DashboardPage";
-import StudentManagementPage from "./pages/StudentManagementPage";
+import StudentManagementPage from "./pages/student/StudentManagementPage";
 import FacultyManagementPage from "./pages/FacultyManagementPage";
 import CourseManagementPage from "./pages/CourseManagementPage";
 import AcademicsLayout from "./pages/academics/AcademicsLayout";
