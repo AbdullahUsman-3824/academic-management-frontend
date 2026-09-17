@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { Box, Button, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  InputAdornment,
+  IconButton,
+} from "@mui/material";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import logo from "../../assets/icons/law-college-logo.png";
@@ -8,6 +17,7 @@ import background from "../../assets/images/lawcollegeimage1.webp";
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const { login, isLoggingIn, loginError } = useAuth();
   const navigate = useNavigate();
@@ -108,7 +118,7 @@ const LoginPage = () => {
           {/* Password */}
           <TextField
             label="Password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             variant="standard"
             fullWidth
             autoComplete="current-password"
@@ -121,6 +131,24 @@ const LoginPage = () => {
               },
               "& .MuiInput-underline:after": {
                 borderBottomColor: "#017348",
+              },
+            }}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword((show) => !show)}
+                      onMouseDown={(e) => e.preventDefault()}
+                      edge="end"
+                      size="small"
+                      sx={{ color: "#017348" }}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
               },
             }}
           />
