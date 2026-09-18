@@ -15,14 +15,16 @@ export interface LoginResponse {
   user: User;
 }
 
-// API Functions 
-
+// API Functions
 
 export const login = async (data: LoginRequest): Promise<LoginResponse> => {
   const response = await apiClient.post<LoginResponse>("/auth/login", data);
   return response.data;
 };
 
+export const logout = async (): Promise<void> => {
+  await apiClient.post("/auth/logout");
+};
 
 export const getMe = async (): Promise<User> => {
   const response = await apiClient.get<User>("/auth/me");
