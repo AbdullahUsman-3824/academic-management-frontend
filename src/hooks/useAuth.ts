@@ -1,6 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDispatch, useSelector } from "react-redux";
-import { login, getMe, LoginRequest, User } from "../api/auth";
+import {
+  login,
+  getMe,
+  logout as logoutApi,
+  LoginRequest,
+  User,
+} from "../api/auth";
 import { setUser, clearUser } from "../app/store/authSlice";
 import { RootState } from "../app/store";
 
@@ -11,7 +17,7 @@ export const useAuth = () => {
   // Get user from Redux
   const user = useSelector((state: RootState) => state.auth.user);
 
-  // LOGIN 
+  // LOGIN
   const loginMutation = useMutation({
     mutationFn: (data: LoginRequest) => login(data),
     onSuccess: (data) => {
@@ -40,11 +46,20 @@ export const useAuth = () => {
     retry: false,
   });
 
-  // LOGOUT (we will use later)
-  const logout = () => {
-    dispatch(clearUser());
-    queryClient.removeQueries({ queryKey: ["auth", "me"] });
-  };
+  // LOGOUT
+  const logoutMutation = useMutation({
+    mutationFn: logoutApi,
+    onSuccess: () => {
+      dispatch(clearUser());
+      queryClient.removeQueries({ queryKey: ["auth", "me"] });
+    },
+    onError: () => {
+      // Even if the network call fails, clear client-side state
+      // so the user isn't stuck looking "logged in" in the UI.
+      dispatch(clearUser());
+      queryClient.removeQueries({ queryKey: ["auth", "me"] });
+    },
+  });
 
   return {
     // Login
@@ -61,6 +76,8 @@ export const useAuth = () => {
     refetchUser,
 
     // Logout
-    logout,
+    logout: logoutMutation.mutate,
+    logoutAsync: logoutMutation.mutateAsync,
+    isLoggingOut: logoutMutation.isPending,
   };
 };
