@@ -10,7 +10,13 @@ export function PortalProvider() {
     return <Navigate to="/login" replace />;
   }
 
-  const portal = user.portal.toLowerCase() as Portal;
+  const portalName = typeof user.portal === "string" ? user.portal.toLowerCase() : "";
+
+  if (portalName !== "admin" && portalName !== "student") {
+    return <Navigate to="/login" replace />;
+  }
+
+  const portal = portalName as Portal;
 
   return (
     <PortalContext.Provider value={{ portal }}>
