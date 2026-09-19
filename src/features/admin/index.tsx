@@ -5,3 +5,4 @@ export { default as AcademicManagementPage }  from './pages/AcademicManagementPa
 export { default as StudentManagementPage }   from './pages/student/StudentManagementPage'
 export { default as FacultyManagementPage }   from './pages/FacultyManagementPage'
 export { default as CourseManagementPage }    from './pages/CourseManagementPage'
+export{default as CoursePage} from "./pages/courses/CoursesPage"
