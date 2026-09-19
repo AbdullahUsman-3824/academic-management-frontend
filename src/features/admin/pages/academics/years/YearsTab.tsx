@@ -1,62 +1,52 @@
-import type { AcademicYearStatus } from "../../../api/academic";
+import { useState } from "react";
+import { AcademicYearStatus } from "../../../api/academic"; // ya jahan se enum aata hai
 import { useYears } from "../../../hooks/useAcademicQueries";
+import { StatusFilterBar } from "../../../components/StatusFilterBar";
+import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import { formatDate, yearStatusClass } from "../helpers";
+import { YearDetail } from "./YearDetail";
+import { YearEdit } from "./YearEdit";
 
-export function YearsTab({
-  yearStatus,
-  setYearStatus,
-  yearsQuery,
-  onView,
-  onEdit,
-}: {
-  yearStatus: AcademicYearStatus | "all";
-  setYearStatus: (s: AcademicYearStatus | "all") => void;
-  yearsQuery: ReturnType<typeof useYears>;
-  onView: (id: string) => void;
-  onEdit: (id: string) => void;
-}) {
-  const { data, isLoading, isError, error, refetch } = yearsQuery;
-  const statuses: (AcademicYearStatus | "all")[] = [
+const YEAR_STATUS_OPTIONS = [
+  { value: "all", label: "All statuses" },
+  { value: AcademicYearStatus.ACTIVE, label: "Active" },
+  { value: AcademicYearStatus.INACTIVE, label: "Inactive" },
+  { value: AcademicYearStatus.COMPLETED, label: "Completed" },
+];
+
+export default function AcademicsYearsPage() {
+  const [yearStatus, setYearStatus] = useState<AcademicYearStatus | "all">(
     "all",
-    "active",
-    "inactive",
-    "completed",
-  ];
+  );
+  const [selectedYearId, setSelectedYearId] = useState<string | null>(null);
+  const [editingYearId, setEditingYearId] = useState<string | null>(null);
+
+  const { data, isLoading, isError, error, refetch } = useYears(yearStatus);
 
   return (
     <>
-      <div className="tabs-row" style={{ borderTop: "1px solid var(--line)" }}>
-        {statuses.map((s) => (
-          <button
-            key={s}
-            type="button"
-            className={`tab-btn${yearStatus === s ? " active" : ""}`}
-            onClick={() => setYearStatus(s)}
-          >
-            {s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
-          </button>
-        ))}
-      </div>
+      {/* ── Filters ─────────────────────────────────────────── */}
+      <StatusFilterBar
+        filters={[
+          {
+            id: "status",
+            label: "Status",
+            value: yearStatus,
+            options: YEAR_STATUS_OPTIONS,
+            onChange: (v) => setYearStatus(v as AcademicYearStatus | "all"),
+          },
+        ]}
+        onRefresh={() => refetch()}
+        meta={
+          isLoading
+            ? null
+            : `${data?.length ?? 0} year${(data?.length ?? 0) !== 1 ? "s" : ""}${
+                yearStatus !== "all" ? ` · ${yearStatus}` : ""
+              }`
+        }
+      />
 
-      <div
-        className="card-head"
-        style={{ borderTop: "none", borderBottom: "1px solid var(--line)" }}
-      >
-        <span className="meta">
-          {isLoading
-            ? "Loading…"
-            : `${data?.length ?? 0} year${(data?.length ?? 0) !== 1 ? "s" : ""}`}
-          {yearStatus !== "all" ? ` · ${yearStatus}` : ""}
-        </span>
-        <button
-          type="button"
-          className="btn secondary"
-          onClick={() => refetch()}
-        >
-          Refresh
-        </button>
-      </div>
-
+      {/* ── Error state ─────────────────────────────────────── */}
       {isError && (
         <div className="card-body">
           <p style={{ color: "var(--ink-faint)", marginBottom: 12 }}>
@@ -72,7 +62,11 @@ export function YearsTab({
         </div>
       )}
 
-      {!isError && (
+      {/* ── Loading state ───────────────────────────────────── */}
+      {isLoading && <LoadingSpinner label="Loading years…" />}
+
+      {/* ── Table ───────────────────────────────────────────── */}
+      {!isLoading && !isError && (
         <div className="table-scroll">
           <table>
             <thead>
@@ -85,17 +79,7 @@ export function YearsTab({
               </tr>
             </thead>
             <tbody>
-              {isLoading && (
-                <tr>
-                  <td
-                    colSpan={5}
-                    style={{ textAlign: "center", color: "var(--ink-faint)" }}
-                  >
-                    Loading years…
-                  </td>
-                </tr>
-              )}
-              {!isLoading && data?.length === 0 && (
+              {data?.length === 0 && (
                 <tr>
                   <td
                     colSpan={5}
@@ -109,52 +93,60 @@ export function YearsTab({
                   </td>
                 </tr>
               )}
-              {!isLoading &&
-                data?.map((year) => (
-                  <tr key={year.id}>
-                    <td>
-                      <div className="subj-title">{year.name}</div>
-                    </td>
-                    <td className="subj-sub col-hide-sm">
-                      {formatDate(year.startDate)}
-                    </td>
-                    <td className="subj-sub col-hide-sm">
-                      {formatDate(year.endDate)}
-                    </td>
-                    <td>
-                      <span
-                        className={`status ${yearStatusClass[year.status]}`}
-                      >
-                        {year.status}
-                      </span>
-                    </td>
-                    <td>
-                      <button
-                        type="button"
-                        className="btn secondary"
-                        style={{
-                          padding: "4px 10px",
-                          fontSize: 12,
-                          marginRight: 6,
-                        }}
-                        onClick={() => onView(year.id)}
-                      >
-                        View
-                      </button>
-                      <button
-                        type="button"
-                        className="btn secondary"
-                        style={{ padding: "4px 10px", fontSize: 12 }}
-                        onClick={() => onEdit(year.id)}
-                      >
-                        Edit
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+              {data?.map((year) => (
+                <tr key={year.id}>
+                  <td>
+                    <div className="subj-title">{year.name}</div>
+                  </td>
+                  <td className="subj-sub col-hide-sm">
+                    {formatDate(year.startDate)}
+                  </td>
+                  <td className="subj-sub col-hide-sm">
+                    {formatDate(year.endDate)}
+                  </td>
+                  <td>
+                    <span className={`status ${yearStatusClass[year.status]}`}>
+                      {year.status}
+                    </span>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      className="btn secondary"
+                      style={{
+                        padding: "4px 10px",
+                        fontSize: 12,
+                        marginRight: 6,
+                      }}
+                      onClick={() => setSelectedYearId(year.id)}
+                    >
+                      View
+                    </button>
+                    <button
+                      type="button"
+                      className="btn secondary"
+                      style={{ padding: "4px 10px", fontSize: 12 }}
+                      onClick={() => setEditingYearId(year.id)}
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
+      )}
+
+      {/* ── Detail / Edit overlays ──────────────────────────── */}
+      {selectedYearId && (
+        <YearDetail
+          id={selectedYearId}
+          onClose={() => setSelectedYearId(null)}
+        />
+      )}
+      {editingYearId && (
+        <YearEdit id={editingYearId} onClose={() => setEditingYearId(null)} />
       )}
     </>
   );

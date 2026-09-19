@@ -1,67 +1,53 @@
-import type { BatchStatus } from "../../../api/academic";
+import { useState } from "react";
+import { BatchStatus } from "../../../api/academic";
 import {
   useBatches,
   useActivateBatch,
 } from "../../../hooks/useAcademicQueries";
+import { StatusFilterBar } from "../../../components/StatusFilterBar";
+import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import { formatDate, batchStatusClass } from "../helpers";
+import { BatchDetail } from "./BatchDetail";
+import { BatchEdit } from "./BatchEdit";
 
-export function BatchesTab({
-  batchStatus,
-  setBatchStatus,
-  batchesQuery,
-  onView,
-  onEdit,
-}: {
-  batchStatus: BatchStatus | "all";
-  setBatchStatus: (s: BatchStatus | "all") => void;
-  batchesQuery: ReturnType<typeof useBatches>;
-  onView: (id: string) => void;
-  onEdit: (id: string) => void;
-}) {
-  const { data, isLoading, isError, error, refetch } = batchesQuery;
+const BATCH_STATUS_OPTIONS = [
+  { value: "all", label: "All statuses" },
+  { value: BatchStatus.ACTIVE, label: "Active" },
+  { value: BatchStatus.INACTIVE, label: "Inactive" },
+  { value: BatchStatus.COMPLETED, label: "Completed" },
+  { value: BatchStatus.CANCELLED, label: "Cancelled" },
+];
+
+export default function AcademicsBatchesPage() {
+  const [batchStatus, setBatchStatus] = useState<BatchStatus | "all">("all");
+  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
+  const [editingBatchId, setEditingBatchId] = useState<string | null>(null);
+
+  const { data, isLoading, isError, error, refetch } = useBatches(batchStatus);
   const activate = useActivateBatch();
-  const statuses: (BatchStatus | "all")[] = [
-    "all",
-    "active",
-    "inactive",
-    "completed",
-    "cancelled",
-  ];
 
   return (
     <>
-      <div className="tabs-row" style={{ borderTop: "1px solid var(--line)" }}>
-        {statuses.map((s) => (
-          <button
-            key={s}
-            type="button"
-            className={`tab-btn${batchStatus === s ? " active" : ""}`}
-            onClick={() => setBatchStatus(s)}
-          >
-            {s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
-          </button>
-        ))}
-      </div>
+      {/* ── Filters ─────────────────────────────────────────── */}
+      <StatusFilterBar
+        filters={[
+          {
+            id: "status",
+            label: "Status",
+            value: batchStatus,
+            options: BATCH_STATUS_OPTIONS,
+            onChange: (v) => setBatchStatus(v as BatchStatus | "all"),
+          },
+        ]}
+        onRefresh={() => refetch()}
+        meta={
+          isLoading
+            ? null
+            : `${data?.length ?? 0} batch${(data?.length ?? 0) !== 1 ? "es" : ""}${batchStatus !== "all" ? ` · ${batchStatus}` : ""}`
+        }
+      />
 
-      <div
-        className="card-head"
-        style={{ borderTop: "none", borderBottom: "1px solid var(--line)" }}
-      >
-        <span className="meta">
-          {isLoading
-            ? "Loading…"
-            : `${data?.length ?? 0} batch${(data?.length ?? 0) !== 1 ? "es" : ""}`}
-          {batchStatus !== "all" ? ` · ${batchStatus}` : ""}
-        </span>
-        <button
-          type="button"
-          className="btn secondary"
-          onClick={() => refetch()}
-        >
-          Refresh
-        </button>
-      </div>
-
+      {/* ── Error state ─────────────────────────────────────── */}
       {isError && (
         <div className="card-body">
           <p style={{ color: "var(--ink-faint)", marginBottom: 12 }}>
@@ -77,7 +63,11 @@ export function BatchesTab({
         </div>
       )}
 
-      {!isError && (
+      {/* ── Loading state ───────────────────────────────────── */}
+      {isLoading && <LoadingSpinner label="Loading batches…" />}
+
+      {/* ── Table ───────────────────────────────────────────── */}
+      {!isLoading && !isError && (
         <div className="table-scroll">
           <table>
             <thead>
@@ -91,17 +81,7 @@ export function BatchesTab({
               </tr>
             </thead>
             <tbody>
-              {isLoading && (
-                <tr>
-                  <td
-                    colSpan={6}
-                    style={{ textAlign: "center", color: "var(--ink-faint)" }}
-                  >
-                    Loading batches…
-                  </td>
-                </tr>
-              )}
-              {!isLoading && data?.length === 0 && (
+              {data?.length === 0 && (
                 <tr>
                   <td
                     colSpan={6}
@@ -115,50 +95,42 @@ export function BatchesTab({
                   </td>
                 </tr>
               )}
-              {!isLoading &&
-                data?.map((b) => (
-                  <tr key={b.id}>
-                    <td>
-                      <div className="subj-title">{b.name}</div>
-                    </td>
-                    <td className="subj-sub col-hide-sm">
-                      {formatDate(b.startDate)}
-                    </td>
-                    <td className="subj-sub col-hide-sm">
-                      {formatDate(b.endDate)}
-                    </td>
-                    <td>{b._count?.students ?? 0}</td>
-                    <td>
-                      <span className={`status ${batchStatusClass[b.status]}`}>
-                        {b.status}
-                      </span>
-                    </td>
-                    <td>
+              {data?.map((b) => (
+                <tr key={b.id}>
+                  <td>
+                    <div className="subj-title">{b.name}</div>
+                  </td>
+                  <td className="subj-sub col-hide-sm">
+                    {formatDate(b.startDate)}
+                  </td>
+                  <td className="subj-sub col-hide-sm">
+                    {formatDate(b.endDate)}
+                  </td>
+                  <td>{b._count?.students ?? 0}</td>
+                  <td>
+                    <span className={`status ${batchStatusClass[b.status]}`}>
+                      {b.status}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="inline-actions">
                       <button
                         type="button"
                         className="btn secondary"
-                        style={{
-                          padding: "4px 10px",
-                          fontSize: 12,
-                          marginRight: 4,
-                        }}
-                        onClick={() => onView(b.id)}
+                        style={{ padding: "4px 10px", fontSize: 12 }}
+                        onClick={() => setSelectedBatchId(b.id)}
                       >
                         View
                       </button>
                       <button
                         type="button"
                         className="btn secondary"
-                        style={{
-                          padding: "4px 10px",
-                          fontSize: 12,
-                          marginRight: 4,
-                        }}
-                        onClick={() => onEdit(b.id)}
+                        style={{ padding: "4px 10px", fontSize: 12 }}
+                        onClick={() => setEditingBatchId(b.id)}
                       >
                         Edit
                       </button>
-                      {b.status === "inactive" && (
+                      {b.status === BatchStatus.INACTIVE && (
                         <button
                           type="button"
                           className="btn"
@@ -169,12 +141,27 @@ export function BatchesTab({
                           Activate
                         </button>
                       )}
-                    </td>
-                  </tr>
-                ))}
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
+      )}
+
+      {/* ── Detail / Edit overlays ──────────────────────────── */}
+      {selectedBatchId && (
+        <BatchDetail
+          id={selectedBatchId}
+          onClose={() => setSelectedBatchId(null)}
+        />
+      )}
+      {editingBatchId && (
+        <BatchEdit
+          id={editingBatchId}
+          onClose={() => setEditingBatchId(null)}
+        />
       )}
     </>
   );

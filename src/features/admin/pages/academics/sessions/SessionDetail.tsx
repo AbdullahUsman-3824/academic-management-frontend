@@ -4,6 +4,7 @@ import {
   useCompleteSession,
 } from "../../../hooks/useAcademicQueries";
 import { formatDate } from "../helpers";
+import { AcademicSessionStatus } from "../../../api/academic";
 
 export function SessionDetail({
   id,
@@ -44,7 +45,7 @@ export function SessionDetail({
               ))}
             </div>
             <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
-              {session.status === "upcoming" && (
+              {session.status === AcademicSessionStatus.UPCOMING && (
                 <button
                   type="button"
                   className="btn"
@@ -56,7 +57,7 @@ export function SessionDetail({
                   Activate
                 </button>
               )}
-              {session.status === "active" && (
+              {session.status === AcademicSessionStatus.ACTIVE && (
                 <button
                   type="button"
                   className="btn"

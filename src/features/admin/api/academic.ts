@@ -2,13 +2,25 @@ import apiClient from "../../../api/client";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
-export type AcademicYearStatus = "active" | "inactive" | "completed";
-export type AcademicSessionStatus =
-  | "upcoming"
-  | "active"
-  | "completed"
-  | "cancelled";
-export type BatchStatus = "active" | "inactive" | "completed" | "cancelled";
+export enum AcademicYearStatus {
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+  COMPLETED = "COMPLETED",
+}
+
+export enum AcademicSessionStatus {
+  UPCOMING = "UPCOMING",
+  ACTIVE = "ACTIVE",
+  COMPLETED = "COMPLETED",
+  CANCELLED = "CANCELLED",
+}
+
+export enum BatchStatus {
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+  COMPLETED = "COMPLETED",
+  CANCELLED = "CANCELLED",
+}
 
 export interface AcademicYear {
   id: string;
@@ -62,7 +74,6 @@ export interface AcademicOverview {
 export interface AcademicSetupPayload {
   year: { name: string; startDate: string; endDate: string };
   sessions: Array<{ name: string; startDate: string; endDate: string }>;
-  batch: { name: string; startDate: string; endDate?: string };
 }
 
 export interface UpdateAcademicYearDto {

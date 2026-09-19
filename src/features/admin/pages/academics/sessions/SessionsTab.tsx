@@ -1,90 +1,82 @@
-import type { AcademicSessionStatus } from "../../../api/academic";
+import { useState } from "react";
+import { AcademicSessionStatus } from "../../../api/academic";
 import {
   useSessions,
   useActivateSession,
   useCompleteSession,
+  useYears,
 } from "../../../hooks/useAcademicQueries";
-import { formatDate, sessionStatusClass, inputStyle } from "../helpers";
+import { StatusFilterBar } from "../../../components/StatusFilterBar";
+import { LoadingSpinner } from "../../../components/LoadingSpinner";
+import { formatDate, sessionStatusClass } from "../helpers";
+import { SessionDetail } from "./SessionDetail";
+import { SessionEdit } from "./SessionEdit";
 
-export function SessionsTab({
-  sessionStatus,
-  setSessionStatus,
-  sessionYearId,
-  setSessionYearId,
-  years,
-  sessionsQuery,
-  onView,
-  onEdit,
-}: {
-  sessionStatus: AcademicSessionStatus | "all";
-  setSessionStatus: (s: AcademicSessionStatus | "all") => void;
-  sessionYearId: string | "all";
-  setSessionYearId: (id: string | "all") => void;
-  years: { id: string; name: string }[];
-  sessionsQuery: ReturnType<typeof useSessions>;
-  onView: (id: string) => void;
-  onEdit: (id: string) => void;
-}) {
-  const { data, isLoading, isError, error, refetch } = sessionsQuery;
+const SESSION_STATUS_OPTIONS = [
+  { value: "all", label: "All statuses" },
+  { value: AcademicSessionStatus.UPCOMING, label: "Upcoming" },
+  { value: AcademicSessionStatus.ACTIVE, label: "Active" },
+  { value: AcademicSessionStatus.COMPLETED, label: "Completed" },
+  { value: AcademicSessionStatus.CANCELLED, label: "Cancelled" },
+];
+
+export default function AcademicsSessionsPage() {
+  const [sessionStatus, setSessionStatus] = useState<
+    AcademicSessionStatus | "all"
+  >("all");
+  const [sessionYearId, setSessionYearId] = useState<string | "all">("all");
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
+    null,
+  );
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+
+  const allYears = useYears("all");
+  const { data, isLoading, isError, error, refetch } = useSessions({
+    status: sessionStatus,
+    academicYearId: sessionYearId,
+  });
+
   const activate = useActivateSession();
   const complete = useCompleteSession();
 
-  const statuses: (AcademicSessionStatus | "all")[] = [
-    "all",
-    "upcoming",
-    "active",
-    "completed",
-    "cancelled",
+  // Build the year filter options dynamically from fetched years
+  const yearOptions = [
+    { value: "all", label: "All years" },
+    ...(allYears.data?.map((y) => ({ value: y.id, label: y.name })) ?? []),
   ];
 
   return (
     <>
-      <div className="tabs-row" style={{ borderTop: "1px solid var(--line)" }}>
-        {statuses.map((s) => (
-          <button
-            key={s}
-            type="button"
-            className={`tab-btn${sessionStatus === s ? " active" : ""}`}
-            onClick={() => setSessionStatus(s)}
-          >
-            {s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
-          </button>
-        ))}
-      </div>
+      {/* ── Filters ─────────────────────────────────────────── */}
+      <StatusFilterBar
+        filters={[
+          {
+            id: "status",
+            label: "Status",
+            value: sessionStatus,
+            options: SESSION_STATUS_OPTIONS,
+            onChange: (v) =>
+              setSessionStatus(v as AcademicSessionStatus | "all"),
+          },
+          {
+            id: "year",
+            label: "Academic Year",
+            value: sessionYearId,
+            options: yearOptions,
+            onChange: (v) => setSessionYearId(v),
+          },
+        ]}
+        onRefresh={() => refetch()}
+        meta={
+          isLoading
+            ? null
+            : `${data?.length ?? 0} session${(data?.length ?? 0) !== 1 ? "s" : ""}${
+                sessionStatus !== "all" ? ` · ${sessionStatus}` : ""
+              }`
+        }
+      />
 
-      <div
-        className="card-head"
-        style={{ borderTop: "none", borderBottom: "1px solid var(--line)" }}
-      >
-        <span className="meta">
-          {isLoading
-            ? "Loading…"
-            : `${data?.length ?? 0} session${(data?.length ?? 0) !== 1 ? "s" : ""}`}
-          {sessionStatus !== "all" ? ` · ${sessionStatus}` : ""}
-        </span>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <select
-            value={sessionYearId}
-            onChange={(e) => setSessionYearId(e.target.value as string | "all")}
-            style={inputStyle}
-          >
-            <option value="all">All years</option>
-            {years.map((y) => (
-              <option key={y.id} value={y.id}>
-                {y.name}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            className="btn secondary"
-            onClick={() => refetch()}
-          >
-            Refresh
-          </button>
-        </div>
-      </div>
-
+      {/* ── Error state ─────────────────────────────────────── */}
       {isError && (
         <div className="card-body">
           <p style={{ color: "var(--ink-faint)", marginBottom: 12 }}>
@@ -100,7 +92,11 @@ export function SessionsTab({
         </div>
       )}
 
-      {!isError && (
+      {/* ── Loading state ───────────────────────────────────── */}
+      {isLoading && <LoadingSpinner label="Loading sessions…" />}
+
+      {/* ── Table ───────────────────────────────────────────── */}
+      {!isLoading && !isError && (
         <div className="table-scroll">
           <table>
             <thead>
@@ -114,17 +110,7 @@ export function SessionsTab({
               </tr>
             </thead>
             <tbody>
-              {isLoading && (
-                <tr>
-                  <td
-                    colSpan={6}
-                    style={{ textAlign: "center", color: "var(--ink-faint)" }}
-                  >
-                    Loading sessions…
-                  </td>
-                </tr>
-              )}
-              {!isLoading && data?.length === 0 && (
+              {data?.length === 0 && (
                 <tr>
                   <td
                     colSpan={6}
@@ -138,36 +124,30 @@ export function SessionsTab({
                   </td>
                 </tr>
               )}
-              {!isLoading &&
-                data?.map((s) => (
-                  <tr key={s.id}>
-                    <td>
-                      <div className="subj-title">{s.name}</div>
-                    </td>
-                    <td className="subj-sub">{s.academicYear?.name ?? "—"}</td>
-                    <td className="subj-sub col-hide-sm">
-                      {formatDate(s.startDate)}
-                    </td>
-                    <td className="subj-sub col-hide-sm">
-                      {formatDate(s.endDate)}
-                    </td>
-                    <td>
-                      <span
-                        className={`status ${sessionStatusClass[s.status]}`}
-                      >
-                        {s.status}
-                      </span>
-                    </td>
-                    <td>
+              {data?.map((s) => (
+                <tr key={s.id}>
+                  <td>
+                    <div className="subj-title">{s.name}</div>
+                  </td>
+                  <td className="subj-sub">{s.academicYear?.name ?? "—"}</td>
+                  <td className="subj-sub col-hide-sm">
+                    {formatDate(s.startDate)}
+                  </td>
+                  <td className="subj-sub col-hide-sm">
+                    {formatDate(s.endDate)}
+                  </td>
+                  <td>
+                    <span className={`status ${sessionStatusClass[s.status]}`}>
+                      {s.status}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="inline-actions">
                       <button
                         type="button"
                         className="btn secondary"
-                        style={{
-                          padding: "4px 10px",
-                          fontSize: 12,
-                          marginRight: 4,
-                        }}
-                        onClick={() => onView(s.id)}
+                        style={{ padding: "4px 10px", fontSize: 12 }}
+                        onClick={() => setSelectedSessionId(s.id)}
                       >
                         View
                       </button>
@@ -175,16 +155,54 @@ export function SessionsTab({
                         type="button"
                         className="btn secondary"
                         style={{ padding: "4px 10px", fontSize: 12 }}
-                        onClick={() => onEdit(s.id)}
+                        onClick={() => setEditingSessionId(s.id)}
                       >
                         Edit
                       </button>
-                    </td>
-                  </tr>
-                ))}
+                      {s.status === AcademicSessionStatus.UPCOMING && (
+                        <button
+                          type="button"
+                          className="btn"
+                          style={{ padding: "4px 10px", fontSize: 12 }}
+                          disabled={activate.isPending}
+                          onClick={() => activate.mutate(s.id)}
+                        >
+                          Activate
+                        </button>
+                      )}
+                      {s.status === AcademicSessionStatus.ACTIVE && (
+                        <button
+                          type="button"
+                          className="btn secondary"
+                          style={{ padding: "4px 10px", fontSize: 12 }}
+                          disabled={complete.isPending}
+                          onClick={() => complete.mutate(s.id)}
+                        >
+                          Complete
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
+      )}
+
+      {/* ── Detail / Edit overlays ──────────────────────────── */}
+      {selectedSessionId && (
+        <SessionDetail
+          id={selectedSessionId}
+          onClose={() => setSelectedSessionId(null)}
+        />
+      )}
+      {editingSessionId && (
+        <SessionEdit
+          id={editingSessionId}
+          years={allYears.data ?? []}
+          onClose={() => setEditingSessionId(null)}
+        />
       )}
     </>
   );

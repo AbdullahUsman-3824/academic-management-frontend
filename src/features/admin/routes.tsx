@@ -4,9 +4,9 @@ import StudentManagementPage from "./pages/student/StudentManagementPage";
 import FacultyManagementPage from "./pages/FacultyManagementPage";
 import AcademicsLayout from "./pages/academics/AcademicsLayout";
 import AcademicsOverviewPage from "./pages/academics/AcademicsOverviewPage";
-import AcademicsYearsPage from "./pages/academics/AcademicsYearsPage";
-import AcademicsSessionsPage from "./pages/academics/AcademicsSessionsPage";
-import AcademicsBatchesPage from "./pages/academics/AcademicsBatchesPage";
+import AcademicsYearsPage from "./pages/academics/years/YearsTab";
+import AcademicsSessionsPage from "./pages/academics/sessions/SessionsTab";
+import AcademicsBatchesPage from "./pages/academics/batches/BatchesTab";
 import AcademicsSetupPage from "./pages/academics/AcademicsSetupPage";
 import CoursesPage from "./pages/courses/CoursesPage";
 
@@ -29,6 +29,5 @@ export const adminRoutes = {
     { path: "students",  element: <StudentManagementPage /> },
     { path: "faculty",   element: <FacultyManagementPage /> },
     { path: "courses",   element: <CoursesPage /> },
-  
   ],
 };
