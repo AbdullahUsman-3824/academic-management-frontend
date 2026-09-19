@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { BatchStatus } from "../../../api/academic";
+import { BatchStatus } from "../../../api/academic";
 import { useBatch, useUpdateBatch } from "../../../hooks/useAcademicQueries";
 import { toInputDate, inputStyle } from "../helpers";
 
@@ -15,7 +15,7 @@ export function BatchEdit({
   const [name, setName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [status, setStatus] = useState<BatchStatus>("active");
+  const [status, setStatus] = useState<BatchStatus>(BatchStatus.ACTIVE);
 
   useEffect(() => {
     if (batch) {
@@ -96,10 +96,10 @@ export function BatchEdit({
                   onChange={(e) => setStatus(e.target.value as BatchStatus)}
                   style={inputStyle}
                 >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
+                  <option value={BatchStatus.ACTIVE}>Active</option>
+                  <option value={BatchStatus.INACTIVE}>Inactive</option>
+                  <option value={BatchStatus.COMPLETED}>Completed</option>
+                  <option value={BatchStatus.CANCELLED}>Cancelled</option>
                 </select>
               </div>
             </div>

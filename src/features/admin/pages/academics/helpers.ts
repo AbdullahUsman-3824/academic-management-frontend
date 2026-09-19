@@ -1,4 +1,4 @@
-import type {
+import {
   AcademicYearStatus,
   AcademicSessionStatus,
   BatchStatus,
@@ -33,23 +33,23 @@ export function isValidRange(start: string, end: string) {
 }
 
 export const yearStatusClass: Record<AcademicYearStatus, string> = {
-  active: "active",
-  inactive: "inactive",
-  completed: "ok",
+  [AcademicYearStatus.ACTIVE]: "active",
+  [AcademicYearStatus.INACTIVE]: "inactive",
+  [AcademicYearStatus.COMPLETED]: "ok",
 };
 
 export const sessionStatusClass: Record<AcademicSessionStatus, string> = {
-  upcoming: "upcoming",
-  active: "active",
-  completed: "ok",
-  cancelled: "inactive",
+  [AcademicSessionStatus.UPCOMING]: "upcoming",
+  [AcademicSessionStatus.ACTIVE]: "active",
+  [AcademicSessionStatus.COMPLETED]: "ok",
+  [AcademicSessionStatus.CANCELLED]: "inactive",
 };
 
 export const batchStatusClass: Record<BatchStatus, string> = {
-  active: "active",
-  inactive: "inactive",
-  completed: "ok",
-  cancelled: "inactive",
+  [BatchStatus.ACTIVE]: "active",
+  [BatchStatus.INACTIVE]: "inactive",
+  [BatchStatus.COMPLETED]: "ok",
+  [BatchStatus.CANCELLED]: "inactive",
 };
 
 export const inputStyle: React.CSSProperties = {

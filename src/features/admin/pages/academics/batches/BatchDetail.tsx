@@ -1,5 +1,6 @@
 import { useBatch, useActivateBatch } from "../../../hooks/useAcademicQueries";
 import { formatDate } from "../helpers";
+import { BatchStatus } from "../../../api/academic";
 
 export function BatchDetail({
   id,
@@ -44,7 +45,7 @@ export function BatchDetail({
                 </div>
               ))}
             </div>
-            {batch.status === "inactive" && (
+            {batch.status === BatchStatus.INACTIVE && (
               <button
                 type="button"
                 className="btn"

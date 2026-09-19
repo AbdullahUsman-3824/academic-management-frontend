@@ -4,81 +4,96 @@ import { useSetupAcademic } from "../../hooks/useAcademicQueries";
 import type { AcademicSetupPayload } from "../../api/academic";
 import { isValidRange, inputStyle } from "./helpers";
 
-const STEPS = ["Academic Year", "Sessions (2)", "Batch", "Review"];
+const STEPS = ["Academic Year", "Sessions (2)", "Review"];
 
 export default function AcademicsSetupPage() {
   const navigate = useNavigate();
   const setup = useSetupAcademic();
 
-  const [step, setStep]   = useState(0);
+  const [step, setStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   // Year fields
-  const [yearName,  setYearName]  = useState("");
+  const [yearName, setYearName] = useState("");
   const [yearStart, setYearStart] = useState("");
-  const [yearEnd,   setYearEnd]   = useState("");
+  const [yearEnd, setYearEnd] = useState("");
 
   // Session fields
-  const [s1Name,  setS1Name]  = useState("Session 1");
+  const [s1Name, setS1Name] = useState("Session 1");
   const [s1Start, setS1Start] = useState("");
-  const [s1End,   setS1End]   = useState("");
-  const [s2Name,  setS2Name]  = useState("Session 2");
+  const [s1End, setS1End] = useState("");
+  const [s2Name, setS2Name] = useState("Session 2");
   const [s2Start, setS2Start] = useState("");
-  const [s2End,   setS2End]   = useState("");
-
-  // Batch fields
-  const [batchName,  setBatchName]  = useState("");
-  const [batchStart, setBatchStart] = useState("");
-  const [batchEnd,   setBatchEnd]   = useState("");
+  const [s2End, setS2End] = useState("");
 
   const validateStep = (): boolean => {
     setError(null);
     if (step === 0) {
-      if (!yearName || !yearStart || !yearEnd) { setError("All year fields are required"); return false; }
-      if (!isValidRange(yearStart, yearEnd))   { setError("Year end must be after start"); return false; }
+      if (!yearName || !yearStart || !yearEnd) {
+        setError("All year fields are required");
+        return false;
+      }
+      if (!isValidRange(yearStart, yearEnd)) {
+        setError("Year end must be after start");
+        return false;
+      }
       return true;
     }
     if (step === 1) {
       if (!s1Name || !s1Start || !s1End || !s2Name || !s2Start || !s2End) {
-        setError("All session fields are required"); return false;
+        setError("All session fields are required");
+        return false;
       }
       if (!isValidRange(s1Start, s1End) || !isValidRange(s2Start, s2End)) {
-        setError("Each session end must be after its start"); return false;
+        setError("Each session end must be after its start");
+        return false;
       }
-      const yS = new Date(yearStart), yE = new Date(yearEnd);
-      if (new Date(s1Start) < yS || new Date(s1End) > yE || new Date(s2Start) < yS || new Date(s2End) > yE) {
-        setError("Sessions must fall within the academic year"); return false;
+      const yS = new Date(yearStart),
+        yE = new Date(yearEnd);
+      if (
+        new Date(s1Start) < yS ||
+        new Date(s1End) > yE ||
+        new Date(s2Start) < yS ||
+        new Date(s2End) > yE
+      ) {
+        setError("Sessions must fall within the academic year");
+        return false;
       }
-      if (new Date(s1Start) < new Date(s2End) && new Date(s2Start) < new Date(s1End)) {
-        setError("Sessions must not overlap"); return false;
+      if (
+        new Date(s1Start) < new Date(s2End) &&
+        new Date(s2Start) < new Date(s1End)
+      ) {
+        setError("Sessions must not overlap");
+        return false;
       }
-      return true;
-    }
-    if (step === 2) {
-      if (!batchName || !batchStart)                      { setError("Batch name and start date are required"); return false; }
-      if (batchEnd && !isValidRange(batchStart, batchEnd)) { setError("Batch end must be after start"); return false; }
       return true;
     }
     return true;
   };
 
-  const next   = () => { if (validateStep()) setStep((s) => s + 1); };
-  const back   = () => { setError(null); setStep((s) => s - 1); };
+  const next = () => {
+    if (validateStep()) setStep((s) => s + 1);
+  };
+  const back = () => {
+    setError(null);
+    setStep((s) => s - 1);
+  };
 
   const submit = () => {
     if (!validateStep()) return;
     const payload: AcademicSetupPayload = {
-      year:     { name: yearName, startDate: yearStart, endDate: yearEnd },
+      year: { name: yearName, startDate: yearStart, endDate: yearEnd },
       sessions: [
         { name: s1Name, startDate: s1Start, endDate: s1End },
         { name: s2Name, startDate: s2Start, endDate: s2End },
       ],
-      batch: { name: batchName, startDate: batchStart, endDate: batchEnd || undefined },
     };
     setup.mutate(payload, {
       onSuccess: () => navigate("/academics"),
       onError: (err: any) =>
-        setError(err?.response?.data?.message ?? err?.message ?? "Setup failed"),
+        setError(
+          err?.response?.data?.message ?? err?.message ?? "Setup failed",
+        ),
     });
   };
 
@@ -88,7 +103,9 @@ export default function AcademicsSetupPage() {
       <div className="card-head">
         <div>
           <h2>Set Up New Academic Year</h2>
-          <span className="meta">Complete all steps to create a year, two sessions, and a batch.</span>
+          <span className="meta">
+            Complete all steps to create a year, two sessions, and a batch.
+          </span>
         </div>
         <button
           type="button"
@@ -103,7 +120,7 @@ export default function AcademicsSetupPage() {
         {/* ── Stepper ─────────────────────────────────────────── */}
         <div className="acad-stepper">
           {STEPS.map((label, i) => {
-            const done   = i < step;
+            const done = i < step;
             const active = i === step;
             return (
               <div key={label} className="acad-stepper__item">
@@ -142,15 +159,30 @@ export default function AcademicsSetupPage() {
           <div className="profile-fields">
             <div className="profile-field">
               <div className="profile-field__label">Year Name</div>
-              <input value={yearName} onChange={(e) => setYearName(e.target.value)} placeholder="e.g. 2026-27" style={inputStyle} />
+              <input
+                value={yearName}
+                onChange={(e) => setYearName(e.target.value)}
+                placeholder="e.g. 2026"
+                style={inputStyle}
+              />
             </div>
             <div className="profile-field">
               <div className="profile-field__label">Start Date</div>
-              <input type="date" value={yearStart} onChange={(e) => setYearStart(e.target.value)} style={inputStyle} />
+              <input
+                type="date"
+                value={yearStart}
+                onChange={(e) => setYearStart(e.target.value)}
+                style={inputStyle}
+              />
             </div>
             <div className="profile-field">
               <div className="profile-field__label">End Date</div>
-              <input type="date" value={yearEnd} onChange={(e) => setYearEnd(e.target.value)} style={inputStyle} />
+              <input
+                type="date"
+                value={yearEnd}
+                onChange={(e) => setYearEnd(e.target.value)}
+                style={inputStyle}
+              />
             </div>
           </div>
         )}
@@ -158,73 +190,87 @@ export default function AcademicsSetupPage() {
         {/* ── Step 1: Sessions ────────────────────────────────── */}
         {step === 1 && (
           <div className="profile-fields">
-            <div className="subj-title" style={{ padding: "8px 18px 4px" }}>Session 1</div>
+            <div className="subj-title" style={{ padding: "8px 18px 4px" }}>
+              Session 1
+            </div>
             <div className="profile-field">
               <div className="profile-field__label">Name</div>
-              <input value={s1Name} onChange={(e) => setS1Name(e.target.value)} style={inputStyle} />
+              <input
+                value={s1Name}
+                onChange={(e) => setS1Name(e.target.value)}
+                style={inputStyle}
+              />
             </div>
             <div className="profile-field">
               <div className="profile-field__label">Start</div>
-              <input type="date" value={s1Start} onChange={(e) => setS1Start(e.target.value)} style={inputStyle} />
+              <input
+                type="date"
+                value={s1Start}
+                onChange={(e) => setS1Start(e.target.value)}
+                style={inputStyle}
+              />
             </div>
             <div className="profile-field">
               <div className="profile-field__label">End</div>
-              <input type="date" value={s1End} onChange={(e) => setS1End(e.target.value)} style={inputStyle} />
+              <input
+                type="date"
+                value={s1End}
+                onChange={(e) => setS1End(e.target.value)}
+                style={inputStyle}
+              />
             </div>
 
-            <div className="subj-title" style={{ padding: "16px 18px 4px" }}>Session 2</div>
+            <div className="subj-title" style={{ padding: "16px 18px 4px" }}>
+              Session 2
+            </div>
             <div className="profile-field">
               <div className="profile-field__label">Name</div>
-              <input value={s2Name} onChange={(e) => setS2Name(e.target.value)} style={inputStyle} />
+              <input
+                value={s2Name}
+                onChange={(e) => setS2Name(e.target.value)}
+                style={inputStyle}
+              />
             </div>
             <div className="profile-field">
               <div className="profile-field__label">Start</div>
-              <input type="date" value={s2Start} onChange={(e) => setS2Start(e.target.value)} style={inputStyle} />
+              <input
+                type="date"
+                value={s2Start}
+                onChange={(e) => setS2Start(e.target.value)}
+                style={inputStyle}
+              />
             </div>
             <div className="profile-field">
               <div className="profile-field__label">End</div>
-              <input type="date" value={s2End} onChange={(e) => setS2End(e.target.value)} style={inputStyle} />
+              <input
+                type="date"
+                value={s2End}
+                onChange={(e) => setS2End(e.target.value)}
+                style={inputStyle}
+              />
             </div>
           </div>
         )}
 
-        {/* ── Step 2: Batch ───────────────────────────────────── */}
+        {/* ── Step 2: Review ──────────────────────────────────── */}
         {step === 2 && (
           <div className="profile-fields">
             <div className="profile-field">
-              <div className="profile-field__label">Batch Name</div>
-              <input value={batchName} onChange={(e) => setBatchName(e.target.value)} placeholder="e.g. Batch 2026" style={inputStyle} />
-            </div>
-            <div className="profile-field">
-              <div className="profile-field__label">Start Date</div>
-              <input type="date" value={batchStart} onChange={(e) => setBatchStart(e.target.value)} style={inputStyle} />
-            </div>
-            <div className="profile-field">
-              <div className="profile-field__label">End Date (optional)</div>
-              <input type="date" value={batchEnd} onChange={(e) => setBatchEnd(e.target.value)} style={inputStyle} />
-            </div>
-          </div>
-        )}
-
-        {/* ── Step 3: Review ──────────────────────────────────── */}
-        {step === 3 && (
-          <div className="profile-fields">
-            <div className="profile-field">
               <div className="profile-field__label">Year</div>
-              <div className="profile-field__value">{yearName} ({yearStart} → {yearEnd})</div>
+              <div className="profile-field__value">
+                {yearName} ({yearStart} → {yearEnd})
+              </div>
             </div>
             <div className="profile-field">
               <div className="profile-field__label">Session 1</div>
-              <div className="profile-field__value">{s1Name} ({s1Start} → {s1End})</div>
+              <div className="profile-field__value">
+                {s1Name} ({s1Start} → {s1End})
+              </div>
             </div>
             <div className="profile-field">
               <div className="profile-field__label">Session 2</div>
-              <div className="profile-field__value">{s2Name} ({s2Start} → {s2End})</div>
-            </div>
-            <div className="profile-field">
-              <div className="profile-field__label">Batch</div>
               <div className="profile-field__value">
-                {batchName} ({batchStart}{batchEnd ? ` → ${batchEnd}` : " · ongoing"})
+                {s2Name} ({s2Start} → {s2End})
               </div>
             </div>
           </div>
@@ -233,16 +279,26 @@ export default function AcademicsSetupPage() {
         {/* ── Navigation buttons ──────────────────────────────── */}
         <div className="action-row" style={{ marginTop: 24 }}>
           {step > 0 && (
-            <button type="button" className="btn secondary" onClick={back} disabled={setup.isPending}>
+            <button
+              type="button"
+              className="btn secondary"
+              onClick={back}
+              disabled={setup.isPending}
+            >
               Back
             </button>
           )}
-          {step < 3 ? (
+          {step < 2 ? (
             <button type="button" className="btn" onClick={next}>
               Next
             </button>
           ) : (
-            <button type="button" className="btn" onClick={submit} disabled={setup.isPending}>
+            <button
+              type="button"
+              className="btn"
+              onClick={submit}
+              disabled={setup.isPending}
+            >
               {setup.isPending ? "Creating…" : "Create Academic Setup"}
             </button>
           )}

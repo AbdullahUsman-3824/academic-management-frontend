@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { AcademicSessionStatus } from "../../../api/academic";
+import { AcademicSessionStatus } from "../../../api/academic";
 import {
   useSession,
   useUpdateSession,
@@ -20,7 +20,9 @@ export function SessionEdit({
   const [name, setName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [status, setStatus] = useState<AcademicSessionStatus>("upcoming");
+  const [status, setStatus] = useState<AcademicSessionStatus>(
+    AcademicSessionStatus.UPCOMING,
+  );
   const [academicYearId, setAcademicYearId] = useState("");
 
   useEffect(() => {
@@ -113,10 +115,16 @@ export function SessionEdit({
                   }
                   style={inputStyle}
                 >
-                  <option value="upcoming">Upcoming</option>
-                  <option value="active">Active</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
+                  <option value={AcademicSessionStatus.UPCOMING}>
+                    Upcoming
+                  </option>
+                  <option value={AcademicSessionStatus.ACTIVE}>Active</option>
+                  <option value={AcademicSessionStatus.COMPLETED}>
+                    Completed
+                  </option>
+                  <option value={AcademicSessionStatus.CANCELLED}>
+                    Cancelled
+                  </option>
                 </select>
               </div>
             </div>
