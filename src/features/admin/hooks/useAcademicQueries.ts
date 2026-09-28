@@ -1,195 +1,208 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import * as api from "../api/academic";
-import type {
-  AcademicYearStatus,
-  AcademicSessionStatus,
-  BatchStatus,
-  AcademicSetupPayload,
-  UpdateAcademicYearDto,
-  UpdateAcademicSessionDto,
-  UpdateBatchDto,
-} from "../api/academic";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { academicsApi } from '../../../api/academics'
+import { sectionsApi } from '../../../api/academics'
+import { progressionApi, createYear, createSession, setupAcademic } from '../api/academic' // adjust path
 
+export function useProgressionCheck() {
+  return useQuery({
+    queryKey: ['progression-check'],
+    queryFn: progressionApi.check,
+  })
+}
+
+export function useStartProgression() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: progressionApi.start,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['progression-check'] })
+    },
+  })
+}
+
+export function useProgressionPreview(progressionId: string | null) {
+  return useQuery({
+    queryKey: ['progression-preview', progressionId],
+    queryFn: () => progressionApi.getPreview(progressionId!),
+    enabled: !!progressionId,
+  })
+}
+export const sectionKeys = {
+  list: (batchId: string) => ['sections', batchId] as const,
+  defaultStudents: (batchId: string) =>
+    ['sections', batchId, 'default-students'] as const,
+}
+
+export function useSections(batchId: string | null) {
+  return useQuery({
+    queryKey: sectionKeys.list(batchId ?? ''),
+    queryFn: () => sectionsApi.list(batchId!),
+    enabled: !!batchId,
+  })
+}
+
+export function useDefaultStudents(batchId: string | null) {
+  return useQuery({
+    queryKey: sectionKeys.defaultStudents(batchId ?? ''),
+    queryFn: () => sectionsApi.studentsInDefault(batchId!),
+    enabled: !!batchId,
+  })
+}
+
+export function useAutoCreateSections() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      batchId,
+      capacity,
+    }: {
+      batchId: string
+      capacity?: number
+    }) => sectionsApi.autoCreate(batchId, capacity),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: sectionKeys.list(vars.batchId) })
+      qc.invalidateQueries({
+        queryKey: sectionKeys.defaultStudents(vars.batchId),
+      })
+    },
+  })
+}
+
+export function useResetSections() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (batchId: string) => sectionsApi.reset(batchId),
+    onSuccess: (_data, batchId) => {
+      qc.invalidateQueries({ queryKey: sectionKeys.list(batchId) })
+      qc.invalidateQueries({
+        queryKey: sectionKeys.defaultStudents(batchId),
+      })
+    },
+  })
+}
+
+export function useDeleteSection() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      batchId,
+      sectionId,
+    }: {
+      batchId: string
+      sectionId: string
+    }) => sectionsApi.deleteSection(batchId, sectionId),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: sectionKeys.list(vars.batchId) })
+      qc.invalidateQueries({
+        queryKey: sectionKeys.defaultStudents(vars.batchId),
+      })
+    },
+  })
+}
 export const academicKeys = {
-  all: ["academics"] as const,
-  overview: () => [...academicKeys.all, "overview"] as const,
-  years: {
-    all: () => [...academicKeys.all, "years"] as const,
-    list: (status?: AcademicYearStatus | "all") =>
-      [...academicKeys.years.all(), { status }] as const,
-    detail: (id: string) => [...academicKeys.years.all(), id] as const,
-  },
-  sessions: {
-    all: () => [...academicKeys.all, "sessions"] as const,
-    list: (filters?: {
-      status?: AcademicSessionStatus | "all";
-      academicYearId?: string | "all";
-    }) => [...academicKeys.sessions.all(), filters ?? {}] as const,
-    detail: (id: string) => [...academicKeys.sessions.all(), id] as const,
-  },
-  batches: {
-    all: () => [...academicKeys.all, "batches"] as const,
-    list: (status?: BatchStatus | "all") =>
-      [...academicKeys.batches.all(), { status }] as const,
-    detail: (id: string) => [...academicKeys.batches.all(), id] as const,
-  },
-};
+  all: ['academics'] as const,
+  overview: () => [...academicKeys.all, 'overview'] as const,
+  years: (status?: string) => [...academicKeys.all, 'years', status] as const,
+  sessions: (params?: { status?: string; academicYearId?: string }) =>
+    [...academicKeys.all, 'sessions', params] as const,
+  batches: (status?: string) => [...academicKeys.all, 'batches', status] as const,
+  progressionCheck: () => [...academicKeys.all, 'progression-check'] as const,
+}
 
-// ── Overview ────────────────────────────────────────────────────────────────
-
-export function useOverview() {
+export function useAcademicOverview() {
   return useQuery({
     queryKey: academicKeys.overview(),
-    queryFn: api.getOverview,
-    staleTime: 30_000,
-  });
+    queryFn: academicsApi.getOverview,
+  })
 }
 
-// ── Years ───────────────────────────────────────────────────────────────────
-
-export function useYears(status?: AcademicYearStatus | "all") {
-  const filter = status === "all" ? undefined : status;
+export function useAcademicYears(status?: string) {
   return useQuery({
-    queryKey: academicKeys.years.list(status),
-    queryFn: () => api.getYears(filter),
-    staleTime: 60_000,
-  });
+    queryKey: academicKeys.years(status),
+    queryFn: () => academicsApi.getYears(status),
+  })
 }
 
-export function useYear(id: string | null) {
-  return useQuery({
-    queryKey: academicKeys.years.detail(id ?? ""),
-    queryFn: () => api.getYear(id!),
-    enabled: !!id,
-  });
-}
-
-export function useUpdateYear() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, dto }: { id: string; dto: UpdateAcademicYearDto }) =>
-      api.updateYear(id, dto),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: academicKeys.years.all() });
-      qc.invalidateQueries({ queryKey: academicKeys.overview() });
-    },
-  });
-}
-
-// ── Sessions ────────────────────────────────────────────────────────────────
-
-export function useSessions(filters?: {
-  status?: AcademicSessionStatus | "all";
-  academicYearId?: string | "all";
+export function useAcademicSessions(params?: {
+  status?: string
+  academicYearId?: string
 }) {
-  const params = {
-    status:
-      filters?.status && filters.status !== "all" ? filters.status : undefined,
-    academicYearId:
-      filters?.academicYearId && filters.academicYearId !== "all"
-        ? filters.academicYearId
-        : undefined,
-  };
   return useQuery({
-    queryKey: academicKeys.sessions.list(filters),
-    queryFn: () => api.getSessions(params),
-    staleTime: 60_000,
-  });
+    queryKey: academicKeys.sessions(params),
+    queryFn: () => academicsApi.getSessions(params),
+  })
 }
 
-export function useSession(id: string | null) {
+export function useBatches(status?: string) {
   return useQuery({
-    queryKey: academicKeys.sessions.detail(id ?? ""),
-    queryFn: () => api.getSession(id!),
-    enabled: !!id,
-  });
+    queryKey: academicKeys.batches(status),
+    queryFn: () => academicsApi.getBatches(status),
+  })
 }
 
-export function useUpdateSession() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, dto }: { id: string; dto: UpdateAcademicSessionDto }) =>
-      api.updateSession(id, dto),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: academicKeys.sessions.all() });
-      qc.invalidateQueries({ queryKey: academicKeys.years.all() });
-      qc.invalidateQueries({ queryKey: academicKeys.overview() });
-    },
-  });
-}
+// export function useProgressionCheck() {
+//   return useQuery({
+//     queryKey: academicKeys.progressionCheck(),
+//     queryFn: academicsApi.checkProgression,
+//   })
+// }
 
 export function useActivateSession() {
-  const qc = useQueryClient();
+  const qc = useQueryClient()
   return useMutation({
-    mutationFn: (id: string) => api.activateSession(id),
+    mutationFn: academicsApi.activateSession,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: academicKeys.sessions.all() });
-      qc.invalidateQueries({ queryKey: academicKeys.overview() });
+      qc.invalidateQueries({ queryKey: academicKeys.all })
     },
-  });
+  })
 }
 
 export function useCompleteSession() {
-  const qc = useQueryClient();
+  const qc = useQueryClient()
   return useMutation({
-    mutationFn: (id: string) => api.completeSession(id),
+    mutationFn: academicsApi.completeSession,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: academicKeys.sessions.all() });
-      qc.invalidateQueries({ queryKey: academicKeys.overview() });
+      qc.invalidateQueries({ queryKey: academicKeys.all })
     },
-  });
+  })
 }
 
-// ── Batches ─────────────────────────────────────────────────────────────────
-
-export function useBatches(status?: BatchStatus | "all") {
-  const filter = status === "all" ? undefined : status;
-  return useQuery({
-    queryKey: academicKeys.batches.list(status),
-    queryFn: () => api.getBatches(filter),
-    staleTime: 60_000,
-  });
-}
-
-export function useBatch(id: string | null) {
-  return useQuery({
-    queryKey: academicKeys.batches.detail(id ?? ""),
-    queryFn: () => api.getBatch(id!),
-    enabled: !!id,
-  });
-}
-
-export function useUpdateBatch() {
-  const qc = useQueryClient();
+export function useCreateYear() {
+  const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, dto }: { id: string; dto: UpdateBatchDto }) =>
-      api.updateBatch(id, dto),
+    mutationFn: createYear,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: academicKeys.batches.all() });
-      qc.invalidateQueries({ queryKey: academicKeys.overview() });
+      qc.invalidateQueries({ queryKey: academicKeys.all })
     },
-  });
+  })
 }
 
-export function useActivateBatch() {
-  const qc = useQueryClient();
+export function useCreateSession() {
+  const qc = useQueryClient()
   return useMutation({
-    mutationFn: (id: string) => api.activateBatch(id),
+    mutationFn: createSession,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: academicKeys.batches.all() });
-      qc.invalidateQueries({ queryKey: academicKeys.overview() });
+      qc.invalidateQueries({ queryKey: academicKeys.all })
     },
-  });
+  })
 }
-
-// ── Setup ───────────────────────────────────────────────────────────────────
 
 export function useSetupAcademic() {
-  const qc = useQueryClient();
+  const qc = useQueryClient()
   return useMutation({
-    mutationFn: (payload: AcademicSetupPayload) => api.setupAcademic(payload),
+    mutationFn: setupAcademic,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: academicKeys.all });
+      qc.invalidateQueries({ queryKey: academicKeys.all })
     },
-  });
+  })
 }
+
+// export function useStartProgression() {
+//   const qc = useQueryClient()
+//   return useMutation({
+//     mutationFn: academicsApi.startProgression,
+//     onSuccess: () => {
+//       qc.invalidateQueries({ queryKey: academicKeys.progressionCheck() })
+//     },
+//   })
+// }

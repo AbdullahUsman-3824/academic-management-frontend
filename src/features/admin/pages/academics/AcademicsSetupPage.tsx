@@ -162,7 +162,7 @@ export default function AcademicsSetupPage() {
               <input
                 value={yearName}
                 onChange={(e) => setYearName(e.target.value)}
-                placeholder="e.g. 2026"
+                placeholder="e.g. 2025-2026"
                 style={inputStyle}
               />
             </div>
