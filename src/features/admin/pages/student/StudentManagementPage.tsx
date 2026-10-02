@@ -1,6 +1,10 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useState, useEffect, type ChangeEvent, type FormEvent } from "react";
 import type { Gender } from "../../api/students";
-import { useBatches } from "../../hooks/useAcademicQueries";
+import {
+  useBatches,
+  useEnrollmentSections,
+  useAcademicSessionsList,
+} from "../../hooks/useAcademicQueries";
 import {
   useBulkEnrollStudents,
   useCreateStudent,
@@ -69,6 +73,15 @@ function StudentManagementPage() {
   const { data: batchesData, isLoading: batchesLoading } = useBatches();
   const batches = batchesData ?? [];
 
+  // Section + academic session lookups for the Register/Update form
+  const { data: sectionsData, isLoading: sectionsLoading } =
+    useEnrollmentSections(draft.batchId || null);
+  const sections = sectionsData ?? [];
+
+  const { data: academicSessionsData, isLoading: academicSessionsLoading } =
+    useAcademicSessionsList();
+  const academicSessions = academicSessionsData ?? [];
+
   // ── Mutations ──────────────────────────────────────────────────────────────
   const createMutation = useCreateStudent();
   const updateMutation = useUpdateStudent();
@@ -84,9 +97,41 @@ function StudentManagementPage() {
   const currentPage = meta?.page ?? page;
   const listMetaText = `Page ${currentPage} of ${totalPages} · ${total} result${total === 1 ? "" : "s"}`;
 
+  // ── Auto-select effects ─────────────────────────────────────────────────────
+
+  // Select the first batch once the batch list loads, if nothing is picked yet.
+  useEffect(() => {
+    if (!batchesLoading && batches.length > 0 && !draft.batchId) {
+      setDraft((prev) => ({ ...prev, batchId: batches[0].id }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [batchesLoading, batches, draft.batchId]);
+
+  // Select the first academic session once the list loads, if nothing is picked yet.
+  useEffect(() => {
+    if (
+      !academicSessionsLoading &&
+      academicSessions.length > 0 &&
+      !draft.academicSessionId
+    ) {
+      setDraft((prev) => ({
+        ...prev,
+        academicSessionId: academicSessions[0].id,
+      }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [academicSessionsLoading, academicSessions, draft.academicSessionId]);
+
   // ── Handlers ───────────────────────────────────────────────────────────────
   const handleFormChange = (field: keyof StudentFormValues, value: string) =>
-    setDraft((prev) => ({ ...prev, [field]: value }));
+    setDraft((prev) => {
+      // Changing the batch invalidates the previously chosen section —
+      // sections are scoped to a batch, so reset it back to AUTO.
+      if (field === "batchId" && value !== prev.batchId) {
+        return { ...prev, batchId: value, sectionId: "" };
+      }
+      return { ...prev, [field]: value };
+    });
 
   const resetListView = () => {
     setView("list");
@@ -117,25 +162,35 @@ function StudentManagementPage() {
     return { ok: true };
   };
 
-  const draftToDto = () => ({
-    batchId: draft.batchId || undefined,
-    firstName: draft.firstName.trim() || undefined,
-    middleName: toNullable(draft.middleName),
-    lastName: toNullable(draft.lastName),
-    email: toNullable(draft.email),
-    dateOfBirth: toNullable(draft.dateOfBirth),
-    gender: (toNullable(draft.gender) as Gender | null) ?? null,
-    cnic: toNullable(draft.cnic),
-    profileImageUrl: toNullable(draft.profileImageUrl),
-    phone: toNullable(draft.phone),
-    address: toNullable(draft.address),
-    city: toNullable(draft.city),
-    guardianName: toNullable(draft.guardianName),
-    guardianRelation: toNullable(draft.guardianRelation),
-    guardianPhone: toNullable(draft.guardianPhone),
-    guardianCnic: toNullable(draft.guardianCnic),
-    admissionDate: toNullable(draft.admissionDate),
-  });
+  const draftToDto = () => {
+    const semesterNum = Math.min(
+      8,
+      Math.max(1, Number.parseInt(draft.semesterNumber, 10) || 1),
+    );
+
+    return {
+      batchId: draft.batchId || undefined,
+      academicSessionId: toNullable(draft.academicSessionId) ?? undefined,
+      semesterNumber: semesterNum,
+      sectionId: toNullable(draft.sectionId),
+      firstName: draft.firstName.trim() || undefined,
+      middleName: toNullable(draft.middleName),
+      lastName: toNullable(draft.lastName),
+      email: toNullable(draft.email),
+      dateOfBirth: toNullable(draft.dateOfBirth),
+      gender: (toNullable(draft.gender) as Gender | null) ?? null,
+      cnic: toNullable(draft.cnic),
+      profileImageUrl: toNullable(draft.profileImageUrl),
+      phone: toNullable(draft.phone),
+      address: toNullable(draft.address),
+      city: toNullable(draft.city),
+      guardianName: toNullable(draft.guardianName),
+      guardianRelation: toNullable(draft.guardianRelation),
+      guardianPhone: toNullable(draft.guardianPhone),
+      guardianCnic: toNullable(draft.guardianCnic),
+      admissionDate: toNullable(draft.admissionDate),
+    };
+  };
 
   const handleCreate = () => {
     const v = validateForm("create");
@@ -455,6 +510,10 @@ function StudentManagementPage() {
           values={draft}
           batches={batches}
           batchesLoading={batchesLoading}
+          sections={sections}
+          sectionsLoading={sectionsLoading}
+          academicSessions={academicSessions}
+          academicSessionsLoading={academicSessionsLoading}
           onChange={handleFormChange}
           onCancel={resetListView}
           onSubmit={handleCreate}
@@ -470,6 +529,10 @@ function StudentManagementPage() {
             values={draft}
             batches={batches}
             batchesLoading={batchesLoading}
+            sections={sections}
+            sectionsLoading={sectionsLoading}
+            academicSessions={academicSessions}
+            academicSessionsLoading={academicSessionsLoading}
             onChange={handleFormChange}
             onCancel={() => setView("detail")}
             onSubmit={handleUpdate}

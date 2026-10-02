@@ -239,6 +239,26 @@ export const sectionsApi = {
       .delete(`/batches/${batchId}/sections/${sectionId}`)
       .then((r) => r.data),
 }
+
+// ── Enrollment-form lookups (used by Register Student) ──────────────────────
+
+export async function getSectionsForBatch(
+  batchId: string,
+): Promise<{ id: string; name: string }[]> {
+  const { data } = await apiClient.get<{ id: string; name: string }[]>(
+    `/academics/batches/${batchId}/sections`,
+  );
+  return data;
+}
+
+export async function getAcademicSessionsList(): Promise<
+  { id: string; name: string }[]
+> {
+  const { data } = await apiClient.get<{ id: string; name: string }[]>(
+    "/academics/sessions/list",
+  );
+  return data;
+}
 // ── Overview ────────────────────────────────────────────────────────────────
 
 export async function getOverview(): Promise<AcademicOverview> {

@@ -1,5 +1,5 @@
-import { useState } from "react";
 import type { StudentFormProps } from "./student.types";
+import { useState } from "react";
 import {
   Card,
   CardHeader,
@@ -16,26 +16,22 @@ import {
   Avatar,
 } from "@mui/material";
 
-// Temporary dummy data, replace with real API data later
-const DUMMY_SECTIONS = [
-  { id: "sec-a", name: "Section A" },
-  { id: "sec-b", name: "Section B" },
-  { id: "sec-c", name: "Section C" },
-];
-
-const DUMMY_SESSIONS = [
-  { id: "2024-25", name: "2024-25" },
-  { id: "2025-26", name: "2025-26" },
-  { id: "2026-27", name: "2026-27" },
-];
-
 const MAX_IMAGE_SIZE_MB = 2;
+
+// Colors the required-field "*" red instead of MUI's default muted grey.
+const requiredAsteriskSx = {
+  "& .MuiFormLabel-asterisk": { color: "error.main" },
+};
 
 export function StudentForm({
   mode,
   values,
   batches,
   batchesLoading,
+  sections,
+  sectionsLoading,
+  academicSessions,
+  academicSessionsLoading,
   onChange,
   onCancel,
   onSubmit,
@@ -78,6 +74,18 @@ export function StudentForm({
     onChange("profileImageUrl", "");
   };
 
+  const handleSemesterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    if (raw === "") {
+      onChange("semesterNumber", "");
+      return;
+    }
+    const num = Number(raw);
+    if (Number.isNaN(num)) return;
+    const clamped = Math.min(8, Math.max(1, Math.trunc(num)));
+    onChange("semesterNumber", String(clamped));
+  };
+
   return (
     <Card variant="outlined">
       <CardHeader
@@ -106,6 +114,7 @@ export function StudentForm({
               value={values.stdRegNumber}
               onChange={(e) => onChange("stdRegNumber", e.target.value)}
               disabled={regReadOnly}
+              sx={requiredAsteriskSx}
               slotProps={{
                 input: { readOnly: regReadOnly },
               }}
@@ -123,6 +132,7 @@ export function StudentForm({
               value={values.batchId}
               onChange={(e) => onChange("batchId", e.target.value)}
               disabled={batchesLoading}
+              sx={requiredAsteriskSx}
               slotProps={{
                 select: { displayEmpty: true },
                 inputLabel: { shrink: true },
@@ -139,57 +149,85 @@ export function StudentForm({
             </TextField>
           </Grid>
 
-          {/* Section (dummy) */}
-          {/* <Grid size={{ xs: 12, sm: 6 }}>
+          {/* Section */}
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               select
               fullWidth
               size="small"
               label="Section"
-              value={values.sectionId ?? ""}
+              value={values.sectionId}
               onChange={(e) => onChange("sectionId", e.target.value)}
+              disabled={!values.batchId || sectionsLoading}
               slotProps={{
                 select: { displayEmpty: true },
                 inputLabel: { shrink: true },
               }}
             >
               <MenuItem value="">
-                <em>Select section</em>
+                <em>
+                  {!values.batchId
+                    ? "Select a batch first"
+                    : sectionsLoading
+                      ? "Loading sections…"
+                      : "AUTO"}
+                </em>
               </MenuItem>
-              {DUMMY_SECTIONS.map((sec) => (
+              {sections.map((sec) => (
                 <MenuItem key={sec.id} value={sec.id}>
                   {sec.name}
                 </MenuItem>
               ))}
             </TextField>
-          </Grid> */}
+          </Grid>
 
-          {/* Session (dummy) */}
-          {/* <Grid size={{ xs: 12, sm: 6 }}>
+          {/* Semester */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              size="small"
+              type="number"
+              label="Semester"
+              value={values.semesterNumber}
+              onChange={handleSemesterChange}
+              slotProps={{
+                htmlInput: { min: 1, max: 8 },
+                inputLabel: { shrink: true },
+              }}
+            />
+          </Grid>
+
+          {/* Academic Session */}
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               select
               fullWidth
               size="small"
-              label="Session"
-              value={values.sessionId ?? ""}
-              onChange={(e) => onChange("sessionId", e.target.value)}
+              label="Academic Session"
+              value={values.academicSessionId}
+              onChange={(e) => onChange("academicSessionId", e.target.value)}
+              disabled={academicSessionsLoading}
               slotProps={{
                 select: { displayEmpty: true },
                 inputLabel: { shrink: true },
               }}
             >
               <MenuItem value="">
-                <em>Select session</em>
+                <em>
+                  {academicSessionsLoading
+                    ? "Loading sessions…"
+                    : "Select session"}
+                </em>
               </MenuItem>
-              {DUMMY_SESSIONS.map((sess) => (
+              {academicSessions.map((sess) => (
                 <MenuItem key={sess.id} value={sess.id}>
                   {sess.name}
                 </MenuItem>
               ))}
             </TextField>
-          </Grid> */}
+          </Grid>
 
-          {/* Admission Date (moved here) */}
+          {/* Admission Date */}
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
@@ -222,6 +260,7 @@ export function StudentForm({
               label="First Name"
               value={values.firstName}
               onChange={(e) => onChange("firstName", e.target.value)}
+              sx={requiredAsteriskSx}
             />
           </Grid>
 

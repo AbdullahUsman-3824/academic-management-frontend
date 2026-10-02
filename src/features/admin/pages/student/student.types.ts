@@ -9,6 +9,9 @@ export type PageView = "list" | "detail" | "create" | "edit" | "bulk";
 
 export interface StudentFormValues {
   batchId: string;
+  sectionId: string;
+  semesterNumber: string;
+  academicSessionId: string;
   stdRegNumber: string;
   firstName: string;
   middleName: string;
@@ -33,6 +36,10 @@ export interface StudentFormProps {
   values: StudentFormValues;
   batches: { id: string; name: string }[];
   batchesLoading: boolean;
+  sections: { id: string; name: string }[];
+  sectionsLoading: boolean;
+  academicSessions: { id: string; name: string }[];
+  academicSessionsLoading: boolean;
   onChange: (field: keyof StudentFormValues, value: string) => void;
   onCancel: () => void;
   onSubmit: () => void;
@@ -56,6 +63,9 @@ export const STATUS_CLASS: Record<StudentStatus, string> = {
 
 export const EMPTY_FORM: StudentFormValues = {
   batchId: "",
+  sectionId: "",
+  semesterNumber: "1",
+  academicSessionId: "",
   stdRegNumber: "",
   firstName: "",
   middleName: "",
