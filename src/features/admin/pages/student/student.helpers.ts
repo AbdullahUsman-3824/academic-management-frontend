@@ -29,6 +29,10 @@ export function toNullable(value: string): string | null {
 export function toStudentFormValues(student: Student): StudentFormValues {
   return {
     batchId: student.batch.id,
+    sectionId: student.sectionId ?? "",
+    semesterNumber:
+      student.semesterNumber != null ? String(student.semesterNumber) : "1",
+    academicSessionId: student.academicSessionId ?? "",
     stdRegNumber: student.stdRegNumber,
     firstName: student.firstName,
     middleName: student.middleName ?? "",

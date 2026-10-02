@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { academicsApi } from '../../../api/academics'
 import { sectionsApi } from '../../../api/academics'
-import { progressionApi, createYear, createSession, setupAcademic } from '../api/academic' // adjust path
+import { progressionApi, createYear, createSession, setupAcademic, getSectionsForBatch, getAcademicSessionsList } from '../api/academic' // adjust path
 
 export function useProgressionCheck() {
   return useQuery({
@@ -137,6 +137,21 @@ export function useBatches(status?: string) {
   return useQuery({
     queryKey: academicKeys.batches(status),
     queryFn: () => academicsApi.getBatches(status),
+  })
+}
+
+export function useEnrollmentSections(batchId: string | null) {
+  return useQuery({
+    queryKey: ['enrollment-sections', batchId],
+    queryFn: () => getSectionsForBatch(batchId!),
+    enabled: !!batchId,
+  })
+}
+
+export function useAcademicSessionsList() {
+  return useQuery({
+    queryKey: ['enrollment-academic-sessions'],
+    queryFn: getAcademicSessionsList,
   })
 }
 

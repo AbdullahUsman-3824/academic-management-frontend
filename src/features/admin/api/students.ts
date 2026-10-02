@@ -35,6 +35,9 @@ export interface Student {
   status: StudentStatus;
   createdAt: string;
   updatedAt: string;
+  sectionId?: string | null;
+  academicSessionId?: string | null;
+  semesterNumber?: number | null;
 }
 
 /** Shape returned by GET /api/students (list — omits heavy fields) */
@@ -77,6 +80,9 @@ export interface StudentListParams {
 
 export interface CreateStudentDto {
   batchId: string;
+  academicSessionId?: string | null;
+  semesterNumber?: number;
+  sectionId?: string | null;
   stdRegNumber: string;
   firstName: string;
   middleName?: string | null;
@@ -98,6 +104,9 @@ export interface CreateStudentDto {
 
 export interface UpdateStudentDto {
   batchId?: string;
+  academicSessionId?: string | null;
+  semesterNumber?: number;
+  sectionId?: string | null;
   firstName?: string;
   middleName?: string | null;
   lastName?: string | null;
