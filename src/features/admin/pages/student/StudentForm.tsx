@@ -1,4 +1,35 @@
+import { useState } from "react";
 import type { StudentFormProps } from "./student.types";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  TextField,
+  MenuItem,
+  Button,
+  Grid,
+  Stack,
+  CircularProgress,
+  Typography,
+  Divider,
+  Box,
+  Avatar,
+} from "@mui/material";
+
+// Temporary dummy data, replace with real API data later
+const DUMMY_SECTIONS = [
+  { id: "sec-a", name: "Section A" },
+  { id: "sec-b", name: "Section B" },
+  { id: "sec-c", name: "Section C" },
+];
+
+const DUMMY_SESSIONS = [
+  { id: "2024-25", name: "2024-25" },
+  { id: "2025-26", name: "2025-26" },
+  { id: "2026-27", name: "2026-27" },
+];
+
+const MAX_IMAGE_SIZE_MB = 2;
 
 export function StudentForm({
   mode,
@@ -11,231 +42,446 @@ export function StudentForm({
   submitting,
 }: StudentFormProps) {
   const regReadOnly = mode === "edit";
+  const [imageError, setImageError] = useState("");
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Basic validation
+    if (!file.type.startsWith("image/")) {
+      setImageError("Please select an image file.");
+      e.target.value = "";
+      return;
+    }
+    if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+      setImageError(`Image must be smaller than ${MAX_IMAGE_SIZE_MB} MB.`);
+      e.target.value = "";
+      return;
+    }
+
+    setImageError("");
+
+    // Convert to base64 data URL and store it in form values
+    const reader = new FileReader();
+    reader.onload = () => {
+      onChange("profileImageUrl", reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Reset so selecting the same file again still triggers onChange
+    e.target.value = "";
+  };
+
+  const handleRemoveImage = () => {
+    setImageError("");
+    onChange("profileImageUrl", "");
+  };
 
   return (
-    <div className="card">
-      <div className="card-head" style={{ borderBottom: "1px solid var(--line)" }}>
-        <h2>{mode === "create" ? "Register Student" : "Update Student Profile"}</h2>
-      </div>
+    <Card variant="outlined">
+      <CardHeader
+        title={
+          mode === "create" ? "Register Student" : "Update Student Profile"
+        }
+        sx={{ borderBottom: 1, borderColor: "divider", py: 1.5 }}
+      />
 
-      <div className="card-body">
-        <div className="form-grid two-col">
+      <CardContent sx={{ pt: 2 }}>
+        {/* ─────────────────────────────────────────────── */}
+        {/* SECTION 1: Registration Information              */}
+        {/* ─────────────────────────────────────────────── */}
+        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
+          Registration Information
+        </Typography>
 
-          <label className="field-label">
-            Batch <span aria-hidden="true">*</span>
-            <select
-              className="field-control"
-              value={values.batchId}
-              onChange={(e) => onChange("batchId", e.target.value)}
-              disabled={batchesLoading}
-            >
-              <option value="">{batchesLoading ? "Loading batches…" : "Select batch"}</option>
-              {batches.map((batch) => (
-                <option key={batch.id} value={batch.id}>{batch.name}</option>
-              ))}
-            </select>
-          </label>
-
-          <label className="field-label">
-            Registration Number <span aria-hidden="true">*</span>
-            <input
-              className="field-control"
-              type="text"
+        <Grid container spacing={1.5} sx={{ mb: 3 }}>
+          {/* Registration Number */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              size="small"
+              required
+              label="Registration Number"
               value={values.stdRegNumber}
               onChange={(e) => onChange("stdRegNumber", e.target.value)}
               disabled={regReadOnly}
-              readOnly={regReadOnly}
+              slotProps={{
+                input: { readOnly: regReadOnly },
+              }}
             />
-          </label>
+          </Grid>
 
-          <label className="field-label">
-            First Name <span aria-hidden="true">*</span>
-            <input
-              className="field-control"
-              type="text"
+          {/* Batch */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              select
+              fullWidth
+              size="small"
+              required
+              label="Batch"
+              value={values.batchId}
+              onChange={(e) => onChange("batchId", e.target.value)}
+              disabled={batchesLoading}
+              slotProps={{
+                select: { displayEmpty: true },
+                inputLabel: { shrink: true },
+              }}
+            >
+              <MenuItem value="">
+                <em>{batchesLoading ? "Loading batches…" : "Select batch"}</em>
+              </MenuItem>
+              {batches.map((batch) => (
+                <MenuItem key={batch.id} value={batch.id}>
+                  {batch.name}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+
+          {/* Section (dummy) */}
+          {/* <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              select
+              fullWidth
+              size="small"
+              label="Section"
+              value={values.sectionId ?? ""}
+              onChange={(e) => onChange("sectionId", e.target.value)}
+              slotProps={{
+                select: { displayEmpty: true },
+                inputLabel: { shrink: true },
+              }}
+            >
+              <MenuItem value="">
+                <em>Select section</em>
+              </MenuItem>
+              {DUMMY_SECTIONS.map((sec) => (
+                <MenuItem key={sec.id} value={sec.id}>
+                  {sec.name}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Grid> */}
+
+          {/* Session (dummy) */}
+          {/* <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              select
+              fullWidth
+              size="small"
+              label="Session"
+              value={values.sessionId ?? ""}
+              onChange={(e) => onChange("sessionId", e.target.value)}
+              slotProps={{
+                select: { displayEmpty: true },
+                inputLabel: { shrink: true },
+              }}
+            >
+              <MenuItem value="">
+                <em>Select session</em>
+              </MenuItem>
+              {DUMMY_SESSIONS.map((sess) => (
+                <MenuItem key={sess.id} value={sess.id}>
+                  {sess.name}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Grid> */}
+
+          {/* Admission Date (moved here) */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              size="small"
+              type="date"
+              label="Admission Date"
+              value={values.admissionDate}
+              onChange={(e) => onChange("admissionDate", e.target.value)}
+              slotProps={{ inputLabel: { shrink: true } }}
+            />
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ mb: 3 }} />
+
+        {/* ─────────────────────────────────────────────── */}
+        {/* SECTION 2: Student Details                       */}
+        {/* ─────────────────────────────────────────────── */}
+        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
+          Student Details
+        </Typography>
+
+        <Grid container spacing={1.5}>
+          {/* First Name */}
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <TextField
+              fullWidth
+              size="small"
+              required
+              label="First Name"
               value={values.firstName}
               onChange={(e) => onChange("firstName", e.target.value)}
             />
-          </label>
+          </Grid>
 
-          <label className="field-label">
-            Middle Name
-            <input
-              className="field-control"
-              type="text"
+          {/* Middle Name */}
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Middle Name"
               value={values.middleName}
               onChange={(e) => onChange("middleName", e.target.value)}
             />
-          </label>
+          </Grid>
 
-          <label className="field-label">
-            Last Name
-            <input
-              className="field-control"
-              type="text"
+          {/* Last Name */}
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Last Name"
               value={values.lastName}
               onChange={(e) => onChange("lastName", e.target.value)}
             />
-          </label>
+          </Grid>
 
-          <label className="field-label">
-            Email
-            <input
-              className="field-control"
+          {/* Email */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              size="small"
               type="email"
+              label="Email"
               value={values.email}
               onChange={(e) => onChange("email", e.target.value)}
             />
-          </label>
+          </Grid>
 
-          <label className="field-label">
-            Date of Birth
-            <input
-              className="field-control"
+          {/* Phone */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Phone"
+              value={values.phone}
+              onChange={(e) => onChange("phone", e.target.value)}
+            />
+          </Grid>
+
+          {/* Date of Birth */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              size="small"
               type="date"
+              label="Date of Birth"
               value={values.dateOfBirth}
               onChange={(e) => onChange("dateOfBirth", e.target.value)}
+              slotProps={{ inputLabel: { shrink: true } }}
             />
-          </label>
+          </Grid>
 
-          <label className="field-label">
-            Gender
-            <select
-              className="field-control"
+          {/* Gender */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              select
+              fullWidth
+              size="small"
+              label="Gender"
               value={values.gender}
               onChange={(e) => onChange("gender", e.target.value)}
+              slotProps={{
+                select: { displayEmpty: true },
+                inputLabel: { shrink: true },
+              }}
             >
-              <option value="">Select gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-            </select>
-          </label>
+              <MenuItem value="">
+                <em>Select gender</em>
+              </MenuItem>
+              <MenuItem value="male">Male</MenuItem>
+              <MenuItem value="female">Female</MenuItem>
+              <MenuItem value="other">Other</MenuItem>
+            </TextField>
+          </Grid>
 
-          <label className="field-label">
-            CNIC
-            <input
-              className="field-control"
-              type="text"
+          {/* CNIC */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              size="small"
+              label="CNIC"
               placeholder="35202-1234567-1"
               value={values.cnic}
               onChange={(e) => onChange("cnic", e.target.value)}
             />
-          </label>
+          </Grid>
 
-          <label className="field-label">
-            Profile Image URL
-            <input
-              className="field-control"
-              type="url"
-              value={values.profileImageUrl}
-              onChange={(e) => onChange("profileImageUrl", e.target.value)}
-            />
-          </label>
-
-          <label className="field-label">
-            Phone
-            <input
-              className="field-control"
-              type="text"
-              value={values.phone}
-              onChange={(e) => onChange("phone", e.target.value)}
-            />
-          </label>
-
-          <label className="field-label">
-            City
-            <input
-              className="field-control"
-              type="text"
+          {/* City */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              size="small"
+              label="City"
               value={values.city}
               onChange={(e) => onChange("city", e.target.value)}
             />
-          </label>
+          </Grid>
 
-          <label className="field-label span-2">
-            Address
-            <input
-              className="field-control"
-              type="text"
+          {/* Address */}
+          <Grid size={{ xs: 12 }}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Address"
               value={values.address}
               onChange={(e) => onChange("address", e.target.value)}
             />
-          </label>
+          </Grid>
 
-          <label className="field-label">
-            Guardian Name
-            <input
-              className="field-control"
-              type="text"
+          {/* Profile Picture: upload + preview (stored as base64) */}
+          <Grid size={{ xs: 12 }}>
+            <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+              <Avatar
+                src={values.profileImageUrl || undefined}
+                alt="Profile preview"
+                sx={{ width: 64, height: 64 }}
+              />
+
+              <Box>
+                <Stack direction="row" spacing={1}>
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    size="small"
+                    className="btn secondary"
+                  >
+                    {values.profileImageUrl
+                      ? "Change Picture"
+                      : "Upload Picture"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      onChange={handleImageChange}
+                    />
+                  </Button>
+
+                  {values.profileImageUrl && (
+                    <Button
+                      variant="text"
+                      size="small"
+                      color="error"
+                      onClick={handleRemoveImage}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </Stack>
+
+                <Typography
+                  variant="caption"
+                  sx={{
+                    display: "block",
+                    mt: 0.5,
+                    color: imageError ? "error.main" : "text.secondary",
+                  }}
+                >
+                  {imageError || `Max size ${MAX_IMAGE_SIZE_MB} MB`}
+                </Typography>
+              </Box>
+            </Stack>
+          </Grid>
+
+          {/* Guardian section heading */}
+          <Grid size={{ xs: 12 }}>
+            <Box sx={{ mt: 1, mb: 0.5 }}>
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: 600, color: "text.secondary" }}
+              >
+                Guardian Information
+              </Typography>
+            </Box>
+          </Grid>
+
+          {/* Guardian Name */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Guardian Name"
               value={values.guardianName}
               onChange={(e) => onChange("guardianName", e.target.value)}
             />
-          </label>
+          </Grid>
 
-          <label className="field-label">
-            Guardian Relation
-            <input
-              className="field-control"
-              type="text"
+          {/* Guardian Relation */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Guardian Relation"
               value={values.guardianRelation}
               onChange={(e) => onChange("guardianRelation", e.target.value)}
             />
-          </label>
+          </Grid>
 
-          <label className="field-label">
-            Guardian Phone
-            <input
-              className="field-control"
-              type="text"
+          {/* Guardian Phone */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Guardian Phone"
               value={values.guardianPhone}
               onChange={(e) => onChange("guardianPhone", e.target.value)}
             />
-          </label>
+          </Grid>
 
-          <label className="field-label">
-            Guardian CNIC
-            <input
-              className="field-control"
-              type="text"
+          {/* Guardian CNIC */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Guardian CNIC"
               value={values.guardianCnic}
               onChange={(e) => onChange("guardianCnic", e.target.value)}
             />
-          </label>
+          </Grid>
+        </Grid>
 
-          <label className="field-label">
-            Admission Date
-            <input
-              className="field-control"
-              type="date"
-              value={values.admissionDate}
-              onChange={(e) => onChange("admissionDate", e.target.value)}
-            />
-          </label>
-
-        </div>
-
-        <div className="action-row" style={{ marginTop: 18 }}>
-          <button
-            type="button"
-            className="btn"
+        {/* Actions */}
+        <Stack direction="row" spacing={1.5} sx={{ mt: 3 }}>
+          <Button
+            variant="contained"
+            size="small"
             onClick={onSubmit}
             disabled={submitting}
+            startIcon={
+              submitting ? <CircularProgress size={14} color="inherit" /> : null
+            }
+            className="btn"
           >
             {submitting
-              ? mode === "create" ? "Saving…" : "Updating…"
-              : mode === "create" ? "Save Student" : "Update Student"}
-          </button>
-          <button
-            type="button"
-            className="btn secondary"
+              ? mode === "create"
+                ? "Saving…"
+                : "Updating…"
+              : mode === "create"
+                ? "Save Student"
+                : "Update Student"}
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
             onClick={onCancel}
             disabled={submitting}
+            className="btn secondary"
           >
             Cancel
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </Stack>
+      </CardContent>
+    </Card>
   );
 }
