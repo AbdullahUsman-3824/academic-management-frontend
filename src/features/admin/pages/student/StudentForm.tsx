@@ -490,6 +490,84 @@ export function StudentForm({
           </Grid>
         </Grid>
 
+                  {/* Section, Semester, Academic Session — create only */}
+          {mode === "create" && (
+            <>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  select
+                  fullWidth
+                  size="small"
+                  label="Section"
+                  value={values.sectionId}
+                  onChange={(e) => onChange("sectionId", e.target.value)}
+                  disabled={!values.batchId || sectionsLoading}
+                  slotProps={{
+                    select: { displayEmpty: true },
+                    inputLabel: { shrink: true },
+                  }}
+                >
+                  <MenuItem value="">
+                    <em>
+                      {!values.batchId
+                        ? "Select a batch first"
+                        : sectionsLoading
+                          ? "Loading sections…"
+                          : "AUTO"}
+                    </em>
+                  </MenuItem>
+                  {sections.map((sec) => (
+                    <MenuItem key={sec.id} value={sec.id}>
+                      {sec.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  type="number"
+                  label="Semester"
+                  value={values.semesterNumber}
+                  onChange={handleSemesterChange}
+                  slotProps={{
+                    htmlInput: { min: 1, max: 8 },
+                    inputLabel: { shrink: true },
+                  }}
+                />
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  select
+                  fullWidth
+                  size="small"
+                  label="Academic Session"
+                  value={values.academicSessionId}
+                  onChange={(e) => onChange("academicSessionId", e.target.value)}
+                  disabled={academicSessionsLoading}
+                  slotProps={{
+                    select: { displayEmpty: true },
+                    inputLabel: { shrink: true },
+                  }}
+                >
+                  <MenuItem value="">
+                    <em>
+                      {academicSessionsLoading ? "Loading sessions…" : "Select session"}
+                    </em>
+                  </MenuItem>
+                  {academicSessions.map((sess) => (
+                    <MenuItem key={sess.id} value={sess.id}>
+                      {sess.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+            </>
+          )}
+                  
         {/* Actions */}
         <Stack direction="row" spacing={1.5} sx={{ mt: 3 }}>
           <Button

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { LoadingSpinner } from '../../components/LoadingSpinner'
 import { StatusFilterBar } from '../../components/StatusFilterBar'
 import { useAcademicYears } from '../../hooks/useAcademicQueries'
-import type { AcademicYear } from '../../../../api/academics'
+import type { AcademicYear } from '../../api/academic'
 import { adminPaths } from '../../data/navData'
 
 const statusClass: Record<string, string> = {

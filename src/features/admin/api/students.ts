@@ -1,7 +1,5 @@
 import apiClient from "../../../api/client";
 
-// ── Types ───────────────────────────────────────────────────────────────────
-
 export type StudentStatus = "active" | "inactive" | "graduated";
 export type Gender = "male" | "female" | "other";
 
@@ -35,12 +33,8 @@ export interface Student {
   status: StudentStatus;
   createdAt: string;
   updatedAt: string;
-  sectionId?: string | null;
-  academicSessionId?: string | null;
-  semesterNumber?: number | null;
 }
 
-/** Shape returned by GET /api/students (list — omits heavy fields) */
 export interface StudentListItem {
   id: string;
   userId: string;
@@ -80,7 +74,7 @@ export interface StudentListParams {
 
 export interface CreateStudentDto {
   batchId: string;
-  academicSessionId?: string | null;
+  academicSessionId?: string;
   semesterNumber?: number;
   sectionId?: string | null;
   stdRegNumber: string;
@@ -102,11 +96,11 @@ export interface CreateStudentDto {
   admissionDate?: string | null;
 }
 
+// Keep in sync with the backend's real UpdateStudentDto — it does NOT have
+// sectionId / semesterNumber / academicSessionId. ValidationPipe uses
+// forbidNonWhitelisted: true, so adding those here will 400 every update.
 export interface UpdateStudentDto {
   batchId?: string;
-  academicSessionId?: string | null;
-  semesterNumber?: number;
-  sectionId?: string | null;
   firstName?: string;
   middleName?: string | null;
   lastName?: string | null;
@@ -129,6 +123,12 @@ export interface UpdateStudentStatusDto {
   status: StudentStatus;
 }
 
+export interface CreateStudentResult {
+  id: string;
+  message: string;
+  createdAt: string;
+}
+
 export interface BulkEnrollmentError {
   row: number;
   stdRegNumber: string | null;
@@ -141,8 +141,6 @@ export interface BulkEnrollmentResult {
   failedCount: number;
   errors: BulkEnrollmentError[];
 }
-
-// ── Students ─────────────────────────────────────────────────────────────────
 
 export async function getStudents(
   params?: StudentListParams,
@@ -160,11 +158,14 @@ export async function getStudent(id: string): Promise<Student> {
   return data.data;
 }
 
-export async function createStudent(dto: CreateStudentDto): Promise<Student> {
-  const { data } = await apiClient.post<{ success: boolean; data: Student }>(
-    "/students",
-    dto,
-  );
+export async function createStudent(
+  dto: CreateStudentDto,
+): Promise<CreateStudentResult> {
+  const { data } = await apiClient.post<{
+    success: boolean;
+    message: string;
+    data: CreateStudentResult;
+  }>("/students", dto);
   return data.data;
 }
 

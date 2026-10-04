@@ -8,8 +8,9 @@ import {
   useActivateSession,
   useCompleteSession,
 } from '../../hooks/useAcademicQueries'
-import type { AcademicSession } from '../../../../api/academics'
+import type { AcademicSession } from '../../api/academic'
 import { adminPaths } from '../../data/navData'
+import { ProgressionModal } from '../../components/ProgressionModal'
 
 const statusClass: Record<string, string> = {
   UPCOMING: 'upcoming',
@@ -31,6 +32,7 @@ export default function SessionsPage() {
   const navigate = useNavigate()
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [yearFilter, setYearFilter] = useState<string>('all')
+  const [progressionSessionId, setProgressionSessionId] = useState<string | null>(null)
 
   const yearsQuery = useAcademicYears()
   const sessionsQuery = useAcademicSessions({
@@ -193,15 +195,27 @@ export default function SessionsPage() {
                         </button>
                       )}
                       {session.status === 'ACTIVE' && (
-                        <button
-                          type="button"
-                          className="btn secondary"
-                          style={{ padding: '4px 10px', fontSize: 12 }}
-                          disabled={completeMutation.isPending}
-                          onClick={() => handleComplete(session.id)}
-                        >
-                          Complete
-                        </button>
+                        <>
+                          <button
+                            type="button"
+                            className="btn secondary"
+                            style={{ padding: '4px 10px', fontSize: 12 }}
+                            disabled={completeMutation.isPending}
+                            onClick={() => handleComplete(session.id)}
+                          >
+                            Complete
+                          </button>
+                          {!session.progressed && (
+                            <button
+                              type="button"
+                              className="btn"
+                              style={{ padding: '4px 10px', fontSize: 12 }}
+                              onClick={() => setProgressionSessionId(session.id)}
+                            >
+                              Run Progression
+                            </button>
+                          )}
+                        </>
                       )}
                     </div>
                   </td>
@@ -210,6 +224,13 @@ export default function SessionsPage() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {progressionSessionId && (
+        <ProgressionModal
+          academicSessionId={progressionSessionId}
+          onClose={() => setProgressionSessionId(null)}
+        />
       )}
     </>
   )
