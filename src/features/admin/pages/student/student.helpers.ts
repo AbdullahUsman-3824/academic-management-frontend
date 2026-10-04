@@ -29,10 +29,13 @@ export function toNullable(value: string): string | null {
 export function toStudentFormValues(student: Student): StudentFormValues {
   return {
     batchId: student.batch.id,
-    sectionId: student.sectionId ?? "",
-    semesterNumber:
-      student.semesterNumber != null ? String(student.semesterNumber) : "1",
-    academicSessionId: student.academicSessionId ?? "",
+    // Backend's GET /students/:id doesn't return section/session/semester —
+    // they live on a separate academic-record, not the Student row — and
+    // UpdateStudentDto can't save them either. These start blank in edit
+    // mode; the fields themselves are hidden there too (see StudentForm).
+    sectionId: "",
+    semesterNumber: "1",
+    academicSessionId: "",
     stdRegNumber: student.stdRegNumber,
     firstName: student.firstName,
     middleName: student.middleName ?? "",

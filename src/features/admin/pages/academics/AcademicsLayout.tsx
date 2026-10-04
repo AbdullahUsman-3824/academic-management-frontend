@@ -3,12 +3,10 @@ import { AcademicNavTabs } from '../../components/AcademicNavTabs'
 import { adminPaths } from '../../data/navData'
 
 const academicTabs = [
-  { label: 'Overview',     to: adminPaths.academics,              end: true },
-  { label: 'Years',        to: `${adminPaths.academics}/years` },
-  { label: 'Sessions',     to: `${adminPaths.academics}/sessions` },
-  { label: 'Batches',      to: `${adminPaths.academics}/batches` },
-  { label: 'Progression',  to: `${adminPaths.academics}/progression` },
-  { label: 'Sections',     to: `${adminPaths.academics}/sections` },
+  { label: 'Overview', to: adminPaths.academics, end: true },
+  { label: 'Years',    to: `${adminPaths.academics}/years` },
+  { label: 'Sessions', to: `${adminPaths.academics}/sessions` },
+  { label: 'Batches',  to: `${adminPaths.academics}/batches` },
 ]
 
 export default function AcademicsLayout() {
@@ -18,7 +16,8 @@ export default function AcademicsLayout() {
         <div>
           <h1>Academic Management</h1>
           <div className="today">
-            Years, sessions, batches, progression, and section administration.
+            Years, sessions, and batch administration. Sections live under each
+            batch; progression runs from an active session.
           </div>
         </div>
       </div>

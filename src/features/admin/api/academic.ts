@@ -1,6 +1,6 @@
 import apiClient from "../../../api/client";
 
-// ── Types ───────────────────────────────────────────────────────────────────
+// ── Enums ───────────────────────────────────────────────────────────────────
 
 export enum AcademicYearStatus {
   ACTIVE = "ACTIVE",
@@ -22,6 +22,8 @@ export enum BatchStatus {
   CANCELLED = "CANCELLED",
 }
 
+// ── Types ───────────────────────────────────────────────────────────────────
+
 export interface AcademicYear {
   id: string;
   name: string;
@@ -38,16 +40,25 @@ export interface AcademicSession {
   startDate: string;
   endDate: string;
   status: AcademicSessionStatus;
+  progressed?: boolean;
   academicYear?: { id: string; name: string };
 }
 
+// Matches the backend's actual MappedBatchResponse — NOT a stored
+// startDate/endDate, they're derived (entryYear.startDate → +programDuration years).
 export interface Batch {
   id: string;
   name: string;
+  entryYearId: string;
   startDate: string;
-  endDate?: string | null;
+  endDate: string;
   status: BatchStatus;
-  _count?: { students: number };
+  programDuration?: number;
+  sectionCapacity?: number;
+  counts?: {
+    students: number;
+    sections: number;
+  };
 }
 
 export interface AcademicOverview {
@@ -82,163 +93,141 @@ export interface UpdateAcademicYearDto {
   endDate?: string;
 }
 
+// NOTE: the backend's update() accepts status too, but it skips the
+// "only one ACTIVE session per year" safety check that /activate enforces.
+// Don't expose a raw status field in the UI — use activateSession/completeSession.
 export interface UpdateAcademicSessionDto {
   name?: string;
   startDate?: string;
   endDate?: string;
-  status?: AcademicSessionStatus;
   academicYearId?: string;
 }
 
+// Matches the real UpdateBatchDto exactly — no startDate/endDate (backend
+// derives them), has entryYearId/programDuration/sectionCapacity instead.
 export interface UpdateBatchDto {
   name?: string;
-  startDate?: string;
-  endDate?: string | null;
+  entryYearId?: string;
+  programDuration?: number;
+  sectionCapacity?: number;
   status?: BatchStatus;
 }
 
-// ── Sections ─────────────────────────────────────────────
+// ── Sections ────────────────────────────────────────────────────────────────
+// Real routes: /academics/batches/:batchId/sections[...]
 
 export interface SectionItem {
-  id: string
-  name: string
-  studentCount: number
-  status: string
+  id: string;
+  name: string;
 }
 
-export interface DefaultStudent {
-  studentId: string
-  regNumber: string
-  fullName: string
+export interface CreateSectionDto {
+  name?: string; // optional — backend auto-assigns next free letter (A, B, C…)
 }
 
-// ── Progression Types ────────────────────────────────────
-
-export interface ProgressionCheck {
-  canStart: boolean
-  reason?: string
-  activeSession?: { id: string; name: string }
-  existingProgression?: {
-    id: string
-    status: string
-    currentStep: string | null
-  }
+export interface UpdateSectionDto {
+  name?: string;
 }
 
-export interface ProgressionStartResponse {
-  id: string
-  academicSessionId: string
-  status: string
-  currentStep: string | null
-  isResumed: boolean
-}
-
-export interface ProgressionPreview {
-  progressionId: string
-  academicSessionId: string
-  status: string
-  totalWithRecord: number
-  totalWithoutRecord: number
-  batches: Array<{
-    batchId: string
-    batchName: string
-    withRecordCount: number
-    withoutRecordCount: number
-    withRecordStudents: Array<{
-      studentId: string
-      regNumber: string
-      fullName: string
-      currentSemester: number | null
-      targetSemester: number
-      sectionName?: string
-    }>
-    withoutRecordStudents: Array<{
-      studentId: string
-      regNumber: string
-      fullName: string
-      currentSemester: null
-      targetSemester: number
-    }>
-  }>
-}
-
-// ── Progression API ──────────────────────────────────────
-
-export const progressionApi = {
-  check: () =>
-    apiClient
-      .get<ProgressionCheck>('/academics/progression/check')
-      .then((r) => r.data),
-
-  start: (academicSessionId: string) =>
-    apiClient
-      .post<ProgressionStartResponse>('/academics/progression/start', {
-        academicSessionId,
-      })
-      .then((r) => r.data),
-
-  getPreview: (id: string) =>
-    apiClient
-      .get<ProgressionPreview>(`/academics/progression/${id}/preview`)
-      .then((r) => r.data),
-
-  confirmWithRecord: (
-    id: string,
-    body: { mode: 'auto' | 'manual'; adjustments?: any[] },
-  ) =>
-    apiClient
-      .post(`/academics/progression/${id}/with-record/confirm`, body)
-      .then((r) => r.data),
-
-  assignSemester: (id: string, body: any) =>
-    apiClient
-      .post(`/academics/progression/${id}/without-record/semester`, body)
-      .then((r) => r.data),
-
-  assignSections: (id: string, body: any) =>
-    apiClient
-      .post(`/academics/progression/${id}/without-record/sections`, body)
-      .then((r) => r.data),
-
-  getFinalPreview: (id: string) =>
-    apiClient
-      .get(`/academics/progression/${id}/final-preview`)
-      .then((r) => r.data),
-
-  lock: (id: string) =>
-    apiClient
-      .post(`/academics/progression/${id}/lock`)
-      .then((r) => r.data),
+export interface MoveStudentsSectionDto {
+  studentIds: string[];
+  // NOTE: backend's moveStudents REJECTS null with a 400 — there is no
+  // "Auto" option here (unlike student registration's sectionId). An
+  // explicit target section is always required.
+  targetSectionId: string;
 }
 
 export const sectionsApi = {
   list: (batchId: string) =>
     apiClient
-      .get<SectionItem[]>(`/batches/${batchId}/sections`)
+      .get<SectionItem[]>(`/academics/batches/${batchId}/sections`)
       .then((r) => r.data),
 
-  studentsInDefault: (batchId: string) =>
+  create: (batchId: string, dto: CreateSectionDto) =>
     apiClient
-      .get<DefaultStudent[]>(
-        `/batches/${batchId}/sections/students-in-default`,
+      .post<SectionItem>(`/academics/batches/${batchId}/sections`, dto)
+      .then((r) => r.data),
+
+  update: (batchId: string, sectionId: string, dto: UpdateSectionDto) =>
+    apiClient
+      .patch<SectionItem>(
+        `/academics/batches/${batchId}/sections/${sectionId}`,
+        dto,
       )
       .then((r) => r.data),
 
-  autoCreate: (batchId: string, capacity?: number) =>
+  remove: (batchId: string, sectionId: string) =>
     apiClient
-      .post(`/batches/${batchId}/sections/auto`, { capacity })
+      .delete<{ message: string }>(
+        `/academics/batches/${batchId}/sections/${sectionId}`,
+      )
       .then((r) => r.data),
 
-  reset: (batchId: string) =>
+  moveStudents: (batchId: string, dto: MoveStudentsSectionDto) =>
     apiClient
-      .post(`/batches/${batchId}/sections/reset`)
+      .post<{
+        message: string;
+        movedCount: number;
+        targetSection: { id: string; name: string };
+      }>(`/academics/batches/${batchId}/sections/move-students`, dto)
       .then((r) => r.data),
+};
 
-  deleteSection: (batchId: string, sectionId: string) =>
-    apiClient
-      .delete(`/batches/${batchId}/sections/${sectionId}`)
-      .then((r) => r.data),
+// ── Progression ─────────────────────────────────────────────────────────────
+// Real routes: GET /academics/progression/preview, POST /academics/progression/implement
+// This IS the full backend surface — there is no check/start/with-record/etc.
+
+export interface ProgressionStudentPreview {
+  studentId: string;
+  regNumber: string;
+  fullName: string;
+  batchId: string;
+  batchName: string;
+  currentSemester: number;
+  targetSemester: number;
+  currentSectionId: string | null;
+  currentSectionName: string | null;
 }
+
+export interface ProgressionPreviewResponse {
+  academicSessionId: string;
+  academicSessionName: string;
+  totalStudents: number;
+  students: ProgressionStudentPreview[];
+}
+
+export interface ProgressionAdjustment {
+  studentId: string;
+  targetSemester: number;
+}
+
+export interface ImplementProgressionDto {
+  academicSessionId: string;
+  adjustments?: ProgressionAdjustment[];
+}
+
+export interface ImplementProgressionResponse {
+  message: string;
+  createdCount: number;
+  academicSessionId: string;
+}
+
+export const progressionApi = {
+  getPreview: (academicSessionId?: string) =>
+    apiClient
+      .get<ProgressionPreviewResponse>("/academics/progression/preview", {
+        params: academicSessionId ? { academicSessionId } : undefined,
+      })
+      .then((r) => r.data),
+
+  implement: (dto: ImplementProgressionDto) =>
+    apiClient
+      .post<ImplementProgressionResponse>(
+        "/academics/progression/implement",
+        dto,
+      )
+      .then((r) => r.data),
+};
 
 // ── Enrollment-form lookups (used by Register Student) ──────────────────────
 
@@ -259,6 +248,7 @@ export async function getAcademicSessionsList(): Promise<
   );
   return data;
 }
+
 // ── Overview ────────────────────────────────────────────────────────────────
 
 export async function getOverview(): Promise<AcademicOverview> {
@@ -272,6 +262,8 @@ export async function setupAcademic(payload: AcademicSetupPayload) {
 }
 
 // ── Years ───────────────────────────────────────────────────────────────────
+// NOTE: no delete route exists on the backend (service has a remove() method
+// but the controller never calls it) — don't add a delete button for years.
 
 export async function getYears(
   status?: AcademicYearStatus,
@@ -292,9 +284,17 @@ export async function updateYear(id: string, dto: UpdateAcademicYearDto) {
   return data;
 }
 
-
+export async function createYear(payload: {
+  name: string;
+  startDate: string;
+  endDate: string;
+}) {
+  const { data } = await apiClient.post("/academics/years", payload);
+  return data;
+}
 
 // ── Sessions ────────────────────────────────────────────────────────────────
+// NOTE: no delete route either. Status changes only via activate()/complete().
 
 export async function getSessions(params?: {
   status?: AcademicSessionStatus;
@@ -329,7 +329,20 @@ export async function completeSession(id: string) {
   return data;
 }
 
+export async function createSession(payload: {
+  academicYearId: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+}) {
+  const { data } = await apiClient.post("/academics/sessions", payload);
+  return data;
+}
+
 // ── Batches ─────────────────────────────────────────────────────────────────
+// NOTE: no standalone create or delete route — batches are created via
+// /academics/setup. Status changes should go through activate(), not a raw
+// status field, since activate() has transition guards the generic PATCH skips.
 
 export async function getBatches(status?: BatchStatus): Promise<Batch[]> {
   const { data } = await apiClient.get<Batch[]>("/academics/batches", {
@@ -352,24 +365,3 @@ export async function activateBatch(id: string) {
   const { data } = await apiClient.post(`/academics/batches/${id}/activate`);
   return data;
 }
-
-export async function createYear(payload: {
-  name: string
-  startDate: string
-  endDate: string
-}) {
-  const { data } = await apiClient.post('/academics/years', payload)
-  return data
-}
-
-export async function createSession(payload: {
-  academicYearId: string
-  name: string
-  startDate: string
-  endDate: string
-}) {
-  const { data } = await apiClient.post('/academics/sessions', payload)
-  return data
-}
-
-

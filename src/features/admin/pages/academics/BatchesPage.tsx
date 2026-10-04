@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { LoadingSpinner } from '../../components/LoadingSpinner'
 import { StatusFilterBar } from '../../components/StatusFilterBar'
 import { useBatches } from '../../hooks/useAcademicQueries'
-import type { Batch } from '../../../../api/academics'
-import { adminPaths } from '../../data/navData'
+import type { Batch } from '../../api/academic'
+import { SectionManager } from '../../components/SectionManager'
 
 const statusClass: Record<string, string> = {
   ACTIVE: 'active',
@@ -22,8 +21,8 @@ function formatDate(dateStr?: string) {
 }
 
 export default function BatchesPage() {
-  const navigate = useNavigate()
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [expandedBatchId, setExpandedBatchId] = useState<string | null>(null)
 
   const { data, isLoading, isError, error, refetch } = useBatches(
     statusFilter === 'all' ? undefined : statusFilter,
@@ -107,41 +106,50 @@ export default function BatchesPage() {
               )}
 
               {batches.map((batch) => (
-                <tr key={batch.id}>
-                  <td>
-                    <div className="subj-title">{batch.name}</div>
-                  </td>
-                  <td className="col-hide-sm subj-sub">
-                    {formatDate(batch.startDate)}
-                  </td>
-                  <td className="col-hide-sm subj-sub">
-                    {formatDate(batch.endDate)}
-                  </td>
-                  <td>{batch.counts?.students ?? 0}</td>
-                  <td>{batch.counts?.sections ?? 0}</td>
-                  <td className="subj-sub">
-                    {batch.sectionCapacity ?? '—'}
-                  </td>
-                  <td>
-                    <span className={`status ${statusClass[batch.status] ?? ''}`}>
-                      {batch.status}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      type="button"
-                      className="btn secondary"
-                      style={{ padding: '4px 10px', fontSize: 12 }}
-                      onClick={() =>
-                        navigate(
-                          `${adminPaths.academics}/sections?batchId=${batch.id}`,
-                        )
-                      }
-                    >
-                      Manage Sections
-                    </button>
-                  </td>
-                </tr>
+                <>
+                  <tr key={batch.id}>
+                    <td>
+                      <div className="subj-title">{batch.name}</div>
+                    </td>
+                    <td className="col-hide-sm subj-sub">
+                      {formatDate(batch.startDate)}
+                    </td>
+                    <td className="col-hide-sm subj-sub">
+                      {formatDate(batch.endDate)}
+                    </td>
+                    <td>{batch.counts?.students ?? 0}</td>
+                    <td>{batch.counts?.sections ?? 0}</td>
+                    <td className="subj-sub">
+                      {batch.sectionCapacity ?? '—'}
+                    </td>
+                    <td>
+                      <span className={`status ${statusClass[batch.status] ?? ''}`}>
+                        {batch.status}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        className="btn secondary"
+                        style={{ padding: '4px 10px', fontSize: 12 }}
+                        onClick={() =>
+                          setExpandedBatchId(
+                            expandedBatchId === batch.id ? null : batch.id,
+                          )
+                        }
+                      >
+                        {expandedBatchId === batch.id ? 'Hide Sections' : 'Manage Sections'}
+                      </button>
+                    </td>
+                  </tr>
+                  {expandedBatchId === batch.id && (
+                    <tr>
+                      <td colSpan={8} style={{ background: 'var(--card)', padding: 0 }}>
+                        <SectionManager batchId={batch.id} />
+                      </td>
+                    </tr>
+                  )}
+                </>
               ))}
             </tbody>
           </table>
