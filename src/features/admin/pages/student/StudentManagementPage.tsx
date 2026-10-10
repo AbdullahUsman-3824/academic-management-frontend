@@ -29,10 +29,14 @@ import type { PageView, StudentFormValues } from "./student.types";
 
 function StudentManagementPage() {
   const [view, setView] = useState<PageView>("list");
-  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
+    null,
+  );
 
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | StudentStatus>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | StudentStatus>(
+    "all",
+  );
   const [batchFilter, setBatchFilter] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -62,8 +66,11 @@ function StudentManagementPage() {
     ...(batchFilter ? { batchId: batchFilter } : {}),
   };
 
-  const { data: listData, isLoading: listLoading, isError: listError } =
-    useStudents(listParams);
+  const {
+    data: listData,
+    isLoading: listLoading,
+    isError: listError,
+  } = useStudents(listParams);
 
   const { data: selectedStudent, isLoading: detailLoading } = useStudent(
     view === "detail" || view === "edit" ? selectedStudentId : null,
@@ -102,7 +109,12 @@ function StudentManagementPage() {
   const listMetaText = `Page ${currentPage} of ${totalPages} · ${total} result${total === 1 ? "" : "s"}`;
 
   useEffect(() => {
-    if (view === "create" && !batchesLoading && batches.length > 0 && !draft.batchId) {
+    if (
+      view === "create" &&
+      !batchesLoading &&
+      batches.length > 0 &&
+      !draft.batchId
+    ) {
       setDraft((prev) => ({ ...prev, batchId: batches[0].id }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -115,10 +127,18 @@ function StudentManagementPage() {
       academicSessions.length > 0 &&
       !draft.academicSessionId
     ) {
-      setDraft((prev) => ({ ...prev, academicSessionId: academicSessions[0].id }));
+      setDraft((prev) => ({
+        ...prev,
+        academicSessionId: academicSessions[0].id,
+      }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, academicSessionsLoading, academicSessions, draft.academicSessionId]);
+  }, [
+    view,
+    academicSessionsLoading,
+    academicSessions,
+    draft.academicSessionId,
+  ]);
 
   // Selecting students only makes sense scoped to one batch (move-students
   // requires it) — turn off select mode and clear selection if the batch
@@ -158,8 +178,10 @@ function StudentManagementPage() {
   const validateForm = (
     mode: "create" | "edit",
   ): { ok: true } | { ok: false; message: string } => {
-    if (!draft.batchId.trim()) return { ok: false, message: "Batch is required." };
-    if (!draft.firstName.trim()) return { ok: false, message: "First name is required." };
+    if (!draft.batchId.trim())
+      return { ok: false, message: "Batch is required." };
+    if (!draft.firstName.trim())
+      return { ok: false, message: "First name is required." };
     if (mode === "create" && !draft.stdRegNumber.trim())
       return { ok: false, message: "Registration number is required." };
     return { ok: true };
@@ -199,7 +221,10 @@ function StudentManagementPage() {
 
   const handleCreate = () => {
     const v = validateForm("create");
-    if (!v.ok) { setFeedback({ type: "error", message: v.message }); return; }
+    if (!v.ok) {
+      setFeedback({ type: "error", message: v.message });
+      return;
+    }
 
     createMutation.mutate(
       {
@@ -211,13 +236,19 @@ function StudentManagementPage() {
       },
       {
         onSuccess: (created) => {
-          setFeedback({ type: "success", message: "Student enrolled successfully." });
+          setFeedback({
+            type: "success",
+            message: "Student enrolled successfully.",
+          });
           setSelectedStudentId(created.id);
           setStatusDraft("active");
           setView("detail");
         },
         onError: (err) =>
-          setFeedback({ type: "error", message: extractErrorMessage(err, "Failed to enroll student.") }),
+          setFeedback({
+            type: "error",
+            message: extractErrorMessage(err, "Failed to enroll student."),
+          }),
       },
     );
   };
@@ -225,17 +256,26 @@ function StudentManagementPage() {
   const handleUpdate = () => {
     if (!selectedStudentId) return;
     const v = validateForm("edit");
-    if (!v.ok) { setFeedback({ type: "error", message: v.message }); return; }
+    if (!v.ok) {
+      setFeedback({ type: "error", message: v.message });
+      return;
+    }
 
     updateMutation.mutate(
       { id: selectedStudentId, dto: draftToDto() },
       {
         onSuccess: () => {
-          setFeedback({ type: "success", message: "Student updated successfully." });
+          setFeedback({
+            type: "success",
+            message: "Student updated successfully.",
+          });
           setView("detail");
         },
         onError: (err) =>
-          setFeedback({ type: "error", message: extractErrorMessage(err, "Failed to update student.") }),
+          setFeedback({
+            type: "error",
+            message: extractErrorMessage(err, "Failed to update student."),
+          }),
       },
     );
   };
@@ -246,9 +286,15 @@ function StudentManagementPage() {
       { id: selectedStudentId, dto: { status: statusDraft } },
       {
         onSuccess: () =>
-          setFeedback({ type: "success", message: "Student status updated successfully." }),
+          setFeedback({
+            type: "success",
+            message: "Student status updated successfully.",
+          }),
         onError: (err) =>
-          setFeedback({ type: "error", message: extractErrorMessage(err, "Failed to update status.") }),
+          setFeedback({
+            type: "error",
+            message: extractErrorMessage(err, "Failed to update status."),
+          }),
       },
     );
   };
@@ -261,11 +307,17 @@ function StudentManagementPage() {
   const handleBulkProcess = (e: FormEvent) => {
     e.preventDefault();
     if (!bulkFile) {
-      setFeedback({ type: "error", message: "Please choose a .xlsx file before processing." });
+      setFeedback({
+        type: "error",
+        message: "Please choose a .xlsx file before processing.",
+      });
       return;
     }
     if (!bulkFile.name.toLowerCase().endsWith(".xlsx")) {
-      setFeedback({ type: "error", message: "Only .xlsx files are supported." });
+      setFeedback({
+        type: "error",
+        message: "Only .xlsx files are supported.",
+      });
       return;
     }
     setFeedback(null);
@@ -280,7 +332,10 @@ function StudentManagementPage() {
               : `Bulk enrollment complete. ${result.successCount} enrolled, ${result.failedCount} failed.`,
           }),
         onError: (err) =>
-          setFeedback({ type: "error", message: extractErrorMessage(err, "Bulk enrollment failed.") }),
+          setFeedback({
+            type: "error",
+            message: extractErrorMessage(err, "Bulk enrollment failed."),
+          }),
       },
     );
   };
@@ -288,7 +343,10 @@ function StudentManagementPage() {
   const handleDownloadTemplate = () => {
     templateMutation.mutate(undefined, {
       onError: (err) =>
-        setFeedback({ type: "error", message: extractErrorMessage(err, "Failed to download template.") }),
+        setFeedback({
+          type: "error",
+          message: extractErrorMessage(err, "Failed to download template."),
+        }),
     });
   };
 
@@ -331,7 +389,10 @@ function StudentManagementPage() {
     moveMutation.mutate(
       {
         batchId: batchFilter,
-        dto: { studentIds: Array.from(selectedIds), targetSectionId: moveTargetSectionId },
+        dto: {
+          studentIds: Array.from(selectedIds),
+          targetSectionId: moveTargetSectionId,
+        },
       },
       {
         onSuccess: (res) => {
@@ -344,7 +405,10 @@ function StudentManagementPage() {
           setMoveTargetSectionId("");
         },
         onError: (err) =>
-          setFeedback({ type: "error", message: extractErrorMessage(err, "Failed to move students.") }),
+          setFeedback({
+            type: "error",
+            message: extractErrorMessage(err, "Failed to move students."),
+          }),
       },
     );
   };
@@ -353,7 +417,9 @@ function StudentManagementPage() {
     if (detailLoading) {
       return (
         <div className="card">
-          <div className="card-body"><p className="meta">Loading student…</p></div>
+          <div className="card-body">
+            <p className="meta">Loading student…</p>
+          </div>
         </div>
       );
     }
@@ -362,7 +428,11 @@ function StudentManagementPage() {
         <div className="card">
           <div className="card-body">
             <p className="empty-note">Student not found.</p>
-            <button type="button" className="btn secondary" onClick={resetListView}>
+            <button
+              type="button"
+              className="btn secondary"
+              onClick={resetListView}
+            >
               Back to list
             </button>
           </div>
@@ -377,14 +447,18 @@ function StudentManagementPage() {
         <div>
           <h1>Student Management</h1>
           <div className="today">
-            Manage student enrollment, profiles, status updates, and bulk imports.
+            Manage student enrollment, profiles, status updates, and bulk
+            imports.
           </div>
         </div>
         <div className="inline-actions">
           <button
             type="button"
             className="btn secondary"
-            onClick={() => { setFeedback(null); setView("bulk"); }}
+            onClick={() => {
+              setFeedback(null);
+              setView("bulk");
+            }}
           >
             Bulk Enrollment
           </button>
@@ -395,7 +469,9 @@ function StudentManagementPage() {
       </div>
 
       {feedback && (
-        <div className={`notice ${feedback.type === "error" ? "error" : "success"}`}>
+        <div
+          className={`notice ${feedback.type === "error" ? "error" : "success"}`}
+        >
           {feedback.message}
         </div>
       )}
@@ -408,7 +484,10 @@ function StudentManagementPage() {
                 key={sf.value}
                 type="button"
                 className={`tab-btn${statusFilter === sf.value ? " active" : ""}`}
-                onClick={() => { setStatusFilter(sf.value); setPage(1); }}
+                onClick={() => {
+                  setStatusFilter(sf.value);
+                  setPage(1);
+                }}
               >
                 {sf.label}
               </button>
@@ -424,7 +503,10 @@ function StudentManagementPage() {
                   type="search"
                   placeholder="Name, reg no, username, phone, email"
                   value={search}
-                  onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
                 />
               </label>
 
@@ -433,12 +515,18 @@ function StudentManagementPage() {
                 <select
                   className="field-control"
                   value={batchFilter}
-                  onChange={(e) => { setBatchFilter(e.target.value); setPage(1); setSelectMode(false); }}
+                  onChange={(e) => {
+                    setBatchFilter(e.target.value);
+                    setPage(1);
+                    setSelectMode(false);
+                  }}
                   disabled={batchesLoading}
                 >
                   <option value="">All batches</option>
                   {batches.map((b) => (
-                    <option key={b.id} value={b.id}>{b.name}</option>
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
                   ))}
                 </select>
               </label>
@@ -448,7 +536,10 @@ function StudentManagementPage() {
                 <select
                   className="field-control"
                   value={String(limit)}
-                  onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
+                  onChange={(e) => {
+                    setLimit(Number(e.target.value));
+                    setPage(1);
+                  }}
                 >
                   <option value="10">10</option>
                   <option value="20">20</option>
@@ -456,13 +547,20 @@ function StudentManagementPage() {
                 </select>
               </label>
 
-              <label className="field-label narrow" style={{ justifyContent: "flex-end" }}>
+              <label
+                className="field-label narrow"
+                style={{ justifyContent: "flex-end" }}
+              >
                 <span style={{ visibility: "hidden" }}>Move</span>
                 <button
                   type="button"
                   className="btn secondary"
                   disabled={!batchFilter}
-                  title={!batchFilter ? "Select a specific batch to enable bulk section moves" : undefined}
+                  title={
+                    !batchFilter
+                      ? "Select a specific batch to enable bulk section moves"
+                      : undefined
+                  }
                   onClick={() => {
                     setSelectMode((v) => !v);
                     setSelectedIds(new Set());
@@ -474,7 +572,13 @@ function StudentManagementPage() {
             </div>
 
             {!batchFilter && (
-              <p style={{ fontSize: 12, color: "var(--ink-faint)", marginTop: 8 }}>
+              <p
+                style={{
+                  fontSize: 12,
+                  color: "var(--ink-faint)",
+                  marginTop: 8,
+                }}
+              >
                 Select a specific batch above to enable bulk section moves.
               </p>
             )}
@@ -482,10 +586,17 @@ function StudentManagementPage() {
 
           <div
             className="card-head"
-            style={{ borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)" }}
+            style={{
+              borderTop: "1px solid var(--line)",
+              borderBottom: "1px solid var(--line)",
+            }}
           >
             <span className="meta">
-              {listLoading ? "Loading…" : listError ? "Failed to load students." : listMetaText}
+              {listLoading
+                ? "Loading…"
+                : listError
+                  ? "Failed to load students."
+                  : listMetaText}
             </span>
             {selectMode && selectedIds.size > 0 && (
               <button
@@ -507,7 +618,10 @@ function StudentManagementPage() {
                     <th style={{ width: 32 }}>
                       <input
                         type="checkbox"
-                        checked={students.length > 0 && students.every((s) => selectedIds.has(s.id))}
+                        checked={
+                          students.length > 0 &&
+                          students.every((s) => selectedIds.has(s.id))
+                        }
                         onChange={toggleAllOnPage}
                       />
                     </th>
@@ -525,74 +639,117 @@ function StudentManagementPage() {
               <tbody>
                 {listLoading && (
                   <tr>
-                    <td colSpan={selectMode ? 9 : 8} style={{ textAlign: "center", color: "var(--ink-faint)", fontStyle: "italic" }}>
+                    <td
+                      colSpan={selectMode ? 9 : 8}
+                      style={{
+                        textAlign: "center",
+                        color: "var(--ink-faint)",
+                        fontStyle: "italic",
+                      }}
+                    >
                       Loading students…
                     </td>
                   </tr>
                 )}
                 {!listLoading && listError && (
                   <tr>
-                    <td colSpan={selectMode ? 9 : 8} style={{ textAlign: "center", color: "var(--ink-faint)", fontStyle: "italic" }}>
+                    <td
+                      colSpan={selectMode ? 9 : 8}
+                      style={{
+                        textAlign: "center",
+                        color: "var(--ink-faint)",
+                        fontStyle: "italic",
+                      }}
+                    >
                       Failed to load students. Please try again.
                     </td>
                   </tr>
                 )}
                 {!listLoading && !listError && students.length === 0 && (
                   <tr>
-                    <td colSpan={selectMode ? 9 : 8} style={{ textAlign: "center", color: "var(--ink-faint)", fontStyle: "italic" }}>
+                    <td
+                      colSpan={selectMode ? 9 : 8}
+                      style={{
+                        textAlign: "center",
+                        color: "var(--ink-faint)",
+                        fontStyle: "italic",
+                      }}
+                    >
                       No students match the selected query.
                     </td>
                   </tr>
                 )}
-                {!listLoading && students.map((student, index) => (
-                  <tr key={student.id}>
-                    {selectMode && (
+                {!listLoading &&
+                  students.map((student, index) => (
+                    <tr key={student.id}>
+                      {selectMode && (
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(student.id)}
+                            onChange={(e) =>
+                              toggleOne(
+                                student.id,
+                                index,
+                                (e.nativeEvent as MouseEvent).shiftKey,
+                              )
+                            }
+                          />
+                        </td>
+                      )}
+                      <td className="code">{student.stdRegNumber}</td>
                       <td>
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.has(student.id)}
-                          onChange={(e) =>
-                            toggleOne(student.id, index, (e.nativeEvent as MouseEvent).shiftKey)
-                          }
-                        />
+                        <div className="subj-title">
+                          {getDisplayName(student)}
+                        </div>
+                        <div className="subj-sub col-show-sm">
+                          {student.batch.name}
+                        </div>
                       </td>
-                    )}
-                    <td className="code">{student.stdRegNumber}</td>
-                    <td>
-                      <div className="subj-title">{getDisplayName(student)}</div>
-                      <div className="subj-sub col-show-sm">{student.batch.name}</div>
-                    </td>
-                    <td className="subj-sub col-hide-sm">{student.batch.name}</td>
-                    <td className="subj-sub col-hide-sm">{student.phone ?? "—"}</td>
-                    <td className="subj-sub col-hide-sm">{student.email ?? "—"}</td>
-                    <td>
-                      <span className={`status ${STATUS_CLASS[student.status]}`}>
-                        {toLabel(student.status)}
-                      </span>
-                    </td>
-                    <td className="subj-sub col-hide-sm">{student.admissionDate}</td>
-                    <td>
-                      <button
-                        type="button"
-                        className="btn secondary"
-                        style={{ padding: "4px 10px", fontSize: 12 }}
-                        onClick={() => {
-                          setSelectedStudentId(student.id);
-                          setStatusDraft(student.status);
-                          setView("detail");
-                          setFeedback(null);
-                        }}
-                      >
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      <td className="subj-sub col-hide-sm">
+                        {student.batch.name}
+                      </td>
+                      <td className="subj-sub col-hide-sm">
+                        {student.phone ?? "—"}
+                      </td>
+                      <td className="subj-sub col-hide-sm">
+                        {student.email ?? "—"}
+                      </td>
+                      <td>
+                        <span
+                          className={`status ${STATUS_CLASS[student.status]}`}
+                        >
+                          {toLabel(student.status)}
+                        </span>
+                      </td>
+                      <td className="subj-sub col-hide-sm">
+                        {student.admissionDate}
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="btn secondary"
+                          style={{ padding: "4px 10px", fontSize: 12 }}
+                          onClick={() => {
+                            setSelectedStudentId(student.id);
+                            setStatusDraft(student.status);
+                            setView("detail");
+                            setFeedback(null);
+                          }}
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
 
-          <div className="card-body" style={{ borderTop: "1px solid var(--line)" }}>
+          <div
+            className="card-body"
+            style={{ borderTop: "1px solid var(--line)" }}
+          >
             <div className="pager-row">
               <button
                 type="button"
@@ -616,21 +773,320 @@ function StudentManagementPage() {
         </div>
       )}
 
-      {/* Keep the Create / Edit / Detail / Bulk blocks exactly as in your
-          current file — unchanged, just pass sections/academicSessions
-          props through as before. */}
+      {/* ── CREATE ── */}
+      {view === "create" && (
+        <StudentForm
+          mode="create"
+          values={draft}
+          batches={batches}
+          batchesLoading={batchesLoading}
+          sections={sections}
+          sectionsLoading={sectionsLoading}
+          academicSessions={academicSessions}
+          academicSessionsLoading={academicSessionsLoading}
+          onChange={handleFormChange}
+          onCancel={resetListView}
+          onSubmit={handleCreate}
+          submitting={createMutation.isPending}
+        />
+      )}
+      {/* ── EDIT ── */}
+      {view === "edit" && selectedStudent && (
+        <>
+          <StudentForm
+            mode="edit"
+            values={draft}
+            batches={batches}
+            batchesLoading={batchesLoading}
+            sections={sections}
+            sectionsLoading={sectionsLoading}
+            academicSessions={academicSessions}
+            academicSessionsLoading={academicSessionsLoading}
+            onChange={handleFormChange}
+            onCancel={() => setView("detail")}
+            onSubmit={handleUpdate}
+            submitting={updateMutation.isPending}
+          />
+        </>
+      )}
+
+      {/* ── DETAIL ── */}
+      {view === "detail" && selectedStudent && (
+        <>
+          <div className="topbar" style={{ marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <button
+                type="button"
+                className="btn secondary"
+                onClick={resetListView}
+              >
+                ← Back
+              </button>
+              <div>
+                <h1 style={{ marginBottom: 2 }}>
+                  {getDisplayName(selectedStudent)}
+                </h1>
+                <div className="today">
+                  {selectedStudent.stdRegNumber} · {selectedStudent.batch.name}
+                </div>
+              </div>
+            </div>
+            <div className="inline-actions">
+              <button
+                type="button"
+                className="btn secondary"
+                onClick={goToEdit}
+              >
+                Edit Profile
+              </button>
+              <span
+                className={`status ${STATUS_CLASS[selectedStudent.status]}`}
+              >
+                {toLabel(selectedStudent.status)}
+              </span>
+            </div>
+          </div>
+
+          <div className="profile-grid">
+            <div className="card">
+              <div className="card-head">
+                <h2>Personal Information</h2>
+              </div>
+              <div className="profile-fields">
+                {(
+                  [
+                    ["First Name", selectedStudent.firstName],
+                    ["Middle Name", selectedStudent.middleName ?? "—"],
+                    ["Last Name", selectedStudent.lastName ?? "—"],
+                    ["Email", selectedStudent.email ?? "—"],
+                    ["Phone", selectedStudent.phone ?? "—"],
+                    ["Date of Birth", selectedStudent.dateOfBirth ?? "—"],
+                    ["Gender", selectedStudent.gender ?? "—"],
+                    ["CNIC", selectedStudent.cnic ?? "—"],
+                    [
+                      "Profile Image URL",
+                      selectedStudent.profileImageUrl ?? "—",
+                    ],
+                  ] as [string, string][]
+                ).map(([label, value]) => (
+                  <div className="profile-field" key={label}>
+                    <div className="profile-field__label">{label}</div>
+                    <div className="profile-field__value">{value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="card-head">
+                <h2>Enrollment Information</h2>
+              </div>
+              <div className="profile-fields">
+                {(
+                  [
+                    ["Student ID", selectedStudent.id],
+                    ["User ID", selectedStudent.userId],
+                    ["Username", selectedStudent.username],
+                    ["Registration Number", selectedStudent.stdRegNumber],
+                    [
+                      "Batch",
+                      `${selectedStudent.batch.name} (${selectedStudent.batch.id})`,
+                    ],
+                    ["Admission Date", selectedStudent.admissionDate],
+                    ["Status", toLabel(selectedStudent.status)],
+                    ["Created At", selectedStudent.createdAt],
+                    ["Updated At", selectedStudent.updatedAt],
+                  ] as [string, string][]
+                ).map(([label, value]) => (
+                  <div className="profile-field" key={label}>
+                    <div className="profile-field__label">{label}</div>
+                    <div className="profile-field__value">{value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="card-head">
+                <h2>Guardian Information</h2>
+              </div>
+              <div className="profile-fields">
+                {(
+                  [
+                    ["Guardian Name", selectedStudent.guardianName ?? "—"],
+                    ["Relation", selectedStudent.guardianRelation ?? "—"],
+                    ["Guardian Phone", selectedStudent.guardianPhone ?? "—"],
+                    ["Guardian CNIC", selectedStudent.guardianCnic ?? "—"],
+                    ["Address", selectedStudent.address ?? "—"],
+                    ["City", selectedStudent.city ?? "—"],
+                  ] as [string, string][]
+                ).map(([label, value]) => (
+                  <div className="profile-field" key={label}>
+                    <div className="profile-field__label">{label}</div>
+                    <div className="profile-field__value">{value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="card-head">
+                <h2>Update Status</h2>
+              </div>
+              <div className="card-body">
+                <div className="toolbar-grid">
+                  <label className="field-label narrow">
+                    New Status
+                    <select
+                      className="field-control"
+                      value={statusDraft}
+                      onChange={(e) =>
+                        setStatusDraft(e.target.value as StudentStatus)
+                      }
+                      disabled={statusMutation.isPending}
+                    >
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                      <option value="graduated">Graduated</option>
+                    </select>
+                  </label>
+                </div>
+                <div className="action-row" style={{ marginTop: 12 }}>
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={handleStatusUpdate}
+                    disabled={
+                      statusMutation.isPending ||
+                      statusDraft === selectedStudent.status
+                    }
+                  >
+                    {statusMutation.isPending ? "Applying…" : "Apply Status"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── BULK ── */}
+      {view === "bulk" && (
+        <div className="card">
+          <div
+            className="card-head"
+            style={{ borderBottom: "1px solid var(--line)" }}
+          >
+            <h2>Bulk Enrollment</h2>
+          </div>
+
+          <div className="card-body">
+            <form onSubmit={handleBulkProcess}>
+              <div className="toolbar-grid">
+                <label className="field-label span-2">
+                  Upload .xlsx file
+                  <input
+                    className="field-control"
+                    type="file"
+                    accept=".xlsx"
+                    onChange={handleBulkFile}
+                    disabled={bulkMutation.isPending}
+                  />
+                </label>
+
+                <label
+                  className="field-label narrow"
+                  style={{ justifyContent: "center" }}
+                >
+                  <span>Dry Run</span>
+                  <input
+                    type="checkbox"
+                    checked={bulkDryRun}
+                    onChange={(e) => setBulkDryRun(e.target.checked)}
+                    style={{ width: 18, height: 18, marginTop: 8 }}
+                    disabled={bulkMutation.isPending}
+                  />
+                </label>
+              </div>
+
+              <div className="action-row" style={{ marginTop: 14 }}>
+                <button
+                  type="submit"
+                  className="btn"
+                  disabled={bulkMutation.isPending}
+                >
+                  {bulkMutation.isPending
+                    ? "Processing…"
+                    : bulkDryRun
+                      ? "Run Validation (Dry Run)"
+                      : "Process Bulk Enrollment"}
+                </button>
+                <button
+                  type="button"
+                  className="btn secondary"
+                  onClick={handleDownloadTemplate}
+                  disabled={templateMutation.isPending}
+                >
+                  {templateMutation.isPending
+                    ? "Downloading…"
+                    : "Download Template"}
+                </button>
+                <button
+                  type="button"
+                  className="btn secondary"
+                  onClick={resetListView}
+                  disabled={bulkMutation.isPending}
+                >
+                  Back to List
+                </button>
+              </div>
+            </form>
+
+            {bulkMutation.data && (
+              <div className="bulk-result">
+                <h3 style={{ marginTop: 0 }}>Bulk Result</h3>
+                <p className="meta" style={{ margin: "0 0 8px" }}>
+                  totalRows: {bulkMutation.data.totalRows} · successCount:{" "}
+                  {bulkMutation.data.successCount} · failedCount:{" "}
+                  {bulkMutation.data.failedCount}
+                </p>
+                {bulkMutation.data.errors.length > 0 && (
+                  <ul className="bulk-errors">
+                    {bulkMutation.data.errors.map((err) => (
+                      <li key={`${err.row}-${err.stdRegNumber ?? "none"}`}>
+                        Row {err.row}
+                        {err.stdRegNumber ? ` (${err.stdRegNumber})` : ""}:{" "}
+                        {err.errors.join(", ")}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {moveModalOpen && (
         <div
           style={{
-            position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)",
-            display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000,
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
           }}
         >
           <div className="card" style={{ width: 360 }}>
             <div className="card-head">
               <h2>Move {selectedIds.size} Student(s)</h2>
-              <button type="button" className="btn secondary" onClick={() => setMoveModalOpen(false)}>
+              <button
+                type="button"
+                className="btn secondary"
+                onClick={() => setMoveModalOpen(false)}
+              >
                 Cancel
               </button>
             </div>
@@ -644,20 +1100,31 @@ function StudentManagementPage() {
                   disabled={moveSectionsLoading}
                 >
                   <option value="">
-                    {moveSectionsLoading ? "Loading sections…" : "Select a section"}
+                    {moveSectionsLoading
+                      ? "Loading sections…"
+                      : "Select a section"}
                   </option>
                   {moveSections.map((s) => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
                   ))}
                 </select>
               </label>
-              <p style={{ fontSize: 11.5, color: "var(--ink-faint)", marginTop: 6 }}>
+              <p
+                style={{
+                  fontSize: 11.5,
+                  color: "var(--ink-faint)",
+                  marginTop: 6,
+                }}
+              >
                 Note: there's no "Auto" option here — the backend requires an
                 explicit target section for bulk moves.
               </p>
               {moveMutation.isError && (
                 <p style={{ color: "crimson", fontSize: 12.5, marginTop: 8 }}>
-                  {(moveMutation.error as Error)?.message ?? "Failed to move students."}
+                  {(moveMutation.error as Error)?.message ??
+                    "Failed to move students."}
                 </p>
               )}
               <button

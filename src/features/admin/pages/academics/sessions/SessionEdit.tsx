@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { AcademicSessionStatus } from "../../../api/academic";
 import {
   useSession,
   useUpdateSession,
@@ -20,9 +19,6 @@ export function SessionEdit({
   const [name, setName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [status, setStatus] = useState<AcademicSessionStatus>(
-    AcademicSessionStatus.UPCOMING,
-  );
   const [academicYearId, setAcademicYearId] = useState("");
 
   useEffect(() => {
@@ -30,7 +26,6 @@ export function SessionEdit({
       setName(session.name);
       setStartDate(toInputDate(session.startDate));
       setEndDate(toInputDate(session.endDate));
-      setStatus(session.status);
       setAcademicYearId(session.academicYearId);
     }
   }, [session]);
@@ -38,7 +33,7 @@ export function SessionEdit({
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     update.mutate(
-      { id, dto: { name, startDate, endDate, status, academicYearId } },
+      { id, dto: { name, startDate, endDate, academicYearId } },
       { onSuccess: onClose },
     );
   };
@@ -105,27 +100,6 @@ export function SessionEdit({
                   required
                   style={inputStyle}
                 />
-              </div>
-              <div className="profile-field">
-                <div className="profile-field__label">Status</div>
-                <select
-                  value={status}
-                  onChange={(e) =>
-                    setStatus(e.target.value as AcademicSessionStatus)
-                  }
-                  style={inputStyle}
-                >
-                  <option value={AcademicSessionStatus.UPCOMING}>
-                    Upcoming
-                  </option>
-                  <option value={AcademicSessionStatus.ACTIVE}>Active</option>
-                  <option value={AcademicSessionStatus.COMPLETED}>
-                    Completed
-                  </option>
-                  <option value={AcademicSessionStatus.CANCELLED}>
-                    Cancelled
-                  </option>
-                </select>
               </div>
             </div>
             <button

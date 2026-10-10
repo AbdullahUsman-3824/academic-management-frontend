@@ -158,9 +158,9 @@ export const sectionsApi = {
 
   remove: (batchId: string, sectionId: string) =>
     apiClient
-      .delete<{ message: string }>(
-        `/academics/batches/${batchId}/sections/${sectionId}`,
-      )
+      .delete<{
+        message: string;
+      }>(`/academics/batches/${batchId}/sections/${sectionId}`)
       .then((r) => r.data),
 
   moveStudents: (batchId: string, dto: MoveStudentsSectionDto) =>
@@ -181,19 +181,36 @@ export interface ProgressionStudentPreview {
   studentId: string;
   regNumber: string;
   fullName: string;
-  batchId: string;
-  batchName: string;
-  currentSemester: number;
-  targetSemester: number;
   currentSectionId: string | null;
   currentSectionName: string | null;
+}
+
+export interface ProgressionTransitionPreview {
+  fromSemester: number;
+  fromSemesterId: string | null;
+  fromSemesterName: string | null;
+  toSemester: number;
+  toSemesterId: string | null;
+  toSemesterName: string | null;
+  isFinal: boolean;
+  missingTargetSemester: boolean;
+  count: number;
+  students: ProgressionStudentPreview[];
+}
+
+export interface ProgressionBatchPreview {
+  batchId: string;
+  batchName: string;
+  totalStudents: number;
+  transitions: ProgressionTransitionPreview[];
 }
 
 export interface ProgressionPreviewResponse {
   academicSessionId: string;
   academicSessionName: string;
   totalStudents: number;
-  students: ProgressionStudentPreview[];
+  totalBatches: number;
+  batches: ProgressionBatchPreview[];
 }
 
 export interface ProgressionAdjustment {
@@ -201,14 +218,23 @@ export interface ProgressionAdjustment {
   targetSemester: number;
 }
 
+export interface ProgressionExcludedGroup {
+  batchId: string;
+  fromSemester: number;
+  toSemester: number;
+}
+
 export interface ImplementProgressionDto {
   academicSessionId: string;
   adjustments?: ProgressionAdjustment[];
+  excludedStudentIds?: string[];
+  excludedGroups?: ProgressionExcludedGroup[];
 }
 
 export interface ImplementProgressionResponse {
   message: string;
   createdCount: number;
+  skippedCount: number;
   academicSessionId: string;
 }
 
