@@ -9,6 +9,7 @@ import AcademicsSessionsPage from "./pages/academics/sessions/SessionsPage";
 import BatchesPage from "./pages/academics/BatchesPage";
 import AcademicsSetupPage from "./pages/academics/AcademicsSetupPage";
 import CoursesPage from "./pages/courses/CoursesPage";
+import BatchCourseManagementPage from "./pages/BatchCourseManagementPage";
 
 export const adminRoutes = {
   layout: AdminLayout,
@@ -28,5 +29,6 @@ export const adminRoutes = {
     { path: "students", element: <StudentManagementPage /> },
     { path: "faculty", element: <FacultyManagementPage /> },
     { path: "courses", element: <CoursesPage /> },
+    { path: "batch-courses", element: <BatchCourseManagementPage /> },
   ],
 };

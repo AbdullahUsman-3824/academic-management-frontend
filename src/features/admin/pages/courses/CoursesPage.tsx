@@ -4,8 +4,11 @@ import type { CourseStatus } from '../../../../api/courses'
 import CatalogTab from './components/CatalogTab'
 import CourseDetail from './components/CourseDetail'
 import CourseForm from './components/CourseForm'
+import SemesterCoursesTab from './components/SemesterCoursesTab'
+import AllocationsTab from './components/AllocationsTab'
+import EnrollmentsTab from './components/EnrollmentsTab'
 
-type MainTab = 'catalog' | 'allocations' | 'enrollments'
+type MainTab = 'catalog' | 'semester-courses' | 'allocations' | 'enrollments'
 
 export default function CoursesPage() {
   const [mainTab, setMainTab] = useState<MainTab>('catalog')
@@ -33,9 +36,9 @@ export default function CoursesPage() {
     <>
       <div className="topbar">
         <div>
-          <h1>Courses</h1>
+          <h1>Course Management</h1>
           <div className="today">
-            Course catalog, allocations, and enrollments.
+            Course catalog, semester mappings, allocations, and enrollments.
           </div>
         </div>
         {mainTab === 'catalog' && (
@@ -58,6 +61,7 @@ export default function CoursesPage() {
           {(
             [
               ['catalog', 'Catalog'],
+              ['semester-courses', 'Semester Courses'],
               ['allocations', 'Allocations'],
               ['enrollments', 'Enrollments'],
             ] as const
@@ -95,21 +99,11 @@ export default function CoursesPage() {
           />
         )}
 
-        {mainTab === 'allocations' && (
-          <div className="card-body">
-            <p style={{ color: 'var(--ink-faint)', margin: 0 }}>
-              Course allocations (faculty + session + section) — coming next.
-            </p>
-          </div>
-        )}
+        {mainTab === 'semester-courses' && <SemesterCoursesTab />}
 
-        {mainTab === 'enrollments' && (
-          <div className="card-body">
-            <p style={{ color: 'var(--ink-faint)', margin: 0 }}>
-              Student course enrollments — coming after allocations.
-            </p>
-          </div>
-        )}
+        {mainTab === 'allocations' && <AllocationsTab />}
+
+        {mainTab === 'enrollments' && <EnrollmentsTab />}
       </div>
 
       {creating && (
