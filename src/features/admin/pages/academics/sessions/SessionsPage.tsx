@@ -12,8 +12,10 @@ import { StatusFilterBar } from "../../../components/StatusFilterBar";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import { ProgressionModal } from "../../../components/ProgressionModal";
 import { adminPaths } from "../../../data/navData";
-import { formatDate, sessionStatusClass } from "../helpers";
-import { SessionEdit } from "./SessionEdit";
+import {
+  formatDate,
+  sessionStatusClass,
+} from "../../../helpers/academic.helpers";
 
 const SESSION_STATUS_OPTIONS = [
   { value: "all", label: "All statuses" },
@@ -66,7 +68,6 @@ export default function AcademicsSessionsPage() {
     AcademicSessionStatus | "all"
   >("all");
   const [sessionYearId, setSessionYearId] = useState<string | "all">("all");
-  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [progressionSessionId, setProgressionSessionId] = useState<
     string | null
   >(null);
@@ -131,6 +132,24 @@ export default function AcademicsSessionsPage() {
 
   return (
     <>
+          <div
+        className="card-head"
+        style={{ borderTop: "none", borderBottom: "1px solid var(--line)" }}
+      >
+        <span className="meta">
+          {isLoading
+            ? "Loading…"
+            : `${sessions.length} session${sessions.length !== 1 ? "s" : ""}`}
+        </span>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => navigate(adminPaths.academicsSessionNew)}
+        >
+          + New Session
+        </button>
+      </div>
+
       {/* ── Filters ─────────────────────────────────────────── */}
       <StatusFilterBar
         filters={[
@@ -251,14 +270,22 @@ export default function AcademicsSessionsPage() {
                     </td>
                     <td>
                       <div className="inline-actions">
-                        <button
-                          type="button"
-                          className="btn secondary"
-                          style={{ padding: "4px 10px", fontSize: 12 }}
-                          onClick={() => setEditingSessionId(s.id)}
-                        >
-                          Edit
-                        </button>
+<button
+  type="button"
+  className="btn secondary"
+  style={{ padding: "4px 10px", fontSize: 12 }}
+  onClick={() => navigate(adminPaths.academicsSessionView(s.id))}
+>
+  View
+</button>
+<button
+  type="button"
+  className="btn secondary"
+  style={{ padding: "4px 10px", fontSize: 12 }}
+  onClick={() => navigate(adminPaths.academicsSessionEdit(s.id))}
+>
+  Edit
+</button>
 
                         {showActivate && (
                           <button
@@ -302,15 +329,6 @@ export default function AcademicsSessionsPage() {
             </tbody>
           </table>
         </div>
-      )}
-
-      {/* ── Edit overlay ────────────────────────────────────── */}
-      {editingSessionId && (
-        <SessionEdit
-          id={editingSessionId}
-          years={years}
-          onClose={() => setEditingSessionId(null)}
-        />
       )}
 
       {/* ── Progression modal ───────────────────────────────── */}

@@ -1,0 +1,81 @@
+import type { FormEvent } from "react";
+import { inputStyle } from "../../helpers/academic.helpers";
+import type { YearFormValues } from "../../helpers/academic.helpers";
+
+interface Props {
+  values: YearFormValues;
+  onChange: (field: keyof YearFormValues, value: string) => void;
+  onSubmit: () => void;
+  onCancel: () => void;
+  submitting?: boolean;
+  error?: string | null;
+  submitLabel?: string;
+}
+
+export function YearForm({
+  values,
+  onChange,
+  onSubmit,
+  onCancel,
+  submitting = false,
+  error,
+  submitLabel = "Save",
+}: Props) {
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    onSubmit();
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {error && <p style={{ color: "crimson", marginBottom: 12 }}>{error}</p>}
+
+      <div className="profile-fields">
+        <div className="profile-field">
+          <div className="profile-field__label">Name</div>
+          <input
+            value={values.name}
+            onChange={(e) => onChange("name", e.target.value)}
+            placeholder="e.g. 2026-2027"
+            required
+            style={inputStyle}
+          />
+        </div>
+        <div className="profile-field">
+          <div className="profile-field__label">Start Date</div>
+          <input
+            type="date"
+            value={values.startDate}
+            onChange={(e) => onChange("startDate", e.target.value)}
+            required
+            style={inputStyle}
+          />
+        </div>
+        <div className="profile-field">
+          <div className="profile-field__label">End Date</div>
+          <input
+            type="date"
+            value={values.endDate}
+            onChange={(e) => onChange("endDate", e.target.value)}
+            required
+            style={inputStyle}
+          />
+        </div>
+      </div>
+
+      <div className="inline-actions" style={{ marginTop: 16 }}>
+        <button type="submit" className="btn" disabled={submitting}>
+          {submitting ? "Saving…" : submitLabel}
+        </button>
+        <button
+          type="button"
+          className="btn secondary"
+          onClick={onCancel}
+          disabled={submitting}
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
