@@ -1,6 +1,6 @@
-import type { Student, StudentListItem } from "../../api/students";
-import type { StudentStatus } from "../../hooks/useStudentQueries";
-import type { StudentFormValues } from "./student.types";
+import type { Student, StudentListItem } from "../api/students";
+import type { StudentStatus } from "../hooks/useStudentQueries";
+import type { StudentFormValues } from "../types/student.types";
 
 // ── Display ──────────────────────────────────────────────────────────────────
 
@@ -32,7 +32,7 @@ export function toStudentFormValues(student: Student): StudentFormValues {
     // Backend's GET /students/:id doesn't return section/session/semester —
     // they live on a separate academic-record, not the Student row — and
     // UpdateStudentDto can't save them either. These start blank in edit
-    // mode; the fields themselves are hidden there too (see StudentForm).
+    // mode, and StudentForm hides the fields entirely when mode === "edit".
     sectionId: "",
     semesterNumber: "1",
     academicSessionId: "",

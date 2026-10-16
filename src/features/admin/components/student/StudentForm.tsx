@@ -1,4 +1,4 @@
-import type { StudentFormProps } from "./student.types";
+import type { StudentFormProps } from "../../types/student.types";
 import { useState } from "react";
 import {
   Card,
@@ -44,7 +44,6 @@ export function StudentForm({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Basic validation
     if (!file.type.startsWith("image/")) {
       setImageError("Please select an image file.");
       e.target.value = "";
@@ -58,14 +57,12 @@ export function StudentForm({
 
     setImageError("");
 
-    // Convert to base64 data URL and store it in form values
     const reader = new FileReader();
     reader.onload = () => {
       onChange("profileImageUrl", reader.result as string);
     };
     reader.readAsDataURL(file);
 
-    // Reset so selecting the same file again still triggers onChange
     e.target.value = "";
   };
 
@@ -149,83 +146,91 @@ export function StudentForm({
             </TextField>
           </Grid>
 
-          {/* Section */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField
-              select
-              fullWidth
-              size="small"
-              label="Section"
-              value={values.sectionId}
-              onChange={(e) => onChange("sectionId", e.target.value)}
-              disabled={!values.batchId || sectionsLoading}
-              slotProps={{
-                select: { displayEmpty: true },
-                inputLabel: { shrink: true },
-              }}
-            >
-              <MenuItem value="">
-                <em>
-                  {!values.batchId
-                    ? "Select a batch first"
-                    : sectionsLoading
-                      ? "Loading sections…"
-                      : "AUTO"}
-                </em>
-              </MenuItem>
-              {sections.map((sec) => (
-                <MenuItem key={sec.id} value={sec.id}>
-                  {sec.name}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
+          {/* Section / Semester / Academic Session only apply at enrollment
+              time — the backend's UpdateStudentDto can't touch them post-
+              creation (they live on a separate academic-record row), so
+              hide them entirely in edit mode rather than show dead fields. */}
+          {mode === "create" && (
+            <>
+              {/* Section */}
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  select
+                  fullWidth
+                  size="small"
+                  label="Section"
+                  value={values.sectionId}
+                  onChange={(e) => onChange("sectionId", e.target.value)}
+                  disabled={!values.batchId || sectionsLoading}
+                  slotProps={{
+                    select: { displayEmpty: true },
+                    inputLabel: { shrink: true },
+                  }}
+                >
+                  <MenuItem value="">
+                    <em>
+                      {!values.batchId
+                        ? "Select a batch first"
+                        : sectionsLoading
+                          ? "Loading sections…"
+                          : "AUTO"}
+                    </em>
+                  </MenuItem>
+                  {sections.map((sec) => (
+                    <MenuItem key={sec.id} value={sec.id}>
+                      {sec.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
 
-          {/* Semester */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField
-              fullWidth
-              size="small"
-              type="number"
-              label="Semester"
-              value={values.semesterNumber}
-              onChange={handleSemesterChange}
-              slotProps={{
-                htmlInput: { min: 1, max: 8 },
-                inputLabel: { shrink: true },
-              }}
-            />
-          </Grid>
+              {/* Semester */}
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  type="number"
+                  label="Semester"
+                  value={values.semesterNumber}
+                  onChange={handleSemesterChange}
+                  slotProps={{
+                    htmlInput: { min: 1, max: 8 },
+                    inputLabel: { shrink: true },
+                  }}
+                />
+              </Grid>
 
-          {/* Academic Session */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField
-              select
-              fullWidth
-              size="small"
-              label="Academic Session"
-              value={values.academicSessionId}
-              onChange={(e) => onChange("academicSessionId", e.target.value)}
-              disabled={academicSessionsLoading}
-              slotProps={{
-                select: { displayEmpty: true },
-                inputLabel: { shrink: true },
-              }}
-            >
-              <MenuItem value="">
-                <em>
-                  {academicSessionsLoading
-                    ? "Loading sessions…"
-                    : "Select session"}
-                </em>
-              </MenuItem>
-              {academicSessions.map((sess) => (
-                <MenuItem key={sess.id} value={sess.id}>
-                  {sess.name}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
+              {/* Academic Session */}
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  select
+                  fullWidth
+                  size="small"
+                  label="Academic Session"
+                  value={values.academicSessionId}
+                  onChange={(e) => onChange("academicSessionId", e.target.value)}
+                  disabled={academicSessionsLoading}
+                  slotProps={{
+                    select: { displayEmpty: true },
+                    inputLabel: { shrink: true },
+                  }}
+                >
+                  <MenuItem value="">
+                    <em>
+                      {academicSessionsLoading
+                        ? "Loading sessions…"
+                        : "Select session"}
+                    </em>
+                  </MenuItem>
+                  {academicSessions.map((sess) => (
+                    <MenuItem key={sess.id} value={sess.id}>
+                      {sess.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+            </>
+          )}
 
           {/* Admission Date */}
           <Grid size={{ xs: 12, sm: 6 }}>

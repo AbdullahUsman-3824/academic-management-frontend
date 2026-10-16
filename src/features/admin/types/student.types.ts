@@ -1,9 +1,5 @@
-import type { Gender } from "../../api/students";
-import type { StudentStatus } from "../../hooks/useStudentQueries";
-
-// ── Page navigation ──────────────────────────────────────────────────────────
-
-export type PageView = "list" | "detail" | "create" | "edit" | "bulk";
+import type { Gender } from "../api/students";
+import type { StudentStatus } from "../hooks/useStudentQueries";
 
 // ── Form ─────────────────────────────────────────────────────────────────────
 

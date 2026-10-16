@@ -1,6 +1,9 @@
 import AdminLayout from "./components/AdminLayout";
 import DashboardPage from "./pages/DashboardPage";
-import StudentManagementPage from "./pages/student/StudentManagementPage";
+import StudentsPage from "./pages/student/StudentsPage";
+import CreateStudentPage from "./pages/student/CreateStudentPage";
+import ViewStudentPage from "./pages/student/ViewStudentPage";
+import EditStudentPage from "./pages/student/EditStudentPage";
 import FacultyManagementPage from "./pages/FacultyManagementPage";
 import AcademicsLayout from "./pages/academics/AcademicsLayout";
 import OverviewPage from "./pages/academics/OverviewPage";
@@ -25,7 +28,10 @@ export const adminRoutes = {
         { path: "setup", element: <AcademicsSetupPage /> },
       ],
     },
-    { path: "students", element: <StudentManagementPage /> },
+    { path: "students", element: <StudentsPage /> },
+    { path: "students/new", element: <CreateStudentPage /> },
+    { path: "students/:id", element: <ViewStudentPage /> },
+    { path: "students/:id/edit", element: <EditStudentPage /> },
     { path: "faculty", element: <FacultyManagementPage /> },
     { path: "courses", element: <CoursesPage /> },
   ],

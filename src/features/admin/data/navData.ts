@@ -8,9 +8,12 @@ export const adminPaths = {
   academicsBatches:  "/academics/batches",
   academicsSetup:    "/academics/setup",
   // Other sections
-  students: "/students",
-  faculty:  "/faculty",
-  courses:  "/courses",
+  students:     "/students",
+  studentNew:   "/students/new",
+  studentView:  (id: string) => `/students/${id}`,
+  studentEdit:  (id: string) => `/students/${id}/edit`,
+  faculty:      "/faculty",
+  courses:      "/courses",
 };
 
 export const adminNavItems = [
