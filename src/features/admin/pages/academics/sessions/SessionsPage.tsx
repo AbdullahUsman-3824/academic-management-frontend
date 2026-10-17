@@ -132,52 +132,36 @@ export default function AcademicsSessionsPage() {
 
   return (
     <>
-          <div
+      <div
         className="card-head"
         style={{ borderTop: "none", borderBottom: "1px solid var(--line)" }}
       >
-        <span className="meta">
-          {isLoading
-            ? "Loading…"
-            : `${sessions.length} session${sessions.length !== 1 ? "s" : ""}`}
-        </span>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => navigate(adminPaths.academicsSessionNew)}
-        >
-          + New Session
-        </button>
+        <StatusFilterBar
+          filters={[
+            {
+              id: "status",
+              label: "Status",
+              value: sessionStatus,
+              options: SESSION_STATUS_OPTIONS,
+              onChange: (v) =>
+                setSessionStatus(v as AcademicSessionStatus | "all"),
+            },
+            {
+              id: "year",
+              label: "Academic Year",
+              value: sessionYearId,
+              options: yearOptions,
+              onChange: (v) => setSessionYearId(v),
+            },
+          ]}
+          onRefresh={() => refetch()}
+          meta={
+            isLoading
+              ? "Loading…"
+              : `${sessions.length} session${sessions.length !== 1 ? "s" : ""}`
+          }
+        />
       </div>
-
-      {/* ── Filters ─────────────────────────────────────────── */}
-      <StatusFilterBar
-        filters={[
-          {
-            id: "status",
-            label: "Status",
-            value: sessionStatus,
-            options: SESSION_STATUS_OPTIONS,
-            onChange: (v) =>
-              setSessionStatus(v as AcademicSessionStatus | "all"),
-          },
-          {
-            id: "year",
-            label: "Academic Year",
-            value: sessionYearId,
-            options: yearOptions,
-            onChange: (v) => setSessionYearId(v),
-          },
-        ]}
-        onRefresh={() => refetch()}
-        meta={
-          isLoading
-            ? null
-            : `${sessions.length} session${sessions.length !== 1 ? "s" : ""}${
-                sessionStatus !== "all" ? ` · ${sessionStatus}` : ""
-              }`
-        }
-      />
 
       {/* ── Error state ─────────────────────────────────────── */}
       {isError && (
@@ -270,22 +254,19 @@ export default function AcademicsSessionsPage() {
                     </td>
                     <td>
                       <div className="inline-actions">
-<button
-  type="button"
-  className="btn secondary"
-  style={{ padding: "4px 10px", fontSize: 12 }}
-  onClick={() => navigate(adminPaths.academicsSessionView(s.id))}
->
-  View
-</button>
-<button
-  type="button"
-  className="btn secondary"
-  style={{ padding: "4px 10px", fontSize: 12 }}
-  onClick={() => navigate(adminPaths.academicsSessionEdit(s.id))}
->
-  Edit
-</button>
+                        {s.status !== AcademicSessionStatus.COMPLETED &&
+                          s.status !== AcademicSessionStatus.CANCELLED && (
+                            <button
+                              type="button"
+                              className="btn secondary"
+                              style={{ padding: "4px 10px", fontSize: 12 }}
+                              onClick={() =>
+                                navigate(adminPaths.academicsSessionEdit(s.id))
+                              }
+                            >
+                              Edit
+                            </button>
+                          )}
 
                         {showActivate && (
                           <button

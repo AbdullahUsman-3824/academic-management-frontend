@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useYear, useUpdateYear } from "../../../hooks/useAcademicQueries";
 import { YearForm } from "../../../components/academic/YearForm";
+import { AcademicYearStatus } from "../../../api/academic";
 import { adminPaths } from "../../../data/navData";
 import {
   EMPTY_YEAR_FORM,
@@ -30,11 +31,11 @@ export default function YearEdit() {
     }
   }, [year]);
 
-  const goBack = () =>
-    navigate(id ? adminPaths.academicsYearView(id) : adminPaths.academicsYears);
+  const goBack = () => navigate(adminPaths.academicsYears);
 
   const submit = () => {
-    if (!id) return;
+    if (!id || !year) return;
+    const canEditDates = year.status === AcademicYearStatus.INACTIVE;
     const problem = validateYearForm(values);
     if (problem) return setError(problem);
     setError(null);
@@ -44,8 +45,10 @@ export default function YearEdit() {
         id,
         dto: {
           name: values.name.trim(),
-          startDate: values.startDate,
-          endDate: values.endDate,
+          ...(canEditDates && {
+            startDate: values.startDate,
+            endDate: values.endDate,
+          }),
         },
       },
       {
@@ -79,6 +82,7 @@ export default function YearEdit() {
             onCancel={goBack}
             submitting={update.isPending}
             error={error}
+            readonlyDates={year.status !== AcademicYearStatus.INACTIVE}
           />
         )}
       </div>

@@ -6,6 +6,7 @@ import {
   useYears,
 } from "../../../hooks/useAcademicQueries";
 import { SessionForm } from "../../../components/academic/SessionForm";
+import { AcademicSessionStatus } from "../../../api/academic";
 import { adminPaths } from "../../../data/navData";
 import {
   EMPTY_SESSION_FORM,
@@ -36,13 +37,13 @@ export default function SessionEdit() {
     }
   }, [session]);
 
-  const goBack = () =>
-    navigate(
-      id ? adminPaths.academicsSessionView(id) : adminPaths.academicsSessions,
-    );
+  const goBack = () => navigate(adminPaths.academicsSessions);
 
   const submit = () => {
-    if (!id) return;
+    if (!id || !session) return;
+    const canEditDates =
+      session.status === AcademicSessionStatus.UPCOMING ||
+      session.status === AcademicSessionStatus.INACTIVE;
     const problem = validateSessionForm(values);
     if (problem) return setError(problem);
     setError(null);
@@ -53,9 +54,11 @@ export default function SessionEdit() {
         id,
         dto: {
           name: values.name.trim(),
-          academicYearId: values.academicYearId,
-          startDate: values.startDate,
-          endDate: values.endDate,
+          ...(canEditDates && {
+            academicYearId: values.academicYearId,
+            startDate: values.startDate,
+            endDate: values.endDate,
+          }),
         },
       },
       {
@@ -90,6 +93,10 @@ export default function SessionEdit() {
             onCancel={goBack}
             submitting={update.isPending}
             error={error}
+            readonlyDates={
+              session.status !== AcademicSessionStatus.UPCOMING &&
+              session.status !== AcademicSessionStatus.INACTIVE
+            }
           />
         )}
       </div>

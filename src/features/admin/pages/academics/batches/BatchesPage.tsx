@@ -37,32 +37,24 @@ export default function BatchesPage() {
         className="card-head"
         style={{ borderTop: "none", borderBottom: "1px solid var(--line)" }}
       >
-        <span className="meta">
-          {isLoading
-            ? "Loading…"
-            : `${batches.length} batch${batches.length !== 1 ? "es" : ""}`}
-        </span>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => navigate(adminPaths.academicsBatchNew)}
-        >
-          + New Batch
-        </button>
+        <StatusFilterBar
+          filters={[
+            {
+              id: "status",
+              label: "Status",
+              value: batchStatus,
+              options: BATCH_STATUS_OPTIONS,
+              onChange: (v) => setBatchStatus(v as BatchStatus | "all"),
+            },
+          ]}
+          onRefresh={() => refetch()}
+          meta={
+            isLoading
+              ? "Loading…"
+              : `${batches.length} batch${batches.length !== 1 ? "es" : ""}`
+          }
+        />
       </div>
-
-      <StatusFilterBar
-        filters={[
-          {
-            id: "status",
-            label: "Status",
-            value: batchStatus,
-            options: BATCH_STATUS_OPTIONS,
-            onChange: (v) => setBatchStatus(v as BatchStatus | "all"),
-          },
-        ]}
-        onRefresh={() => refetch()}
-      />
 
       {isError && (
         <div className="card-body">

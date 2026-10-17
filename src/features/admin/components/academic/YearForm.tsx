@@ -10,6 +10,8 @@ interface Props {
   submitting?: boolean;
   error?: string | null;
   submitLabel?: string;
+  /** When true, start/end date inputs are disabled (e.g. status = active) */
+  readonlyDates?: boolean;
 }
 
 export function YearForm({
@@ -20,6 +22,7 @@ export function YearForm({
   submitting = false,
   error,
   submitLabel = "Save",
+  readonlyDates = false,
 }: Props) {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -48,7 +51,9 @@ export function YearForm({
             value={values.startDate}
             onChange={(e) => onChange("startDate", e.target.value)}
             required
+            disabled={readonlyDates}
             style={inputStyle}
+            className={"disabled:bg-gray-200 disabled:cursor-not-allowed"}
           />
         </div>
         <div className="profile-field">
@@ -58,7 +63,9 @@ export function YearForm({
             value={values.endDate}
             onChange={(e) => onChange("endDate", e.target.value)}
             required
+            disabled={readonlyDates}
             style={inputStyle}
+            className={"disabled:bg-gray-200 disabled:cursor-not-allowed"}
           />
         </div>
       </div>
