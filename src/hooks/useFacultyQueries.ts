@@ -22,10 +22,11 @@ export function useFaculty(params?: {
   search?: string;
   status?: FacultyStatus;
   designation?: string;
-}) {
+}, enabled: boolean = true) {
   return useQuery({
     queryKey: facultyKeys.list(params),
     queryFn: () => api.getFaculty(params),
+    enabled, // Only fetch when enabled
   });
 }
 

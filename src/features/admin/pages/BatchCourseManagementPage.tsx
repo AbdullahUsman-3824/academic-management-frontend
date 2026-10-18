@@ -31,14 +31,14 @@ export default function BatchCourseManagementPage() {
   });
 
   // Fetch sections for selected batch
-  const { data: sections, isLoading: sectionsLoading } = useQuery({
+  const { data: sections, isLoading: sectionsLoading, error: sectionsError } = useQuery({
     queryKey: ['sections', selectedBatchId],
     queryFn: () => academicsApi.getSections(selectedBatchId),
     enabled: !!selectedBatchId,
   });
 
   // Fetch assigned courses for selected batch/semester/section
-  const { data: assignments, isLoading: assignmentsLoading, refetch } = useQuery({
+  const { data: assignments, isLoading: assignmentsLoading, error: assignmentsError, refetch } = useQuery({
     queryKey: ['batch-courses', selectedBatchId, selectedSemester, selectedSectionId],
     queryFn: () =>
       batchCoursesAPI.getAssignments({
@@ -234,12 +234,28 @@ export default function BatchCourseManagementPage() {
             </span>
           </div>
 
+          {assignmentsError && (
+            <div className="card-body" style={{ padding: 16, backgroundColor: '#fee', border: '1px solid #f88' }}>
+              <p style={{ color: '#d00', margin: 0 }}>
+                <strong>Error loading assignments:</strong> {(assignmentsError as any)?.response?.data?.message || (assignmentsError as Error).message || 'Unknown error'}
+              </p>
+            </div>
+          )}
+
+          {sectionsError && (
+            <div className="card-body" style={{ padding: 16, backgroundColor: '#fee', border: '1px solid #f88' }}>
+              <p style={{ color: '#d00', margin: 0 }}>
+                <strong>Error loading sections:</strong> {(sectionsError as any)?.response?.data?.message || (sectionsError as Error).message || 'Unknown error'}
+              </p>
+            </div>
+          )}
+
           {assignmentsLoading ? (
             <LoadingSpinner label="Loading assignments…" />
           ) : assignments?.length === 0 ? (
             <div className="card-body" style={{ textAlign: 'center', padding: 32 }}>
               <p style={{ color: 'var(--ink-faint)', fontStyle: 'italic' }}>
-                No courses assigned yet. Click "Assign Courses" to add courses to this batch/semester.
+                No courses assigned yet. Click "Copy from Template" to add courses to this batch/semester.
               </p>
             </div>
           ) : (

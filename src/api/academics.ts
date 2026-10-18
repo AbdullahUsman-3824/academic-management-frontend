@@ -115,7 +115,7 @@ export const academicsApi = {
 
   // Sections
   getSections: (batchId: string) =>
-    api.get<Section[]>(`/batches/${batchId}/sections`).then((r) => r.data),
+    api.get<Section[]>(`/academics/batches/${batchId}/sections`).then((r) => r.data),
 
   // Progression
   checkProgression: () =>

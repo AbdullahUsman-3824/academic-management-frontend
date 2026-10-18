@@ -6,25 +6,29 @@ export const allocationKeys = {
   list: (params?: {
     facultyId?: string
     sectionId?: string
-    semesterId?: string
-    academicSessionId?: string
+    semesterNumber?: number
     status?: string
+    page?: number
+    limit?: number
   }) => [...allocationKeys.all, 'list', params] as const,
   detail: (id: string) => [...allocationKeys.all, 'detail', id] as const,
-  sectionSemester: (sectionId: string, semesterId: string) =>
-    [...allocationKeys.all, 'section-semester', sectionId, semesterId] as const,
+  sectionSemester: (sectionId: string, semesterNumber: number) =>
+    [...allocationKeys.all, 'section-semester', sectionId, semesterNumber] as const,
 }
 
 export function useAllocations(params?: {
   facultyId?: string
   sectionId?: string
-  semesterId?: string
-  academicSessionId?: string
+  semesterNumber?: number
   status?: string
+  page?: number
+  limit?: number
 }) {
   return useQuery({
     queryKey: allocationKeys.list(params),
     queryFn: () => api.getAllocations(params),
+    // Only fetch when sectionId is provided
+    enabled: !!params?.sectionId,
   })
 }
 
@@ -38,16 +42,16 @@ export function useAllocation(id: string | null) {
 
 export function useAllocationsBySectionSemester(
   sectionId: string | null,
-  semesterId: string | null,
+  semesterNumber: number | null,
 ) {
   return useQuery({
     queryKey: allocationKeys.sectionSemester(
       sectionId ?? '',
-      semesterId ?? '',
+      semesterNumber ?? 0,
     ),
     queryFn: () =>
-      api.getAllocationsBySectionSemester(sectionId!, semesterId!),
-    enabled: !!sectionId && !!semesterId,
+      api.getAllocationsBySectionSemester(sectionId!, semesterNumber!),
+    enabled: !!sectionId && semesterNumber !== null,
   })
 }
 

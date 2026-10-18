@@ -9,6 +9,12 @@ export const enrollmentKeys = {
     studentAcademicRecordId?: string
     courseId?: string
     status?: EnrollmentStatus
+    search?: string
+    batchId?: string
+    sectionId?: string
+    studentStatus?: string
+    page?: number
+    limit?: number
   }) => [...enrollmentKeys.all, 'list', params] as const,
   detail: (id: string) => [...enrollmentKeys.all, 'detail', id] as const,
   byStudent: (studentId: string, academicSessionId?: string) =>
@@ -22,10 +28,17 @@ export function useEnrollments(params?: {
   studentAcademicRecordId?: string
   courseId?: string
   status?: EnrollmentStatus
+  search?: string
+  batchId?: string
+  sectionId?: string
+  studentStatus?: string
+  page?: number
+  limit?: number
 }) {
   return useQuery({
     queryKey: enrollmentKeys.list(params),
     queryFn: () => api.getEnrollments(params),
+    enabled: !!params && !!params.batchId, // Only fetch if batch is selected
   })
 }
 
@@ -106,6 +119,16 @@ export function useDeleteEnrollment() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: api.deleteEnrollment,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: enrollmentKeys.all })
+    },
+  })
+}
+
+export function useBulkReEnroll() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: api.bulkReEnroll,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: enrollmentKeys.all })
     },

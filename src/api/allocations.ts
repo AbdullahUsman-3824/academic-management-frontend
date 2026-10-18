@@ -5,7 +5,7 @@ export interface Allocation {
   facultyId: string
   courseId: string
   sectionId: string
-  semesterId: string
+  semesterNumber: number
   academicSessionId: string
   status: string
   createdAt: string
@@ -63,16 +63,16 @@ export interface CreateAllocationPayload {
   facultyId: string
   courseId: string
   sectionId: string
-  semesterId: string
-  academicSessionId?: string
+  // semesterNumber removed - automatically derived from section's current semester
+  // academicSessionId removed - always uses active session
 }
 
 export interface BulkCreateAllocationsPayload {
   facultyId: string
   courseIds: string[]
   sectionId: string
-  semesterId: string
-  academicSessionId?: string
+  // semesterNumber removed - automatically derived from section's current semester
+  // academicSessionId removed - always uses active session
 }
 
 export interface BulkCreateResult {
@@ -91,6 +91,12 @@ export interface BulkCreateResult {
 type ApiList = {
   success: boolean
   data: Allocation[]
+  pagination: {
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+  }
 }
 
 type ApiOne = {
@@ -108,15 +114,29 @@ type ApiStatusList = {
   data: AllocationWithCourseStatus[]
 }
 
+export interface PaginatedAllocations {
+  data: Allocation[]
+  pagination: {
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+  }
+}
+
 export async function getAllocations(params?: {
   facultyId?: string
   sectionId?: string
-  semesterId?: string
-  academicSessionId?: string
+  semesterNumber?: number
   status?: string
-}): Promise<Allocation[]> {
+  page?: number
+  limit?: number
+}): Promise<PaginatedAllocations> {
   const { data } = await apiClient.get<ApiList>('/allocations', { params })
-  return data.data
+  return {
+    data: data.data,
+    pagination: data.pagination,
+  }
 }
 
 export async function getAllocation(id: string): Promise<Allocation> {
@@ -126,10 +146,10 @@ export async function getAllocation(id: string): Promise<Allocation> {
 
 export async function getAllocationsBySectionSemester(
   sectionId: string,
-  semesterId: string,
+  semesterNumber: number,
 ): Promise<AllocationWithCourseStatus[]> {
   const { data } = await apiClient.get<ApiStatusList>(
-    `/allocations/section/${sectionId}/semester/${semesterId}`,
+    `/allocations/section/${sectionId}/semester/${semesterNumber}`,
   )
   return data.data
 }

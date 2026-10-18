@@ -4,6 +4,8 @@
   color: var(--ink);
   background: var(--paper);
   min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .student-portal :focus-visible {
@@ -15,7 +17,8 @@
 .student-portal .shell {
   display: grid;
   grid-template-columns: 222px 1fr;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* ---------- Sidebar ---------- */
@@ -106,6 +109,14 @@
   margin-top: 8px;
   padding-top: 14px;
   border-radius: 0;
+  background: transparent !important;
+  border: none !important;
+  color: #fff !important;
+  opacity: 0.8;
+}
+.student-portal .logout-item:hover {
+  background: rgba(255,255,255,.1) !important;
+  opacity: 1;
 }
 
 /* ---------- Sidebar profile card ---------- */
@@ -126,7 +137,8 @@
 .student-portal .sidebar-profile:hover  { background: rgba(255,255,255,.15); }
 .student-portal .sidebar-profile.active { background: rgba(255,255,255,.2); border-color: rgba(255,255,255,.3); }
 
-.student-portal .sidebar-profile__avatar {
+.student-portal .sidebar-profile__avatar,
+.student-portal .sidebar-profile .avatar {
   width: 34px;
   height: 34px;
   border-radius: 50%;
@@ -144,7 +156,8 @@
   min-width: 0;
 }
 
-.student-portal .sidebar-profile__name {
+.student-portal .sidebar-profile__name,
+.student-portal .sidebar-profile .profile-name {
   font-size: 13px;
   font-weight: 700;
   color: #fff;
@@ -153,7 +166,8 @@
   text-overflow: ellipsis;
 }
 
-.student-portal .sidebar-profile__reg {
+.student-portal .sidebar-profile__reg,
+.student-portal .sidebar-profile .profile-role {
   font-family: var(--font-mono);
   font-size: 10.5px;
   color: rgba(255,255,255,.65);
@@ -220,35 +234,83 @@
   display: none; /* mounted in DOM but hidden by default */
 }
 
+/* ---------- Mobile drawer ---------- */
+.student-portal .drawer {
+  display: none; /* hidden by default on desktop */
+}
+
+/* ---------- Drawer close button ---------- */
+.student-portal .drawer-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255,255,255,.15);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  z-index: 10;
+}
+.student-portal .drawer-close:hover { background: rgba(255,255,255,.25); }
+.student-portal .drawer-close svg { width: 20px; height: 20px; }
+
+/* ---------- Menu button ---------- */
+.student-portal .menu-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.student-portal .menu-btn:hover { background: rgba(255,255,255,.15); }
+.student-portal .menu-btn svg { width: 22px; height: 22px; }
+
 /* ---------- Drawer backdrop ---------- */
-.student-portal .drawer-backdrop {
+.student-portal .drawer-backdrop,
+.student-portal .drawer-overlay {
   display: none;
 }
 
 /* ---------- Main content ---------- */
-.student-portal main {
+.student-portal main,
+.student-portal .portal-main {
   padding: 28px 32px 50px;
   min-width: 0; /* prevent grid blowout */
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* ---------- Topbar (page header row) ---------- */
 .student-portal .topbar {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 16px;
   margin-bottom: 22px;
 }
 
 .student-portal h1 {
   font-size: 20px;
-  margin: 0 0 4px;
+  margin: 0;
   font-weight: 700;
+  line-height: 1.3;
 }
 .student-portal .today {
   font-size: 12.5px;
   color: var(--ink-soft);
+  margin-top: 4px;
 }
 
 /* Right side of topbar: tags + profile link */
@@ -546,8 +608,7 @@
 
 /* ---------- Buttons ---------- */
 .student-portal .btn {
-  display: block;
-  width: 100%;
+  display: inline-block;
   text-align: center;
   padding: 9px 14px;
   background: var(--green-900);
@@ -556,10 +617,11 @@
   font-size: 13px;
   font-weight: 700;
   border: none;
-  margin-top: 14px;
   cursor: pointer;
   text-decoration: none;
   transition: background 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .student-portal .btn:hover { background: var(--green-800); }
 .student-portal .btn.secondary {
@@ -567,9 +629,12 @@
   color: var(--green-900);
   border: 1px solid var(--line);
   font-weight: 500;
-  margin-top: 8px;
 }
 .student-portal .btn.secondary:hover { background: var(--green-100); }
+.student-portal .btn.primary {
+  background: var(--green-900);
+  color: #fff;
+}
 
 /* ---------- Announcements ---------- */
 .student-portal .announce {
@@ -658,9 +723,12 @@
 @media (max-width: 1024px) {
   .student-portal .shell {
     grid-template-columns: 200px 1fr;
+    height: 100vh;
   }
-  .student-portal main {
+  .student-portal main,
+  .student-portal .portal-main {
     padding: 24px 24px 40px;
+    height: 100vh;
   }
   .student-portal .layout {
     grid-template-columns: 1.4fr 1fr;
@@ -674,6 +742,10 @@
 /* ---- Mobile: ≤ 768px ---- */
 @media (max-width: 768px) {
 
+  .student-portal {
+    height: 100dvh;
+  }
+
   /* Show the mobile topbar, hide the desktop sidebar */
   .student-portal .mobile-topbar {
     display: flex;
@@ -682,6 +754,7 @@
   /* Shell becomes single column; sidebar removed from flow */
   .student-portal .shell {
     grid-template-columns: 1fr;
+    height: 100dvh;
   }
 
   /* Desktop sidebar — visually hidden but still in the grid (zero-width) */
@@ -707,8 +780,30 @@
     transform: translateX(0);
   }
 
+  /* Mobile drawer */
+  .student-portal .drawer {
+    display: flex;
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 260px;
+    height: 100dvh;
+    z-index: 300;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    overflow-y: auto;
+    background: var(--green-900);
+    color: #fff;
+    padding: 20px 16px;
+    flex-direction: column;
+    box-shadow: 4px 0 24px rgba(0,0,0,.25);
+  }
+  .student-portal .drawer.open {
+    transform: translateX(0);
+  }
+
   /* Backdrop */
-  .student-portal .drawer-backdrop {
+  .student-portal .drawer-backdrop,
+  .student-portal .drawer-overlay {
     display: block;
     position: fixed;
     inset: 0;
@@ -722,8 +817,10 @@
   }
 
   /* Main padding */
-  .student-portal main {
+  .student-portal main,
+  .student-portal .portal-main {
     padding: 20px 16px 40px;
+    height: calc(100dvh - 56px);
   }
 
   /* Page heading */

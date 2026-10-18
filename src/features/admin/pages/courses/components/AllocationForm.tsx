@@ -1,12 +1,12 @@
-import { useState } from 'react'
-import { useCourses } from '../../../../../hooks/useCourseQueries'
+import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import {
   useCreateAllocation,
   useBulkCreateAllocations,
 } from '../../../../../hooks/useAllocationQueries'
-import { useSemesters } from '../../../../../hooks/useSemesterCourseQueries'
-import { useBatches, useEnrollmentSections, useAcademicSessionsList } from '../../../hooks/useAcademicQueries'
+import { useBatches, useEnrollmentSections } from '../../../hooks/useAcademicQueries'
 import { useFaculty } from '../../../../../hooks/useFacultyQueries'
+import apiClient from '../../../../../api/client'
 
 type Props = {
   onClose: () => void
@@ -14,27 +14,57 @@ type Props = {
 
 type FormMode = 'single' | 'bulk'
 
+type AssignedCourse = {
+  id: string
+  code: string
+  name: string
+}
+
 export default function AllocationForm({ onClose }: Props) {
   const [mode, setMode] = useState<FormMode>('single')
   const [facultyId, setFacultyId] = useState('')
   const [courseId, setCourseId] = useState('')
   const [courseIds, setCourseIds] = useState<string[]>([])
   const [sectionId, setSectionId] = useState('')
-  const [semesterId, setSemesterId] = useState('')
-  const [sessionId, setSessionId] = useState('')
   const [batchId, setBatchId] = useState('')
+  const [semesterNumber, setSemesterNumber] = useState<number | null>(null)
 
-  const { data: coursesData } = useCourses({ status: 'active' })
-  const { data: semesters } = useSemesters()
-  const { data: batches } = useBatches('active')
+  const { data: batches } = useBatches('ACTIVE')
   const { data: sections } = useEnrollmentSections(batchId || null)
-  const { data: sessions } = useAcademicSessionsList()
   const { data: facultyData } = useFaculty({ status: 'active' })
 
   const createMutation = useCreateAllocation()
   const bulkMutation = useBulkCreateAllocations()
 
-  const courses = coursesData?.data ?? []
+  // Fetch semester number when section is selected
+  useEffect(() => {
+    if (sectionId) {
+      apiClient
+        .get(`/academics/sections/${sectionId}/semester`)
+        .then((res) => setSemesterNumber(res.data.data.semesterNumber))
+        .catch(() => setSemesterNumber(null))
+    } else {
+      setSemesterNumber(null)
+    }
+  }, [sectionId])
+
+  // Fetch assigned courses for selected batch/semester/section
+  const { data: assignedCoursesData, isLoading: isLoadingCourses } = useQuery({
+    queryKey: ['assignedCourses', batchId, semesterNumber, sectionId],
+    queryFn: async () => {
+      const params = new URLSearchParams()
+      if (sectionId) {
+        params.append('sectionId', sectionId)
+      }
+      const queryString = params.toString()
+      const url = `/allocations/assigned-courses/${batchId}/${semesterNumber}${queryString ? `?${queryString}` : ''}`
+      const res = await apiClient.get(url)
+      return res.data.data
+    },
+    enabled: !!batchId && semesterNumber !== null && !!sectionId,
+  })
+
+  const courses: AssignedCourse[] = assignedCoursesData ?? []
   const faculty = facultyData?.data ?? []
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,7 +76,7 @@ export default function AllocationForm({ onClose }: Props) {
     }
 
     if (mode === 'single') {
-      if (!courseId || !sectionId || !semesterId) {
+      if (!courseId || !sectionId) {
         alert('Please fill all required fields')
         return
       }
@@ -55,12 +85,10 @@ export default function AllocationForm({ onClose }: Props) {
         facultyId,
         courseId,
         sectionId,
-        semesterId,
-        academicSessionId: sessionId || undefined,
       })
       onClose()
     } else {
-      if (courseIds.length === 0 || !sectionId || !semesterId) {
+      if (courseIds.length === 0 || !sectionId) {
         alert('Please select courses and fill all required fields')
         return
       }
@@ -69,8 +97,6 @@ export default function AllocationForm({ onClose }: Props) {
         facultyId,
         courseIds,
         sectionId,
-        semesterId,
-        academicSessionId: sessionId || undefined,
       })
       onClose()
     }
@@ -156,100 +182,6 @@ export default function AllocationForm({ onClose }: Props) {
             </select>
           </div>
 
-          {mode === 'single' && (
-            <div style={{ marginBottom: 16 }}>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: 13,
-                  fontWeight: 500,
-                  marginBottom: 6,
-                }}
-              >
-                Course <span style={{ color: 'var(--red)' }}>*</span>
-              </label>
-              <select
-                value={courseId}
-                onChange={(e) => setCourseId(e.target.value)}
-                required
-                style={{
-                  width: '100%',
-                  padding: '8px 10px',
-                  borderRadius: 5,
-                  border: '1px solid var(--line)',
-                  fontSize: 13,
-                }}
-              >
-                <option value="">Select Course</option>
-                {courses.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.code} - {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {mode === 'bulk' && (
-            <div style={{ marginBottom: 16 }}>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: 13,
-                  fontWeight: 500,
-                  marginBottom: 6,
-                }}
-              >
-                Courses <span style={{ color: 'var(--red)' }}>*</span>
-              </label>
-              <div
-                style={{
-                  maxHeight: 200,
-                  overflow: 'auto',
-                  border: '1px solid var(--line)',
-                  borderRadius: 5,
-                  padding: 8,
-                }}
-              >
-                {courses.map((c) => (
-                  <label
-                    key={c.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      padding: '4px 0',
-                      fontSize: 13,
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={courseIds.includes(c.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setCourseIds([...courseIds, c.id])
-                        } else {
-                          setCourseIds(courseIds.filter((id) => id !== c.id))
-                        }
-                      }}
-                    />
-                    {c.code} - {c.name}
-                  </label>
-                ))}
-              </div>
-              <p
-                style={{
-                  fontSize: 11,
-                  color: 'var(--ink-faint)',
-                  marginTop: 4,
-                  marginBottom: 0,
-                }}
-              >
-                {courseIds.length} selected
-              </p>
-            </div>
-          )}
-
           <div style={{ marginBottom: 16 }}>
             <label
               style={{
@@ -266,6 +198,8 @@ export default function AllocationForm({ onClose }: Props) {
               onChange={(e) => {
                 setBatchId(e.target.value)
                 setSectionId('')
+                setCourseId('')
+                setCourseIds([])
               }}
               required
               style={{
@@ -298,7 +232,11 @@ export default function AllocationForm({ onClose }: Props) {
             </label>
             <select
               value={sectionId}
-              onChange={(e) => setSectionId(e.target.value)}
+              onChange={(e) => {
+                setSectionId(e.target.value)
+                setCourseId('')
+                setCourseIds([])
+              }}
               required
               disabled={!batchId}
               style={{
@@ -316,70 +254,144 @@ export default function AllocationForm({ onClose }: Props) {
                 </option>
               ))}
             </select>
+            <p
+              style={{
+                fontSize: 11,
+                color: 'var(--ink-faint)',
+                marginTop: 4,
+                marginBottom: 0,
+              }}
+            >
+              {semesterNumber !== null 
+                ? `Semester ${semesterNumber} • Showing ${courses.length} assigned course${courses.length !== 1 ? 's' : ''}`
+                : 'Semester is automatically determined from section\'s current progress'}
+            </p>
           </div>
 
-          <div style={{ marginBottom: 16 }}>
-            <label
-              style={{
-                display: 'block',
-                fontSize: 13,
-                fontWeight: 500,
-                marginBottom: 6,
-              }}
-            >
-              Semester <span style={{ color: 'var(--red)' }}>*</span>
-            </label>
-            <select
-              value={semesterId}
-              onChange={(e) => setSemesterId(e.target.value)}
-              required
-              style={{
-                width: '100%',
-                padding: '8px 10px',
-                borderRadius: 5,
-                border: '1px solid var(--line)',
-                fontSize: 13,
-              }}
-            >
-              <option value="">Select Semester</option>
-              {semesters?.map((sem) => (
-                <option key={sem.id} value={sem.id}>
-                  {sem.displayName}
+          {mode === 'single' && (
+            <div style={{ marginBottom: 16 }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  marginBottom: 6,
+                }}
+              >
+                Course <span style={{ color: 'var(--red)' }}>*</span>
+              </label>
+              <select
+                value={courseId}
+                onChange={(e) => setCourseId(e.target.value)}
+                required
+                disabled={!sectionId || isLoadingCourses || courses.length === 0}
+                style={{
+                  width: '100%',
+                  padding: '8px 10px',
+                  borderRadius: 5,
+                  border: '1px solid var(--line)',
+                  fontSize: 13,
+                }}
+              >
+                <option value="">
+                  {isLoadingCourses 
+                    ? 'Loading courses...' 
+                    : courses.length === 0 
+                      ? 'No courses assigned to this batch/section' 
+                      : 'Select Course'}
                 </option>
-              ))}
-            </select>
-          </div>
+                {courses.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.code} - {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
-          <div style={{ marginBottom: 16 }}>
-            <label
-              style={{
-                display: 'block',
-                fontSize: 13,
-                fontWeight: 500,
-                marginBottom: 6,
-              }}
-            >
-              Academic Session (Optional)
-            </label>
-            <select
-              value={sessionId}
-              onChange={(e) => setSessionId(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px 10px',
-                borderRadius: 5,
-                border: '1px solid var(--line)',
-                fontSize: 13,
-              }}
-            >
-              <option value="">Use Current Session</option>
-              {sessions?.map((sess) => (
-                <option key={sess.id} value={sess.id}>
-                  {sess.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          {mode === 'bulk' && (
+            <div style={{ marginBottom: 16 }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  marginBottom: 6,
+                }}
+              >
+                Courses <span style={{ color: 'var(--red)' }}>*</span>
+              </label>
+              {isLoadingCourses ? (
+                <div style={{ 
+                  padding: '12px',
+                  textAlign: 'center',
+                  color: 'var(--ink-faint)',
+                  fontSize: 13,
+                  border: '1px solid var(--line)',
+                  borderRadius: 5,
+                }}>
+                  Loading courses...
+                </div>
+              ) : courses.length === 0 ? (
+                <div style={{ 
+                  padding: '12px',
+                  textAlign: 'center',
+                  color: 'var(--ink-faint)',
+                  fontSize: 13,
+                  border: '1px solid var(--line)',
+                  borderRadius: 5,
+                }}>
+                  No courses assigned to this batch/section
+                </div>
+              ) : (
+                <div
+                  style={{
+                    maxHeight: 200,
+                    overflow: 'auto',
+                    border: '1px solid var(--line)',
+                    borderRadius: 5,
+                    padding: 8,
+                  }}
+                >
+                  {courses.map((c) => (
+                    <label
+                      key={c.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        padding: '4px 0',
+                        fontSize: 13,
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={courseIds.includes(c.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setCourseIds([...courseIds, c.id])
+                          } else {
+                            setCourseIds(courseIds.filter((id) => id !== c.id))
+                          }
+                        }}
+                      />
+                      {c.code} - {c.name}
+                    </label>
+                  ))}
+                </div>
+              )}
+              <p
+                style={{
+                  fontSize: 11,
+                  color: 'var(--ink-faint)',
+                  marginTop: 4,
+                  marginBottom: 0,
+                }}
+              >
+                {courseIds.length} selected
+              </p>
+            </div>
+          )}
 
           <div
             style={{

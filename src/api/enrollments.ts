@@ -32,6 +32,13 @@ export interface Enrollment {
       firstName: string
       middleName?: string | null
       lastName: string
+      cnic?: string | null
+      status?: string
+      batchId?: string
+      batch?: {
+        id: string
+        name: string
+      }
     }
   }
 }
@@ -44,10 +51,37 @@ export interface EnrollmentStats {
   extraCourses: number
 }
 
+export interface AvailableAllocation {
+  id: string
+  courseId: string
+  course: {
+    id: string
+    code: string
+    name: string
+    creditHours: number
+  }
+  semesterNumber: number
+  section: {
+    id: string
+    name: string
+    batch: {
+      id: string
+      name: string
+    }
+  }
+  faculty: {
+    id: string
+    employeeNumber: string
+    name: string
+  }
+  displayText: string
+}
+
 export interface CreateEnrollmentPayload {
   studentAcademicRecordId: string
   courseId: string
   isExtra?: boolean
+  allocationId?: string // Required when isExtra is true
 }
 
 export interface BulkEnrollPayload {
@@ -76,6 +110,12 @@ export interface UpdateEnrollmentStatusPayload {
 type ApiList = {
   success: boolean
   data: Enrollment[]
+  pagination: {
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+  }
 }
 
 type ApiOne = {
@@ -93,14 +133,33 @@ type ApiStats = {
   data: EnrollmentStats
 }
 
+export interface PaginatedEnrollments {
+  data: Enrollment[]
+  pagination: {
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+  }
+}
+
 export async function getEnrollments(params?: {
   studentId?: string
   studentAcademicRecordId?: string
   courseId?: string
   status?: EnrollmentStatus
-}): Promise<Enrollment[]> {
+  search?: string
+  batchId?: string
+  sectionId?: string
+  studentStatus?: string
+  page?: number
+  limit?: number
+}): Promise<PaginatedEnrollments> {
   const { data } = await apiClient.get<ApiList>('/enrollments', { params })
-  return data.data
+  return {
+    data: data.data,
+    pagination: data.pagination,
+  }
 }
 
 export async function getEnrollment(id: string): Promise<Enrollment> {
@@ -126,6 +185,15 @@ export async function getEnrollmentStats(
 ): Promise<EnrollmentStats> {
   const { data } = await apiClient.get<ApiStats>(
     `/enrollments/stats/${studentAcademicRecordId}`,
+  )
+  return data.data
+}
+
+export async function getAvailableAllocations(
+  courseId: string,
+): Promise<AvailableAllocation[]> {
+  const { data } = await apiClient.get<{ success: boolean; data: AvailableAllocation[] }>(
+    `/enrollments/available-allocations/${courseId}`,
   )
   return data.data
 }
@@ -162,4 +230,48 @@ export async function dropEnrollment(id: string): Promise<Enrollment> {
 
 export async function deleteEnrollment(id: string): Promise<void> {
   await apiClient.delete(`/enrollments/${id}`)
+}
+
+export interface BulkReEnrollPayload {
+  batchId?: string
+  academicSessionId?: string
+  dryRun?: boolean
+}
+
+export interface BulkReEnrollResult {
+  dryRun: boolean
+  summary: {
+    totalStudentsFound: number
+    studentsProcessed: number
+    studentsSkipped: number
+    totalEnrollmentsCreated: number
+    totalErrors: number
+  }
+  students: Array<{
+    studentId: string
+    studentName: string
+    studentNumber: string
+    recordId: string
+    batchId: string
+    semesterNumber: number
+    enrollmentsBefore: number
+    enrollmentsCreated: number
+    coursesEnrolled: Array<{
+      courseCode: string
+      courseName: string
+    }>
+    errors: Array<{ courseId: string; error: string }>
+  }>
+  errors: Array<{ studentId: string; error: string }>
+}
+
+export async function bulkReEnroll(
+  payload: BulkReEnrollPayload,
+): Promise<BulkReEnrollResult> {
+  const { data } = await apiClient.post<{
+    success: boolean
+    message: string
+    data: BulkReEnrollResult
+  }>('/enrollments/bulk-re-enroll', payload)
+  return data.data
 }

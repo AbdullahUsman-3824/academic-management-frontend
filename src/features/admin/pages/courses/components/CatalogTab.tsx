@@ -1,6 +1,5 @@
 import { useUpdateCourseStatus } from '../../../../../hooks/useCourseQueries'
-import type { CourseStatus } from '../../../../../api/courses'
-import type { useCourses } from '../../../../../hooks/useCourseQueries'
+import type { CourseStatus, CoursesListResult } from '../../../../../api/courses'
 
 const statusClass: Record<CourseStatus, string> = {
   active: 'active',
@@ -24,7 +23,11 @@ type Props = {
   onSearch: () => void
   page: number
   setPage: (p: number) => void
-  list: ReturnType<typeof useCourses>
+  data: CoursesListResult | undefined
+  isLoading: boolean
+  isError: boolean
+  error: Error | null
+  refetch: () => void
   onView: (id: string) => void
   onEdit: (id: string) => void
 }
@@ -37,11 +40,14 @@ export default function CatalogTab({
   onSearch,
   page,
   setPage,
-  list,
+  data,
+  isLoading,
+  isError,
+  error,
+  refetch,
   onView,
   onEdit,
 }: Props) {
-  const { data, isLoading, isError, error, refetch } = list
   const statusMutation = useUpdateCourseStatus()
   const rows = data?.data ?? []
   const meta = data?.meta

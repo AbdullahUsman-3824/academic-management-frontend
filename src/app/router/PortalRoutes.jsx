@@ -2,13 +2,13 @@ import { useRoutes } from "react-router-dom";
 import { usePortal } from "../providers/PortalContext";
 import { studentRoutes } from "../../features/student/routes";
 import { adminRoutes } from "../../features/admin/routes";
-// import { facultyRoutes } from "../../features/faculty/routes";
+import { facultyRoutes } from "../../features/faculty/routes";
 // import { financeRoutes } from "../../features/finance/routes";
 
 const portalRoutes = {
   student: studentRoutes,
   admin: adminRoutes,
-  //   faculty: facultyRoutes,
+  faculty: facultyRoutes,
   //   finance: financeRoutes,
 };
 

@@ -89,7 +89,11 @@ export default function CoursesPage() {
             onSearch={applySearch}
             page={page}
             setPage={setPage}
-            list={list}
+            data={list.data}
+            isLoading={list.isLoading}
+            isError={list.isError}
+            error={list.error}
+            refetch={list.refetch}
             onView={setSelectedId}
             onEdit={(id) => {
               setEditingId(id)

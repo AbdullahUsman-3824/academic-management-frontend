@@ -1,14 +1,15 @@
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import {
   useEnrollments,
-  useEnrollmentsByStudent,
   useUpdateEnrollmentStatus,
   useDropEnrollment,
   useDeleteEnrollment,
 } from '../../../../../hooks/useEnrollmentQueries'
-import { useStudents } from '../../../hooks/useStudentQueries'
+import { academicsApi } from '../../../../../api/academics'
 import type { EnrollmentStatus } from '../../../../../api/enrollments'
 import EnrollmentForm from './EnrollmentForm'
+import BulkReEnrollModal from './BulkReEnrollModal'
 
 const statusClass: Record<EnrollmentStatus, string> = {
   enrolled: 'active',
@@ -19,32 +20,50 @@ const statusClass: Record<EnrollmentStatus, string> = {
 }
 
 export default function EnrollmentsTab() {
-  const [selectedStudentId, setSelectedStudentId] = useState<string>('')
   const [statusFilter, setStatusFilter] = useState<EnrollmentStatus | 'all'>(
     'all',
   )
   const [showForm, setShowForm] = useState(false)
+  const [showBulkReEnroll, setShowBulkReEnroll] = useState(false)
+  
+  // Search filters
+  const [batchFilter, setBatchFilter] = useState<string>('')
+  const [sectionFilter, setSectionFilter] = useState<string>('')
   const [searchInput, setSearchInput] = useState('')
+  const [appliedSearch, setAppliedSearch] = useState('')
+  const [page, setPage] = useState(1)
 
-  const { data: studentsData } = useStudents({
-    search: searchInput || undefined,
-    status: 'active',
+  // Fetch batches for filter
+  const { data: batches } = useQuery({
+    queryKey: ['batches'],
+    queryFn: academicsApi.getBatches,
   })
 
+  // Fetch sections when batch is selected
+  const { data: sections } = useQuery({
+    queryKey: ['sections', batchFilter],
+    queryFn: () => academicsApi.getSections(batchFilter),
+    enabled: !!batchFilter,
+  })
+
+  // Fetch enrollments with pagination
   const {
-    data: enrollments,
+    data: enrollmentsResult,
     isLoading,
+    error,
     refetch,
   } = useEnrollments({
-    studentId: selectedStudentId || undefined,
     status: statusFilter !== 'all' ? statusFilter : undefined,
+    batchId: batchFilter || undefined,
+    sectionId: sectionFilter || undefined,
+    search: appliedSearch || undefined,
+    page,
+    limit: 20,
   })
 
   const updateStatusMutation = useUpdateEnrollmentStatus()
   const dropMutation = useDropEnrollment()
   const deleteMutation = useDeleteEnrollment()
-
-  const students = studentsData?.data ?? []
 
   const handleUpdateStatus = async (id: string, status: EnrollmentStatus) => {
     if (!confirm(`Change status to ${status}?`)) return
@@ -60,6 +79,20 @@ export default function EnrollmentsTab() {
     if (!confirm('Permanently delete this enrollment?')) return
     await deleteMutation.mutateAsync(id)
   }
+
+  const handleSearch = () => {
+    setAppliedSearch(searchInput.trim())
+    setPage(1)
+  }
+
+  const handleClearSearch = () => {
+    setSearchInput('')
+    setAppliedSearch('')
+    setPage(1)
+  }
+
+  const enrollments = enrollmentsResult?.data || []
+  const pagination = enrollmentsResult?.pagination
 
   const statuses: (EnrollmentStatus | 'all')[] = [
     'all',
@@ -78,7 +111,10 @@ export default function EnrollmentsTab() {
             key={s}
             type="button"
             className={`tab-btn${statusFilter === s ? ' active' : ''}`}
-            onClick={() => setStatusFilter(s)}
+            onClick={() => {
+              setStatusFilter(s)
+              setPage(1)
+            }}
           >
             {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
           </button>
@@ -98,49 +134,131 @@ export default function EnrollmentsTab() {
             flex: 1,
           }}
         >
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search students..."
-            style={{
-              padding: '6px 10px',
-              borderRadius: 5,
-              border: '1px solid var(--line)',
-              fontSize: 13,
-              minWidth: 200,
-            }}
-          />
-
           <select
-            value={selectedStudentId}
-            onChange={(e) => setSelectedStudentId(e.target.value)}
+            value={batchFilter}
+            onChange={(e) => {
+              setBatchFilter(e.target.value)
+              setSectionFilter('')
+              setPage(1)
+            }}
             style={{
               padding: '6px 10px',
               borderRadius: 5,
               border: '1px solid var(--line)',
               fontSize: 13,
-              minWidth: 250,
+              minWidth: 150,
             }}
           >
-            <option value="">All Students</option>
-            {students.map((student) => (
-              <option key={student.id} value={student.id}>
-                {student.studentNumber} - {student.firstName} {student.lastName}
+            <option value="">Select Batch *</option>
+            {batches?.map((batch) => (
+              <option key={batch.id} value={batch.id}>
+                Batch {batch.name}
               </option>
             ))}
           </select>
+
+          {batchFilter && (
+            <select
+              value={sectionFilter}
+              onChange={(e) => {
+                setSectionFilter(e.target.value)
+                setPage(1)
+              }}
+              style={{
+                padding: '6px 10px',
+                borderRadius: 5,
+                border: '1px solid var(--line)',
+                fontSize: 13,
+                minWidth: 150,
+              }}
+            >
+              <option value="">All Sections</option>
+              {sections?.map((sec) => (
+                <option key={sec.id} value={sec.id}>
+                  {sec.name}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {batchFilter && (
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSearch()
+              }}
+              placeholder="Search by reg no, name, or CNIC..."
+              style={{
+                padding: '6px 10px',
+                borderRadius: 5,
+                border: '1px solid var(--line)',
+                fontSize: 13,
+                minWidth: 200,
+                flex: 1,
+              }}
+            />
+          )}
+
+          {batchFilter && (
+            <button
+              type="button"
+              className="btn"
+              onClick={handleSearch}
+              disabled={isLoading}
+              style={{ padding: '6px 16px' }}
+            >
+              Search
+            </button>
+          )}
+
+          {appliedSearch && (
+            <button
+              type="button"
+              className="btn secondary"
+              onClick={handleClearSearch}
+              style={{ padding: '6px 12px' }}
+            >
+              Clear
+            </button>
+          )}
+
+          <button
+            type="button"
+            className="btn secondary"
+            onClick={() => setShowBulkReEnroll(true)}
+            style={{ marginLeft: 'auto' }}
+            title="Enroll students with missing course enrollments"
+          >
+            🔄 Bulk Re-enroll
+          </button>
 
           <button
             type="button"
             className="btn"
             onClick={() => setShowForm(true)}
-            style={{ marginLeft: 'auto' }}
           >
             + New Enrollment
           </button>
         </div>
       </div>
+
+      {error && (
+        <div
+          className="card-body"
+          style={{
+            padding: 16,
+            backgroundColor: '#fee',
+            border: '1px solid #f88',
+          }}
+        >
+          <p style={{ color: '#d00', margin: 0 }}>
+            <strong>Error:</strong>{' '}
+            {(error as any)?.response?.data?.message || (error as Error).message}
+          </p>
+        </div>
+      )}
 
       <div
         className="card-head"
@@ -149,9 +267,16 @@ export default function EnrollmentsTab() {
         <span className="meta">
           {isLoading
             ? 'Loading...'
-            : `${enrollments?.length ?? 0} enrollment${(enrollments?.length ?? 0) !== 1 ? 's' : ''}`}
+            : pagination
+              ? `${pagination.total} enrollment${pagination.total !== 1 ? 's' : ''} (Page ${pagination.page} of ${pagination.totalPages})`
+              : 'Select batch to view enrollments'}
         </span>
-        <button type="button" className="btn secondary" onClick={() => refetch()}>
+        <button
+          type="button"
+          className="btn secondary"
+          onClick={() => refetch()}
+          disabled={!batchFilter || isLoading}
+        >
           Refresh
         </button>
       </div>
@@ -161,6 +286,7 @@ export default function EnrollmentsTab() {
           <thead>
             <tr>
               <th>Student</th>
+              <th>Batch</th>
               <th>Course</th>
               <th className="col-hide-sm">Credits</th>
               <th>Status</th>
@@ -169,32 +295,46 @@ export default function EnrollmentsTab() {
             </tr>
           </thead>
           <tbody>
-            {isLoading && (
+            {!batchFilter ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={7}
+                  style={{
+                    textAlign: 'center',
+                    color: 'var(--ink-faint)',
+                    padding: '40px 16px',
+                    fontStyle: 'italic',
+                  }}
+                >
+                  Please select a batch to view enrollments
+                </td>
+              </tr>
+            ) : isLoading ? (
+              <tr>
+                <td
+                  colSpan={7}
                   style={{ textAlign: 'center', color: 'var(--ink-faint)' }}
                 >
                   Loading enrollments...
                 </td>
               </tr>
-            )}
-            {!isLoading && (!enrollments || enrollments.length === 0) && (
+            ) : !enrollments || enrollments.length === 0 ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   style={{
                     textAlign: 'center',
                     color: 'var(--ink-faint)',
                     fontStyle: 'italic',
                   }}
                 >
-                  No enrollments found
+                  {appliedSearch
+                    ? 'No matching enrollments found'
+                    : 'No enrollments found for this batch'}
                 </td>
               </tr>
-            )}
-            {!isLoading &&
-              enrollments?.map((enr) => (
+            ) : (
+              enrollments.map((enr) => (
                 <tr key={enr.id}>
                   <td>
                     <div className="subj-title">
@@ -206,10 +346,28 @@ export default function EnrollmentsTab() {
                     </div>
                   </td>
                   <td>
+                    <div className="subj-sub">
+                      {enr.studentAcademicRecord?.student?.batch?.name || 'N/A'}
+                    </div>
+                  </td>
+                  <td>
                     <div className="subj-title">{enr.course?.code}</div>
                     <div className="subj-sub col-hide-sm">
                       {enr.course?.name}
                     </div>
+                    {enr.isExtra && enr.allocation && (
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: '#6c757d',
+                          marginTop: 4,
+                        }}
+                      >
+                        📚 Extra • Batch{' '}
+                        {enr.allocation.section?.batch?.name} - Sec{' '}
+                        {enr.allocation.section?.name}
+                      </div>
+                    )}
                   </td>
                   <td className="subj-sub col-hide-sm">
                     {enr.course?.creditHours}
@@ -269,12 +427,50 @@ export default function EnrollmentsTab() {
                     </select>
                   </td>
                 </tr>
-              ))}
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
+      {/* Pagination Controls */}
+      {pagination && pagination.totalPages > 1 && (
+        <div
+          className="card-head"
+          style={{
+            borderTop: '1px solid var(--line)',
+            justifyContent: 'center',
+            gap: 8,
+          }}
+        >
+          <button
+            type="button"
+            className="btn secondary"
+            disabled={page === 1 || isLoading}
+            onClick={() => setPage(page - 1)}
+            style={{ padding: '4px 12px', fontSize: 13 }}
+          >
+            ← Previous
+          </button>
+          <span className="meta">
+            Page {pagination.page} of {pagination.totalPages}
+          </span>
+          <button
+            type="button"
+            className="btn secondary"
+            disabled={page === pagination.totalPages || isLoading}
+            onClick={() => setPage(page + 1)}
+            style={{ padding: '4px 12px', fontSize: 13 }}
+          >
+            Next →
+          </button>
+        </div>
+      )}
+
       {showForm && <EnrollmentForm onClose={() => setShowForm(false)} />}
+      {showBulkReEnroll && (
+        <BulkReEnrollModal onClose={() => setShowBulkReEnroll(false)} />
+      )}
     </>
   )
 }
