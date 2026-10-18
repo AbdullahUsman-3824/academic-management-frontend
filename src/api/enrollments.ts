@@ -78,14 +78,16 @@ export interface AvailableAllocation {
 }
 
 export interface CreateEnrollmentPayload {
-  studentAcademicRecordId: string
+  studentAcademicRecordId?: string
+  studentId?: string // Alternative to studentAcademicRecordId - backend will look up academic record
   courseId: string
   isExtra?: boolean
   allocationId?: string // Required when isExtra is true
 }
 
 export interface BulkEnrollPayload {
-  studentAcademicRecordId: string
+  studentAcademicRecordId?: string
+  studentId?: string // Alternative to studentAcademicRecordId
   courseIds: string[]
   isExtra?: boolean
 }
