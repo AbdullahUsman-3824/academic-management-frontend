@@ -11,6 +11,7 @@ export enum AcademicYearStatus {
 export enum AcademicSessionStatus {
   UPCOMING = "UPCOMING",
   ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
   COMPLETED = "COMPLETED",
   CANCELLED = "CANCELLED",
 }

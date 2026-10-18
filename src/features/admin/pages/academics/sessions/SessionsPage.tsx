@@ -12,8 +12,10 @@ import { StatusFilterBar } from "../../../components/StatusFilterBar";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import { ProgressionModal } from "../../../components/ProgressionModal";
 import { adminPaths } from "../../../data/navData";
-import { formatDate, sessionStatusClass } from "../helpers";
-import { SessionEdit } from "./SessionEdit";
+import {
+  formatDate,
+  sessionStatusClass,
+} from "../../../helpers/academic.helpers";
 
 const SESSION_STATUS_OPTIONS = [
   { value: "all", label: "All statuses" },
@@ -66,7 +68,6 @@ export default function AcademicsSessionsPage() {
     AcademicSessionStatus | "all"
   >("all");
   const [sessionYearId, setSessionYearId] = useState<string | "all">("all");
-  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [progressionSessionId, setProgressionSessionId] = useState<
     string | null
   >(null);
@@ -131,34 +132,36 @@ export default function AcademicsSessionsPage() {
 
   return (
     <>
-      {/* ── Filters ─────────────────────────────────────────── */}
-      <StatusFilterBar
-        filters={[
-          {
-            id: "status",
-            label: "Status",
-            value: sessionStatus,
-            options: SESSION_STATUS_OPTIONS,
-            onChange: (v) =>
-              setSessionStatus(v as AcademicSessionStatus | "all"),
-          },
-          {
-            id: "year",
-            label: "Academic Year",
-            value: sessionYearId,
-            options: yearOptions,
-            onChange: (v) => setSessionYearId(v),
-          },
-        ]}
-        onRefresh={() => refetch()}
-        meta={
-          isLoading
-            ? null
-            : `${sessions.length} session${sessions.length !== 1 ? "s" : ""}${
-                sessionStatus !== "all" ? ` · ${sessionStatus}` : ""
-              }`
-        }
-      />
+      <div
+        className="card-head"
+        style={{ borderTop: "none", borderBottom: "1px solid var(--line)" }}
+      >
+        <StatusFilterBar
+          filters={[
+            {
+              id: "status",
+              label: "Status",
+              value: sessionStatus,
+              options: SESSION_STATUS_OPTIONS,
+              onChange: (v) =>
+                setSessionStatus(v as AcademicSessionStatus | "all"),
+            },
+            {
+              id: "year",
+              label: "Academic Year",
+              value: sessionYearId,
+              options: yearOptions,
+              onChange: (v) => setSessionYearId(v),
+            },
+          ]}
+          onRefresh={() => refetch()}
+          meta={
+            isLoading
+              ? "Loading…"
+              : `${sessions.length} session${sessions.length !== 1 ? "s" : ""}`
+          }
+        />
+      </div>
 
       {/* ── Error state ─────────────────────────────────────── */}
       {isError && (
@@ -251,14 +254,19 @@ export default function AcademicsSessionsPage() {
                     </td>
                     <td>
                       <div className="inline-actions">
-                        <button
-                          type="button"
-                          className="btn secondary"
-                          style={{ padding: "4px 10px", fontSize: 12 }}
-                          onClick={() => setEditingSessionId(s.id)}
-                        >
-                          Edit
-                        </button>
+                        {s.status !== AcademicSessionStatus.COMPLETED &&
+                          s.status !== AcademicSessionStatus.CANCELLED && (
+                            <button
+                              type="button"
+                              className="btn secondary"
+                              style={{ padding: "4px 10px", fontSize: 12 }}
+                              onClick={() =>
+                                navigate(adminPaths.academicsSessionEdit(s.id))
+                              }
+                            >
+                              Edit
+                            </button>
+                          )}
 
                         {showActivate && (
                           <button
@@ -302,15 +310,6 @@ export default function AcademicsSessionsPage() {
             </tbody>
           </table>
         </div>
-      )}
-
-      {/* ── Edit overlay ────────────────────────────────────── */}
-      {editingSessionId && (
-        <SessionEdit
-          id={editingSessionId}
-          years={years}
-          onClose={() => setEditingSessionId(null)}
-        />
       )}
 
       {/* ── Progression modal ───────────────────────────────── */}

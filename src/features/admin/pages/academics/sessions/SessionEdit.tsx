@@ -1,116 +1,103 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   useSession,
   useUpdateSession,
+  useYears,
 } from "../../../hooks/useAcademicQueries";
-import { toInputDate, inputStyle } from "../helpers";
+import { SessionForm } from "../../../components/academic/SessionForm";
+import { AcademicSessionStatus } from "../../../api/academic";
+import { adminPaths } from "../../../data/navData";
+import {
+  EMPTY_SESSION_FORM,
+  toInputDate,
+  validateSessionForm,
+} from "../../../helpers/academic.helpers";
+import type { SessionFormValues } from "../../../helpers/academic.helpers";
+import { extractErrorMessage } from "../../../helpers/student.helpers";
 
-export function SessionEdit({
-  id,
-  years,
-  onClose,
-}: {
-  id: string;
-  years: { id: string; name: string }[];
-  onClose: () => void;
-}) {
-  const { data: session, isLoading } = useSession(id);
+export default function SessionEdit() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { data: session, isLoading, isError } = useSession(id ?? null);
+  const { data: yearsData } = useYears("all");
   const update = useUpdateSession();
-  const [name, setName] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [academicYearId, setAcademicYearId] = useState("");
+
+  const [values, setValues] = useState<SessionFormValues>(EMPTY_SESSION_FORM);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (session) {
-      setName(session.name);
-      setStartDate(toInputDate(session.startDate));
-      setEndDate(toInputDate(session.endDate));
-      setAcademicYearId(session.academicYearId);
+      setValues({
+        name: session.name,
+        academicYearId: session.academicYearId,
+        startDate: toInputDate(session.startDate),
+        endDate: toInputDate(session.endDate),
+      });
     }
   }, [session]);
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const goBack = () => navigate(adminPaths.academicsSessions);
+
+  const submit = () => {
+    if (!id || !session) return;
+    const canEditDates =
+      session.status === AcademicSessionStatus.UPCOMING ||
+      session.status === AcademicSessionStatus.INACTIVE;
+    const problem = validateSessionForm(values);
+    if (problem) return setError(problem);
+    setError(null);
+
+    // NOTE: no status here — use Activate / Complete on the sessions list.
     update.mutate(
-      { id, dto: { name, startDate, endDate, academicYearId } },
-      { onSuccess: onClose },
+      {
+        id,
+        dto: {
+          name: values.name.trim(),
+          ...(canEditDates && {
+            academicYearId: values.academicYearId,
+            startDate: values.startDate,
+            endDate: values.endDate,
+          }),
+        },
+      },
+      {
+        onSuccess: goBack,
+        onError: (err) =>
+          setError(extractErrorMessage(err, "Failed to update session.")),
+      },
     );
   };
 
   return (
-    <div className="card" style={{ marginTop: 16 }}>
+    <div className="card" style={{ margin: 16 }}>
       <div className="card-head">
         <h2>Edit Session</h2>
-        <button type="button" className="btn secondary" onClick={onClose}>
-          Cancel
+        <button type="button" className="btn secondary" onClick={goBack}>
+          ← Back
         </button>
       </div>
       <div className="card-body">
-        {isLoading ? (
+        {isError ? (
+          <p style={{ color: "crimson" }}>Failed to load session.</p>
+        ) : isLoading || !session ? (
           <p style={{ color: "var(--ink-faint)" }}>Loading…</p>
         ) : (
-          <form onSubmit={submit}>
-            {update.isError && (
-              <p style={{ color: "crimson", marginBottom: 12 }}>
-                {(update.error as Error)?.message}
-              </p>
-            )}
-            <div className="profile-fields">
-              <div className="profile-field">
-                <div className="profile-field__label">Name</div>
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  style={inputStyle}
-                />
-              </div>
-              <div className="profile-field">
-                <div className="profile-field__label">Academic Year</div>
-                <select
-                  value={academicYearId}
-                  onChange={(e) => setAcademicYearId(e.target.value)}
-                  required
-                  style={inputStyle}
-                >
-                  {years.map((y) => (
-                    <option key={y.id} value={y.id}>
-                      {y.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="profile-field">
-                <div className="profile-field__label">Start Date</div>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  required
-                  style={inputStyle}
-                />
-              </div>
-              <div className="profile-field">
-                <div className="profile-field__label">End Date</div>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  required
-                  style={inputStyle}
-                />
-              </div>
-            </div>
-            <button
-              type="submit"
-              className="btn"
-              style={{ marginTop: 16 }}
-              disabled={update.isPending}
-            >
-              {update.isPending ? "Saving…" : "Save"}
-            </button>
-          </form>
+          <SessionForm
+            values={values}
+            years={yearsData ?? []}
+            onChange={(field, value) =>
+              setValues((prev) => ({ ...prev, [field]: value }))
+            }
+            onSubmit={submit}
+            onCancel={goBack}
+            submitting={update.isPending}
+            error={error}
+            readonlyDates={
+              session.status !== AcademicSessionStatus.UPCOMING &&
+              session.status !== AcademicSessionStatus.INACTIVE
+            }
+          />
         )}
       </div>
     </div>
