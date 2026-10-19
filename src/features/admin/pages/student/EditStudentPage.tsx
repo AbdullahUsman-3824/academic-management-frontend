@@ -16,6 +16,7 @@ function EditStudentPage() {
   const { data: student, isLoading } = useStudent(id ?? null);
   const { data: batchesData, isLoading: batchesLoading } = useBatches();
   const batches = batchesData ?? [];
+  const [initialized, setInitialized] = useState(false);
 
   const updateMutation = useUpdateStudent();
 
@@ -25,9 +26,14 @@ function EditStudentPage() {
     message: string;
   } | null>(null);
 
-  useEffect(() => {
-    if (student) setDraft(toStudentFormValues(student));
-  }, [student]);
+useEffect(() => {
+  // initialise once, when BOTH student and batches have loaded,
+  // so a background refetch never wipes the user's edits
+  if (student && batchesData && !initialized) {
+    setDraft(toStudentFormValues(student, batchesData));
+    setInitialized(true);
+  }
+}, [student, batchesData, initialized]);
 
   const handleFormChange = (field: keyof StudentFormValues, value: string) =>
     setDraft((prev) => ({ ...prev, [field]: value }));
@@ -76,7 +82,7 @@ function EditStudentPage() {
     );
   };
 
-  if (isLoading) {
+  if (isLoading || batchesLoading) {
     return (
       <div className="card">
         <div className="card-body">
@@ -109,7 +115,7 @@ function EditStudentPage() {
         <div>
           <h1>Update Student Profile</h1>
           <div className="today">
-            {student.stdRegNumber} · {student.batch.name}
+            {student.stdRegNumber} · {student.batchName ?? "No batch"}
           </div>
         </div>
       </div>

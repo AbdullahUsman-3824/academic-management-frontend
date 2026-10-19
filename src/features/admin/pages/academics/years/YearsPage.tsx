@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AcademicYearStatus } from "../../../api/academic";
+import { AcademicYearStatus } from "../../../api/academics";
 import { useYears } from "../../../hooks/useAcademicQueries";
 import { StatusFilterBar } from "../../../components/StatusFilterBar";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";

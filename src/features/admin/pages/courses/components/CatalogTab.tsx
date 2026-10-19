@@ -1,5 +1,5 @@
 import { useUpdateCourseStatus } from '../../../../../hooks/useCourseQueries'
-import type { CourseStatus } from '../../../../../api/courses'
+import type { CourseStatus } from '../../../../../features/admin/api/courses'
 import type { useCourses } from '../../../../../hooks/useCourseQueries'
 
 const statusClass: Record<CourseStatus, string> = {

@@ -1,6 +1,6 @@
 import { Fragment, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BatchStatus } from "../../../api/academic";
+import { BatchStatus } from "../../../api/academics";
 import {
   useBatches,
   useActivateBatch,

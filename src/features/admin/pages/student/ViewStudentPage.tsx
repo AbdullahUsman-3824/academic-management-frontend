@@ -6,7 +6,7 @@ import {
 } from "../../hooks/useStudentQueries";
 import type { StudentStatus } from "../../hooks/useStudentQueries";
 import { StudentDetails } from "../../components/student/StudentDetails";
-import { extractErrorMessage, getDisplayName, toLabel } from "../../helpers/student.helpers";
+import { extractErrorMessage, toLabel } from "../../helpers/student.helpers";
 import { STATUS_CLASS } from "../../types/student.types";
 import { adminPaths } from "../../data/navData";
 
@@ -85,10 +85,10 @@ function ViewStudentPage() {
             ← Back
           </button>
           <div>
-            <h1 style={{ marginBottom: 2 }}>{getDisplayName(student)}</h1>
-            <div className="today">
-              {student.stdRegNumber} · {student.batch.name}
-            </div>
+<h1 style={{ marginBottom: 2 }}>{student.fullName}</h1>
+<div className="today">
+  {student.stdRegNumber} · {student.batchName ?? "No batch"}
+</div>
           </div>
         </div>
         <div className="inline-actions">

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import * as academicApi from "../api/academic";
+import * as academicApi from "../api/academics";
 import type {
   AcademicYearStatus,
   AcademicSessionStatus,
@@ -11,7 +11,7 @@ import type {
   UpdateSectionDto,
   MoveStudentsSectionDto,
   ImplementProgressionDto,
-} from "../api/academic";
+} from "../api/academics";
 
 export const academicKeys = {
   all: ["academics"] as const,

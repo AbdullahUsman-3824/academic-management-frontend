@@ -1,4 +1,4 @@
-import type { Student, StudentListItem } from "../api/students";
+import type { StudentDetail } from "../api/students";
 import type { StudentStatus } from "../hooks/useStudentQueries";
 import type { StudentFormValues } from "../types/student.types";
 
@@ -10,12 +10,36 @@ export function toLabel(value: StudentStatus): string {
   return "Graduated";
 }
 
-export function getDisplayName(
-  student: Pick<Student | StudentListItem, "firstName" | "middleName" | "lastName">,
-): string {
-  return [student.firstName, student.middleName, student.lastName]
-    .filter(Boolean)
-    .join(" ");
+export function capitalize(value: string | null | undefined): string {
+  if (!value) return "—";
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+/** "2026-09-12T00:00:00.000Z" → "Sep 12, 2026". Null/invalid → "—". */
+export function formatDate(value: string | null | undefined): string {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return new Intl.DateTimeFormat("en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC", // date-only values are stored as UTC midnight
+  }).format(d);
+}
+
+/** "2026-09-12T08:30:00.000Z" → "Sep 12, 2026, 1:30 PM" (viewer's local time). */
+export function formatDateTime(value: string | null | undefined): string {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return new Intl.DateTimeFormat("en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(d);
 }
 
 // ── Form ─────────────────────────────────────────────────────────────────────
@@ -26,22 +50,41 @@ export function toNullable(value: string): string | null {
   return trimmed ? trimmed : null;
 }
 
-export function toStudentFormValues(student: Student): StudentFormValues {
+/** ISO string → "yyyy-mm-dd" for <input type="date">. */
+export function toDateInput(value: string | null | undefined): string {
+  return value ? value.slice(0, 10) : "";
+}
+
+/** Best-effort split: first word = first, last word = last, rest = middle. */
+export function splitFullName(fullName: string) {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length <= 1) {
+    return { firstName: parts[0] ?? "", middleName: "", lastName: "" };
+  }
   return {
-    batchId: student.batch.id,
-    // Backend's GET /students/:id doesn't return section/session/semester —
-    // they live on a separate academic-record, not the Student row — and
-    // UpdateStudentDto can't save them either. These start blank in edit
-    // mode, and StudentForm hides the fields entirely when mode === "edit".
+    firstName: parts[0],
+    middleName: parts.slice(1, -1).join(" "),
+    lastName: parts[parts.length - 1],
+  };
+}
+
+export function toStudentFormValues(
+  student: StudentDetail,
+  batches: { id: string; name: string }[],
+): StudentFormValues {
+  const { firstName, middleName, lastName } = splitFullName(student.fullName);
+  return {
+    // Detail response only has batchName, so resolve the id from the batch list.
+    batchId: batches.find((b) => b.name === student.batchName)?.id ?? "",
     sectionId: "",
     semesterNumber: "1",
     academicSessionId: "",
     stdRegNumber: student.stdRegNumber,
-    firstName: student.firstName,
-    middleName: student.middleName ?? "",
-    lastName: student.lastName ?? "",
+    firstName,
+    middleName,
+    lastName,
     email: student.email ?? "",
-    dateOfBirth: student.dateOfBirth ?? "",
+    dateOfBirth: toDateInput(student.dateOfBirth),
     gender: student.gender ?? "",
     cnic: student.cnic ?? "",
     profileImageUrl: student.profileImageUrl ?? "",
@@ -52,7 +95,7 @@ export function toStudentFormValues(student: Student): StudentFormValues {
     guardianRelation: student.guardianRelation ?? "",
     guardianPhone: student.guardianPhone ?? "",
     guardianCnic: student.guardianCnic ?? "",
-    admissionDate: student.admissionDate,
+    admissionDate: toDateInput(student.admissionDate),
   };
 }
 

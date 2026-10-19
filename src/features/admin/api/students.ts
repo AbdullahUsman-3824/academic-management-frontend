@@ -8,48 +8,39 @@ export interface BatchRef {
   name: string;
 }
 
-export interface Student {
+export interface StudentListItem {
   id: string;
-  userId: string;
-  username: string;
-  batch: BatchRef;
   stdRegNumber: string;
-  firstName: string;
-  middleName: string | null;
-  lastName: string | null;
+  fullName: string;
   email: string | null;
-  dateOfBirth: string | null;
+  phone: string | null;
+  batchName: string | null;
+  currentSemester: number | null;
+  currentSection: string | null;
+  status: StudentStatus;
+  admissionDate: string | null;
+}
+
+export interface StudentDetail extends StudentListItem {
   gender: Gender | null;
+  dateOfBirth: string | null;
   cnic: string | null;
   profileImageUrl: string | null;
-  phone: string | null;
   address: string | null;
   city: string | null;
   guardianName: string | null;
   guardianRelation: string | null;
   guardianPhone: string | null;
   guardianCnic: string | null;
-  admissionDate: string;
-  status: StudentStatus;
+  username: string;
+  accountStatus: string;
+  lastLoginAt: string | null;
+  currentAcademicSession: string | null;
   createdAt: string;
-  updatedAt: string;
+  updatedAt: string | null;
 }
 
-export interface StudentListItem {
-  id: string;
-  userId: string;
-  username: string;
-  stdRegNumber: string;
-  firstName: string;
-  middleName: string | null;
-  lastName: string | null;
-  email: string | null;
-  phone: string | null;
-  gender: Gender | null;
-  batch: BatchRef;
-  status: StudentStatus;
-  admissionDate: string;
-}
+export type Student = StudentDetail;
 
 export interface StudentListMeta {
   page: number;
@@ -59,7 +50,7 @@ export interface StudentListMeta {
 }
 
 export interface StudentListResponse {
-  success: boolean;
+  success?: boolean;
   data: StudentListItem[];
   meta: StudentListMeta;
 }
@@ -151,11 +142,12 @@ export async function getStudents(
   return data;
 }
 
-export async function getStudent(id: string): Promise<Student> {
-  const { data } = await apiClient.get<{ success: boolean; data: Student }>(
-    `/students/${id}`,
-  );
-  return data.data;
+export async function getStudent(id: string): Promise<StudentDetail> {
+  const { data } = await apiClient.get<
+    StudentDetail | { success?: boolean; data: StudentDetail }
+  >(`/students/${id}`);
+  // supports both a flat response and a { data: {...} } wrapper
+  return "data" in data && data.data ? data.data : (data as StudentDetail);
 }
 
 export async function createStudent(
@@ -172,12 +164,8 @@ export async function createStudent(
 export async function updateStudent(
   id: string,
   dto: UpdateStudentDto,
-): Promise<Student> {
-  const { data } = await apiClient.patch<{ success: boolean; data: Student }>(
-    `/students/${id}`,
-    dto,
-  );
-  return data.data;
+): Promise<void> {
+  await apiClient.patch(`/students/${id}`, dto);
 }
 
 export async function updateStudentStatus(

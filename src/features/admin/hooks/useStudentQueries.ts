@@ -54,9 +54,9 @@ export function useUpdateStudent() {
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateStudentDto }) =>
       api.updateStudent(id, dto),
-    onSuccess: (data) => {
+    onSuccess: (_data, { id }) => {
       qc.invalidateQueries({ queryKey: studentKeys.list() });
-      qc.setQueryData(studentKeys.detail(data.id), data);
+      qc.invalidateQueries({ queryKey: studentKeys.detail(id) });
     },
   });
 }

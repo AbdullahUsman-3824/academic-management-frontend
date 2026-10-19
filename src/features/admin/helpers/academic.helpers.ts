@@ -3,7 +3,7 @@ import {
   AcademicYearStatus,
   AcademicSessionStatus,
   BatchStatus,
-} from "../api/academic";
+} from "../api/academics";
 
 // ── Formatting ───────────────────────────────────────────────────────────────
 

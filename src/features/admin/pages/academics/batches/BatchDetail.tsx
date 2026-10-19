@@ -4,7 +4,7 @@ import {
   useBatch,
   useYears,
 } from "../../../hooks/useAcademicQueries";
-import { BatchStatus } from "../../../api/academic";
+import { BatchStatus } from "../../../api/academics";
 import { SectionManager } from "../../../components/SectionManager";
 import { adminPaths } from "../../../data/navData";
 import { formatDate } from "../../../helpers/academic.helpers";

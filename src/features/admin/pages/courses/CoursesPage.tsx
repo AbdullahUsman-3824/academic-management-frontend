@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useCourses } from '../../../../hooks/useCourseQueries'
-import type { CourseStatus } from '../../../../api/courses'
+import type { CourseStatus } from '../../../../features/admin/api/courses'
 import CatalogTab from './components/CatalogTab'
 import CourseDetail from './components/CourseDetail'
 import CourseForm from './components/CourseForm'

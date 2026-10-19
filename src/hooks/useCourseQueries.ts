@@ -8,7 +8,7 @@ import {
   type CourseStatus,
   type CreateCoursePayload,
   type UpdateCoursePayload,
-} from '../api/courses'
+} from '../features/admin/api/courses'
 
 export const courseKeys = {
   all: ['courses'] as const,
