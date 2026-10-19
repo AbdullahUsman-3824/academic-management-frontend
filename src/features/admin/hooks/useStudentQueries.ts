@@ -1,12 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import * as api from "../api/students";
+import * as api from "../api/student.api";
 import type {
-  StudentListParams,
-  StudentStatus,
   CreateStudentDto,
   UpdateStudentDto,
   UpdateStudentStatusDto,
-} from "../api/students";
+} from "../types/student.types";
+import { StudentListParams, StudentStatus } from "../../../types/student.types";
 
 // ── Query Key Factory ────────────────────────────────────────────────────────
 

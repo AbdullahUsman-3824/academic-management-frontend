@@ -1,4 +1,4 @@
-import type { StudentDetail } from "../../api/students";
+import type { AdminStudentDetail } from "../../types/student.types";
 import {
   capitalize,
   formatDate,
@@ -7,7 +7,7 @@ import {
 } from "../../helpers/student.helpers";
 
 interface StudentDetailsProps {
-  student: StudentDetail;
+  student: AdminStudentDetail;
 }
 
 type Row = [label: string, value: string];

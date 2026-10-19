@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AcademicYearStatus } from "../../../api/academics";
+import { AcademicYearStatus } from "../../../types/academics.types";
 import { useYears } from "../../../hooks/useAcademicQueries";
 import { StatusFilterBar } from "../../../components/StatusFilterBar";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
@@ -29,41 +29,24 @@ export default function YearsPage() {
         className="card-head"
         style={{ borderTop: "none", borderBottom: "1px solid var(--line)" }}
       >
-        <span className="meta">
-          {isLoading
-            ? "Loading…"
-            : `${years.length} academic year${years.length !== 1 ? "s" : ""}`}
-        </span>
-        <div className="inline-actions">
-          <button
-            type="button"
-            className="btn secondary"
-            onClick={() => navigate(adminPaths.academicsSetup)}
-          >
-            Setup Wizard
-          </button>
-          <button
-            type="button"
-            className="btn"
-            onClick={() => navigate(adminPaths.academicsYearNew)}
-          >
-            + New Year
-          </button>
-        </div>
+        <StatusFilterBar
+          filters={[
+            {
+              id: "status",
+              label: "Status",
+              value: yearStatus,
+              options: YEAR_STATUS_OPTIONS,
+              onChange: (v) => setYearStatus(v as AcademicYearStatus | "all"),
+            },
+          ]}
+          onRefresh={() => refetch()}
+          meta={
+            isLoading
+              ? "Loading…"
+              : `${years.length} academic year${years.length !== 1 ? "s" : ""}`
+          }
+        />
       </div>
-
-      <StatusFilterBar
-        filters={[
-          {
-            id: "status",
-            label: "Status",
-            value: yearStatus,
-            options: YEAR_STATUS_OPTIONS,
-            onChange: (v) => setYearStatus(v as AcademicYearStatus | "all"),
-          },
-        ]}
-        onRefresh={() => refetch()}
-      />
 
       {isError && (
         <div className="card-body">
@@ -133,26 +116,18 @@ export default function YearsPage() {
                   </td>
                   <td>
                     <div className="inline-actions">
-                      <button
-                        type="button"
-                        className="btn secondary"
-                        style={{ padding: "4px 10px", fontSize: 12 }}
-                        onClick={() =>
-                          navigate(adminPaths.academicsYearView(year.id))
-                        }
-                      >
-                        View
-                      </button>
-                      <button
-                        type="button"
-                        className="btn secondary"
-                        style={{ padding: "4px 10px", fontSize: 12 }}
-                        onClick={() =>
-                          navigate(adminPaths.academicsYearEdit(year.id))
-                        }
-                      >
-                        Edit
-                      </button>
+                      {year.status !== AcademicYearStatus.COMPLETED && (
+                        <button
+                          type="button"
+                          className="btn secondary"
+                          style={{ padding: "4px 10px", fontSize: 12 }}
+                          onClick={() =>
+                            navigate(adminPaths.academicsYearEdit(year.id))
+                          }
+                        >
+                          Edit
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

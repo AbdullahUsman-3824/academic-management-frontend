@@ -1,9 +1,9 @@
-import type { StudentListItem } from "../../api/students";
+import type { AdminStudentListItem } from "../../types/student.types";
 import { STATUS_CLASS } from "../../types/student.types";
 import { formatDate, toLabel } from "../../helpers/student.helpers";
 
 interface StudentTableProps {
-  students: StudentListItem[];
+  students: AdminStudentListItem[];
   loading: boolean;
   error: boolean;
   selectMode: boolean;
@@ -72,8 +72,12 @@ export function StudentTable({
         </thead>
         <tbody>
           {loading && messageCell("Loading students…")}
-          {!loading && error && messageCell("Failed to load students. Please try again.")}
-          {!loading && !error && students.length === 0 &&
+          {!loading &&
+            error &&
+            messageCell("Failed to load students. Please try again.")}
+          {!loading &&
+            !error &&
+            students.length === 0 &&
             messageCell("No students match the selected query.")}
           {!loading &&
             students.map((student, index) => (
@@ -119,8 +123,12 @@ export function StudentTable({
                 <td className="subj-sub col-hide-sm">
                   {student.currentSection ?? EMPTY}
                 </td>
-                <td className="subj-sub col-hide-sm">{student.phone ?? EMPTY}</td>
-                <td className="subj-sub col-hide-sm">{student.email ?? EMPTY}</td>
+                <td className="subj-sub col-hide-sm">
+                  {student.phone ?? EMPTY}
+                </td>
+                <td className="subj-sub col-hide-sm">
+                  {student.email ?? EMPTY}
+                </td>
                 <td>
                   <span className={`status ${STATUS_CLASS[student.status]}`}>
                     {toLabel(student.status)}

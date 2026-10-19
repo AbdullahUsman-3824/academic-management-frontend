@@ -3,10 +3,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useBatches } from "../../hooks/useAcademicQueries";
 import { useStudent, useUpdateStudent } from "../../hooks/useStudentQueries";
 import { StudentForm } from "../../components/student/StudentForm";
-import { extractErrorMessage, toNullable, toStudentFormValues } from "../../helpers/student.helpers";
+import {
+  extractErrorMessage,
+  toNullable,
+  toStudentFormValues,
+} from "../../helpers/student.helpers";
 import { EMPTY_FORM } from "../../types/student.types";
 import type { StudentFormValues } from "../../types/student.types";
-import type { Gender } from "../../api/students";
+import type { Gender } from "../../../../types/student.types";
 import { adminPaths } from "../../data/navData";
 
 function EditStudentPage() {
@@ -26,14 +30,14 @@ function EditStudentPage() {
     message: string;
   } | null>(null);
 
-useEffect(() => {
-  // initialise once, when BOTH student and batches have loaded,
-  // so a background refetch never wipes the user's edits
-  if (student && batchesData && !initialized) {
-    setDraft(toStudentFormValues(student, batchesData));
-    setInitialized(true);
-  }
-}, [student, batchesData, initialized]);
+  useEffect(() => {
+    // initialise once, when BOTH student and batches have loaded,
+    // so a background refetch never wipes the user's edits
+    if (student && batchesData && !initialized) {
+      setDraft(toStudentFormValues(student, batchesData));
+      setInitialized(true);
+    }
+  }, [student, batchesData, initialized]);
 
   const handleFormChange = (field: keyof StudentFormValues, value: string) =>
     setDraft((prev) => ({ ...prev, [field]: value }));

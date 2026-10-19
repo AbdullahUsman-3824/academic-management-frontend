@@ -12,7 +12,7 @@ export function PortalProvider() {
 
   const portalName = typeof user.portal === "string" ? user.portal.toLowerCase() : "";
 
-  if (portalName !== "admin" && portalName !== "student") {
+  if (portalName !== "admin" && portalName !== "student" && portalName !== "faculty") {
     return <Navigate to="/login" replace />;
   }
 

@@ -5,7 +5,7 @@ import {
   useUpdateBatch,
   useYears,
 } from "../../../hooks/useAcademicQueries";
-import { BatchForm } from "../../../components/academic/BatchForm";
+import { BatchForm } from "../../../components/academics/BatchForm";
 import { adminPaths } from "../../../data/navData";
 import {
   EMPTY_BATCH_FORM,

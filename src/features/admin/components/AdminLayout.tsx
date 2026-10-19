@@ -14,7 +14,7 @@ import {
   LogoutRounded as LogoutIcon,
   MenuRounded as MenuIcon,
   CloseRounded as CloseIcon,
-  AssessmentRounded as AcademicIcon,
+  BookmarksRounded as BatchCoursesIcon,
 } from "@mui/icons-material";
 
 const navIcons: Record<string, ReactNode> = {
@@ -23,6 +23,7 @@ const navIcons: Record<string, ReactNode> = {
   [adminPaths.students]: <PeopleIcon fontSize="small" />,
   [adminPaths.faculty]: <BadgeIcon fontSize="small" />,
   [adminPaths.courses]: <CoursesIcon fontSize="small" />,
+  [adminPaths.batchCourses]: <BatchCoursesIcon fontSize="small" />,
 };
 
 function AdminLayout() {

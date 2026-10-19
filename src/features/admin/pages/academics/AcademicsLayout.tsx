@@ -1,13 +1,13 @@
-import { Outlet } from 'react-router-dom'
-import { AcademicNavTabs } from '../../components/AcademicNavTabs'
-import { adminPaths } from '../../data/navData'
+import { Outlet } from "react-router-dom";
+import { AcademicNavTabs } from "../../components/academics/AcademicNavTabs";
+import { adminPaths } from "../../data/navData";
 
 const academicTabs = [
-  { label: 'Overview', to: adminPaths.academics, end: true },
-  { label: 'Years',    to: `${adminPaths.academics}/years` },
-  { label: 'Sessions', to: `${adminPaths.academics}/sessions` },
-  { label: 'Batches',  to: `${adminPaths.academics}/batches` },
-]
+  { label: "Overview", to: adminPaths.academics, end: true },
+  { label: "Years", to: `${adminPaths.academics}/years` },
+  { label: "Sessions", to: `${adminPaths.academics}/sessions` },
+  { label: "Batches", to: `${adminPaths.academics}/batches` },
+];
 
 export default function AcademicsLayout() {
   return (
@@ -27,5 +27,5 @@ export default function AcademicsLayout() {
         <Outlet />
       </div>
     </>
-  )
+  );
 }

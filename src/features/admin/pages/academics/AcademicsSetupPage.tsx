@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSetupAcademic } from "../../hooks/useAcademicQueries";
-import type { AcademicSetupPayload } from "../../api/academics";
+import type { AcademicSetupPayload } from "../../types/academics.types";
 import { isValidRange, inputStyle } from "../../helpers/academic.helpers";
 
 const STEPS = ["Academic Year", "Sessions (2)", "Review"];

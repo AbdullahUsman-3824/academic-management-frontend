@@ -1,4 +1,4 @@
-import type { StudentDetail } from "../api/students";
+import type { AdminStudentDetail } from "../types/student.types";
 import type { StudentStatus } from "../hooks/useStudentQueries";
 import type { StudentFormValues } from "../types/student.types";
 
@@ -69,7 +69,7 @@ export function splitFullName(fullName: string) {
 }
 
 export function toStudentFormValues(
-  student: StudentDetail,
+  student: AdminStudentDetail,
   batches: { id: string; name: string }[],
 ): StudentFormValues {
   const { firstName, middleName, lastName } = splitFullName(student.fullName);

@@ -11,6 +11,8 @@ interface Props {
   submitting?: boolean;
   error?: string | null;
   submitLabel?: string;
+  /** When true, start/end date and academic year inputs are disabled (e.g. status = active) */
+  readonlyDates?: boolean;
 }
 
 export function SessionForm({
@@ -22,6 +24,7 @@ export function SessionForm({
   submitting = false,
   error,
   submitLabel = "Save",
+  readonlyDates = false,
 }: Props) {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -49,7 +52,9 @@ export function SessionForm({
             value={values.academicYearId}
             onChange={(e) => onChange("academicYearId", e.target.value)}
             required
+            disabled={readonlyDates}
             style={inputStyle}
+            className={"disabled:bg-gray-200 disabled:cursor-not-allowed"}
           >
             <option value="">Select a year…</option>
             {years.map((y) => (
@@ -66,7 +71,9 @@ export function SessionForm({
             value={values.startDate}
             onChange={(e) => onChange("startDate", e.target.value)}
             required
+            disabled={readonlyDates}
             style={inputStyle}
+            className={"disabled:bg-gray-200 disabled:cursor-not-allowed"}
           />
         </div>
         <div className="profile-field">
@@ -76,7 +83,9 @@ export function SessionForm({
             value={values.endDate}
             onChange={(e) => onChange("endDate", e.target.value)}
             required
+            disabled={readonlyDates}
             style={inputStyle}
+            className={"disabled:bg-gray-200 disabled:cursor-not-allowed"}
           />
         </div>
       </div>
