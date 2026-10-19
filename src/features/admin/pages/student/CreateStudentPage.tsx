@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Gender } from "../../api/students";
+import type { Gender } from "../../../../types/student.types";
 import {
   useBatches,
   useEnrollmentSections,

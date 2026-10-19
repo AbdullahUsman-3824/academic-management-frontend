@@ -14,7 +14,6 @@ import {
   LogoutRounded as LogoutIcon,
   MenuRounded as MenuIcon,
   CloseRounded as CloseIcon,
-  AssessmentRounded as AcademicIcon,
   BookmarksRounded as BatchCoursesIcon,
 } from "@mui/icons-material";
 

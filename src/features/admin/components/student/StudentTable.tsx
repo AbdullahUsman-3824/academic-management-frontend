@@ -1,9 +1,9 @@
-import type { StudentListItem } from "../../api/students";
+import type { AdminStudentListItem } from "../../types/student.types";
 import { STATUS_CLASS } from "../../types/student.types";
-import { getDisplayName, toLabel } from "../../helpers/student.helpers";
+import { formatDate, toLabel } from "../../helpers/student.helpers";
 
 interface StudentTableProps {
-  students: StudentListItem[];
+  students: AdminStudentListItem[];
   loading: boolean;
   error: boolean;
   selectMode: boolean;
@@ -12,6 +12,8 @@ interface StudentTableProps {
   onToggleAll: () => void;
   onView: (id: string) => void;
 }
+
+const EMPTY = "—";
 
 export function StudentTable({
   students,
@@ -23,7 +25,21 @@ export function StudentTable({
   onToggleAll,
   onView,
 }: StudentTableProps) {
-  const colSpan = selectMode ? 9 : 8;
+  const colSpan = selectMode ? 11 : 10;
+  const messageCell = (text: string) => (
+    <tr>
+      <td
+        colSpan={colSpan}
+        style={{
+          textAlign: "center",
+          color: "var(--ink-faint)",
+          fontStyle: "italic",
+        }}
+      >
+        {text}
+      </td>
+    </tr>
+  );
 
   return (
     <div className="table-scroll">
@@ -45,6 +61,8 @@ export function StudentTable({
             <th>Reg. Number</th>
             <th>Student</th>
             <th className="col-hide-sm">Batch</th>
+            <th className="col-hide-sm">Semester</th>
+            <th className="col-hide-sm">Section</th>
             <th className="col-hide-sm">Phone</th>
             <th className="col-hide-sm">Email</th>
             <th>Status</th>
@@ -53,48 +71,14 @@ export function StudentTable({
           </tr>
         </thead>
         <tbody>
-          {loading && (
-            <tr>
-              <td
-                colSpan={colSpan}
-                style={{
-                  textAlign: "center",
-                  color: "var(--ink-faint)",
-                  fontStyle: "italic",
-                }}
-              >
-                Loading students…
-              </td>
-            </tr>
-          )}
-          {!loading && error && (
-            <tr>
-              <td
-                colSpan={colSpan}
-                style={{
-                  textAlign: "center",
-                  color: "var(--ink-faint)",
-                  fontStyle: "italic",
-                }}
-              >
-                Failed to load students. Please try again.
-              </td>
-            </tr>
-          )}
-          {!loading && !error && students.length === 0 && (
-            <tr>
-              <td
-                colSpan={colSpan}
-                style={{
-                  textAlign: "center",
-                  color: "var(--ink-faint)",
-                  fontStyle: "italic",
-                }}
-              >
-                No students match the selected query.
-              </td>
-            </tr>
-          )}
+          {loading && messageCell("Loading students…")}
+          {!loading &&
+            error &&
+            messageCell("Failed to load students. Please try again.")}
+          {!loading &&
+            !error &&
+            students.length === 0 &&
+            messageCell("No students match the selected query.")}
           {!loading &&
             students.map((student, index) => (
               <tr key={student.id}>
@@ -115,17 +99,35 @@ export function StudentTable({
                 )}
                 <td className="code">{student.stdRegNumber}</td>
                 <td>
-                  <div className="subj-title">{getDisplayName(student)}</div>
+                  <div className="subj-title">{student.fullName}</div>
                   <div className="subj-sub col-show-sm">
-                    {student.batch.name}
+                    {[
+                      student.batchName,
+                      student.currentSemester != null
+                        ? `Sem ${student.currentSemester}`
+                        : null,
+                      student.currentSection
+                        ? `Sec ${student.currentSection}`
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ") || EMPTY}
                   </div>
                 </td>
-                <td className="subj-sub col-hide-sm">{student.batch.name}</td>
                 <td className="subj-sub col-hide-sm">
-                  {student.phone ?? "—"}
+                  {student.batchName ?? EMPTY}
                 </td>
                 <td className="subj-sub col-hide-sm">
-                  {student.email ?? "—"}
+                  {student.currentSemester ?? EMPTY}
+                </td>
+                <td className="subj-sub col-hide-sm">
+                  {student.currentSection ?? EMPTY}
+                </td>
+                <td className="subj-sub col-hide-sm">
+                  {student.phone ?? EMPTY}
+                </td>
+                <td className="subj-sub col-hide-sm">
+                  {student.email ?? EMPTY}
                 </td>
                 <td>
                   <span className={`status ${STATUS_CLASS[student.status]}`}>
@@ -133,7 +135,7 @@ export function StudentTable({
                   </span>
                 </td>
                 <td className="subj-sub col-hide-sm">
-                  {student.admissionDate}
+                  {formatDate(student.admissionDate)}
                 </td>
                 <td>
                   <button

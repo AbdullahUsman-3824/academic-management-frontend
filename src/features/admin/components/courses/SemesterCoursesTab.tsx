@@ -1,43 +1,43 @@
-import { useState } from 'react'
+import { useState } from "react";
 import {
   useSemesters,
   useSemesterCoursesBySemesterId,
   useDeleteSemesterCourse,
-} from '../../../../../hooks/useSemesterCourseQueries'
-import MapCoursesModal from './MapCoursesModal'
+} from "../../hooks/useSemesterCourseQueries";
+import MapCoursesModal from "./MapCoursesModal";
 
 export default function SemesterCoursesTab() {
-  const [selectedSemesterId, setSelectedSemesterId] = useState<string>('')
-  const [showMapModal, setShowMapModal] = useState(false)
+  const [selectedSemesterId, setSelectedSemesterId] = useState<string>("");
+  const [showMapModal, setShowMapModal] = useState(false);
 
-  const { data: semesters, isLoading: loadingSemesters } = useSemesters()
+  const { data: semesters, isLoading: loadingSemesters } = useSemesters();
   const {
     data: mappedCourses,
     isLoading: loadingCourses,
     refetch,
-  } = useSemesterCoursesBySemesterId(selectedSemesterId || null)
-  const deleteMutation = useDeleteSemesterCourse()
+  } = useSemesterCoursesBySemesterId(selectedSemesterId || null);
+  const deleteMutation = useDeleteSemesterCourse();
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Remove this course from the semester?')) return
-    await deleteMutation.mutateAsync(id)
-  }
+    if (!confirm("Remove this course from the semester?")) return;
+    await deleteMutation.mutateAsync(id);
+  };
 
   return (
     <>
       <div
         className="card-head"
-        style={{ borderBottom: '1px solid var(--line)' }}
+        style={{ borderBottom: "1px solid var(--line)" }}
       >
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
           <label style={{ fontSize: 14, fontWeight: 500 }}>Semester:</label>
           <select
             value={selectedSemesterId}
             onChange={(e) => setSelectedSemesterId(e.target.value)}
             style={{
-              padding: '6px 10px',
+              padding: "6px 10px",
               borderRadius: 5,
-              border: '1px solid var(--line)',
+              border: "1px solid var(--line)",
               fontSize: 13,
               minWidth: 200,
             }}
@@ -55,7 +55,7 @@ export default function SemesterCoursesTab() {
               type="button"
               className="btn"
               onClick={() => setShowMapModal(true)}
-              style={{ marginLeft: 'auto' }}
+              style={{ marginLeft: "auto" }}
             >
               + Map Courses
             </button>
@@ -65,7 +65,7 @@ export default function SemesterCoursesTab() {
 
       {loadingSemesters && (
         <div className="card-body">
-          <p style={{ color: 'var(--ink-faint)', margin: 0 }}>
+          <p style={{ color: "var(--ink-faint)", margin: 0 }}>
             Loading semesters...
           </p>
         </div>
@@ -73,7 +73,7 @@ export default function SemesterCoursesTab() {
 
       {!loadingSemesters && !selectedSemesterId && (
         <div className="card-body">
-          <p style={{ color: 'var(--ink-faint)', margin: 0 }}>
+          <p style={{ color: "var(--ink-faint)", margin: 0 }}>
             Select a semester to view and manage course mappings.
           </p>
         </div>
@@ -83,12 +83,12 @@ export default function SemesterCoursesTab() {
         <>
           <div
             className="card-head"
-            style={{ borderTop: 'none', borderBottom: '1px solid var(--line)' }}
+            style={{ borderTop: "none", borderBottom: "1px solid var(--line)" }}
           >
             <span className="meta">
               {loadingCourses
-                ? 'Loading...'
-                : `${mappedCourses?.length ?? 0} course${(mappedCourses?.length ?? 0) !== 1 ? 's' : ''} mapped`}
+                ? "Loading..."
+                : `${mappedCourses?.length ?? 0} course${(mappedCourses?.length ?? 0) !== 1 ? "s" : ""} mapped`}
             </span>
             <button
               type="button"
@@ -116,26 +116,27 @@ export default function SemesterCoursesTab() {
                   <tr>
                     <td
                       colSpan={6}
-                      style={{ textAlign: 'center', color: 'var(--ink-faint)' }}
+                      style={{ textAlign: "center", color: "var(--ink-faint)" }}
                     >
                       Loading courses...
                     </td>
                   </tr>
                 )}
-                {!loadingCourses && (!mappedCourses || mappedCourses.length === 0) && (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      style={{
-                        textAlign: 'center',
-                        color: 'var(--ink-faint)',
-                        fontStyle: 'italic',
-                      }}
-                    >
-                      No courses mapped to this semester yet
-                    </td>
-                  </tr>
-                )}
+                {!loadingCourses &&
+                  (!mappedCourses || mappedCourses.length === 0) && (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        style={{
+                          textAlign: "center",
+                          color: "var(--ink-faint)",
+                          fontStyle: "italic",
+                        }}
+                      >
+                        No courses mapped to this semester yet
+                      </td>
+                    </tr>
+                  )}
                 {!loadingCourses &&
                   mappedCourses
                     ?.slice()
@@ -156,16 +157,16 @@ export default function SemesterCoursesTab() {
                         </td>
                         <td>
                           <span
-                            className={`status ${sc.isCompulsory ? 'active' : 'inactive'}`}
+                            className={`status ${sc.isCompulsory ? "active" : "inactive"}`}
                           >
-                            {sc.isCompulsory ? 'Compulsory' : 'Elective'}
+                            {sc.isCompulsory ? "Compulsory" : "Elective"}
                           </span>
                         </td>
                         <td>
                           <button
                             type="button"
                             className="btn secondary"
-                            style={{ padding: '4px 10px', fontSize: 12 }}
+                            style={{ padding: "4px 10px", fontSize: 12 }}
                             disabled={deleteMutation.isPending}
                             onClick={() => handleDelete(sc.id)}
                           >
@@ -188,5 +189,5 @@ export default function SemesterCoursesTab() {
         />
       )}
     </>
-  )
+  );
 }

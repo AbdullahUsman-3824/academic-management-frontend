@@ -329,24 +329,49 @@ function StudentsPage() {
 
       {/* ── LIST ── */}
       <div className="card">
-        <div className="tabs-row">
-          {STATUS_FILTERS.map((sf) => (
+        {/* Header row: result info on the left, Update Sections on the right */}
+        <div className="card-head">
+          <span className="meta">
+            {listLoading
+              ? "Loading…"
+              : listError
+                ? "Failed to load students."
+                : listMetaText}
+          </span>
+
+          <div className="inline-actions">
+            {selectMode && selectedIds.size > 0 && (
+              <button
+                type="button"
+                className="btn"
+                style={{ padding: "4px 12px", fontSize: 12 }}
+                onClick={() => setMoveModalOpen(true)}
+              >
+                Move {selectedIds.size} to Section…
+              </button>
+            )}
             <button
-              key={sf.value}
               type="button"
-              className={`tab-btn${statusFilter === sf.value ? " active" : ""}`}
+              className="btn secondary"
+              disabled={!batchFilter}
+              title={
+                !batchFilter
+                  ? "Select a specific batch to enable bulk section moves"
+                  : undefined
+              }
               onClick={() => {
-                setStatusFilter(sf.value);
-                setPage(1);
+                setSelectMode((v) => !v);
+                setSelectedIds(new Set());
               }}
             >
-              {sf.label}
+              {selectMode ? "Cancel Select" : "Update Sections"}
             </button>
-          ))}
+          </div>
         </div>
 
+        {/* Filters */}
         <div className="card-body">
-          <div className="toolbar-grid">
+          <div className="toolbar-grid four-col">
             <label className="field-label">
               Search
               <input
@@ -359,6 +384,24 @@ function StudentsPage() {
                   setPage(1);
                 }}
               />
+            </label>
+
+            <label className="field-label">
+              Status
+              <select
+                className="field-control"
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value as "all" | StudentStatus);
+                  setPage(1);
+                }}
+              >
+                {STATUS_FILTERS.map((sf) => (
+                  <option key={sf.value} value={sf.value}>
+                    {sf.label}
+                  </option>
+                ))}
+              </select>
             </label>
 
             <label className="field-label">
@@ -397,29 +440,6 @@ function StudentsPage() {
                 <option value="50">50</option>
               </select>
             </label>
-
-            <label
-              className="field-label narrow"
-              style={{ justifyContent: "flex-end" }}
-            >
-              <span style={{ visibility: "hidden" }}>Move</span>
-              <button
-                type="button"
-                className="btn secondary"
-                disabled={!batchFilter}
-                title={
-                  !batchFilter
-                    ? "Select a specific batch to enable bulk section moves"
-                    : undefined
-                }
-                onClick={() => {
-                  setSelectMode((v) => !v);
-                  setSelectedIds(new Set());
-                }}
-              >
-                {selectMode ? "Cancel Select" : "Update Sections"}
-              </button>
-            </label>
           </div>
 
           {!batchFilter && (
@@ -435,31 +455,7 @@ function StudentsPage() {
           )}
         </div>
 
-        <div
-          className="card-head"
-          style={{
-            borderTop: "1px solid var(--line)",
-            borderBottom: "1px solid var(--line)",
-          }}
-        >
-          <span className="meta">
-            {listLoading
-              ? "Loading…"
-              : listError
-                ? "Failed to load students."
-                : listMetaText}
-          </span>
-          {selectMode && selectedIds.size > 0 && (
-            <button
-              type="button"
-              className="btn"
-              style={{ padding: "4px 12px", fontSize: 12 }}
-              onClick={() => setMoveModalOpen(true)}
-            >
-              Move {selectedIds.size} to Section…
-            </button>
-          )}
-        </div>
+        <div style={{ borderTop: "1px solid var(--line)" }} />
 
         <StudentTable
           students={students}

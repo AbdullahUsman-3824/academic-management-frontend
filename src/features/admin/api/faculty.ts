@@ -1,6 +1,6 @@
-import apiClient from './client';
+import apiClient from "../../../api/client";
 
-export type FacultyStatus = 'active' | 'inactive';
+export type FacultyStatus = "active" | "inactive";
 
 export interface Faculty {
   id: string;
@@ -20,6 +20,7 @@ export interface Faculty {
   joiningDate?: string | null;
   status: FacultyStatus;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface FacultyWithUser extends Faculty {
@@ -83,7 +84,7 @@ export interface TeachingLoad {
 type ApiList = {
   success: boolean;
   data: Faculty[];
-  meta: FacultyListResult['meta'];
+  meta: FacultyListResult["meta"];
 };
 
 type ApiOne = {
@@ -103,7 +104,7 @@ export async function getFaculty(params?: {
   status?: FacultyStatus;
   designation?: string;
 }): Promise<FacultyListResult> {
-  const { data } = await apiClient.get<ApiList>('/faculty', {
+  const { data } = await apiClient.get<ApiList>("/faculty", {
     params: {
       page: params?.page ?? 1,
       limit: params?.limit ?? 20,
@@ -123,7 +124,7 @@ export async function getFacultyById(id: string): Promise<FacultyWithUser> {
 export async function createFaculty(
   payload: CreateFacultyPayload,
 ): Promise<FacultyWithUser> {
-  const { data } = await apiClient.post<ApiOne>('/faculty', payload);
+  const { data } = await apiClient.post<ApiOne>("/faculty", payload);
   return data.data;
 }
 

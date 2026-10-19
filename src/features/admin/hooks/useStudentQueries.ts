@@ -1,12 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import * as api from "../api/students";
+import * as api from "../api/student.api";
 import type {
-  StudentListParams,
-  StudentStatus,
   CreateStudentDto,
   UpdateStudentDto,
   UpdateStudentStatusDto,
-} from "../api/students";
+} from "../types/student.types";
+import { StudentListParams, StudentStatus } from "../../../types/student.types";
 
 // ── Query Key Factory ────────────────────────────────────────────────────────
 
@@ -54,9 +53,9 @@ export function useUpdateStudent() {
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateStudentDto }) =>
       api.updateStudent(id, dto),
-    onSuccess: (data) => {
+    onSuccess: (_data, { id }) => {
       qc.invalidateQueries({ queryKey: studentKeys.list() });
-      qc.setQueryData(studentKeys.detail(data.id), data);
+      qc.invalidateQueries({ queryKey: studentKeys.detail(id) });
     },
   });
 }

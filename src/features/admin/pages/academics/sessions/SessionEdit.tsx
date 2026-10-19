@@ -5,8 +5,8 @@ import {
   useUpdateSession,
   useYears,
 } from "../../../hooks/useAcademicQueries";
-import { SessionForm } from "../../../components/academic/SessionForm";
-import { AcademicSessionStatus } from "../../../api/academic";
+import { SessionForm } from "../../../components/academics/SessionForm";
+import { AcademicSessionStatus } from "../../../types/academics.types";
 import { adminPaths } from "../../../data/navData";
 import {
   EMPTY_SESSION_FORM,

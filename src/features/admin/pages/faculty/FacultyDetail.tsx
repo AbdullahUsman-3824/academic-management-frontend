@@ -1,4 +1,7 @@
-import { useFacultyById, useFacultyTeachingLoad } from '../../../../../hooks/useFacultyQueries';
+import {
+  useFacultyById,
+  useFacultyTeachingLoad,
+} from "../../hooks/useFacultyQueries";
 
 type Props = {
   id: string;
@@ -20,7 +23,7 @@ export default function FacultyDetail({ id, onClose, onEdit }: Props) {
           </button>
         </div>
         <div className="side-panel-body">
-          <p style={{ color: 'var(--ink-faint)' }}>Loading...</p>
+          <p style={{ color: "var(--ink-faint)" }}>Loading...</p>
         </div>
       </div>
     );
@@ -34,7 +37,7 @@ export default function FacultyDetail({ id, onClose, onEdit }: Props) {
     <div className="side-panel">
       <div className="side-panel-header">
         <h2>Faculty Details</h2>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: "flex", gap: 8 }}>
           <button type="button" className="btn secondary" onClick={onEdit}>
             Edit
           </button>
@@ -66,17 +69,17 @@ export default function FacultyDetail({ id, onClose, onEdit }: Props) {
 
             <div className="detail-item">
               <div className="detail-label">Email</div>
-              <div className="detail-value">{faculty.email || '—'}</div>
+              <div className="detail-value">{faculty.email || "—"}</div>
             </div>
 
             <div className="detail-item">
               <div className="detail-label">Phone</div>
-              <div className="detail-value">{faculty.phone || '—'}</div>
+              <div className="detail-value">{faculty.phone || "—"}</div>
             </div>
 
             <div className="detail-item">
               <div className="detail-label">CNIC</div>
-              <div className="detail-value">{faculty.cnic || '—'}</div>
+              <div className="detail-value">{faculty.cnic || "—"}</div>
             </div>
 
             <div className="detail-item">
@@ -84,7 +87,7 @@ export default function FacultyDetail({ id, onClose, onEdit }: Props) {
               <div className="detail-value">
                 {faculty.dateOfBirth
                   ? new Date(faculty.dateOfBirth).toLocaleDateString()
-                  : '—'}
+                  : "—"}
               </div>
             </div>
 
@@ -92,8 +95,9 @@ export default function FacultyDetail({ id, onClose, onEdit }: Props) {
               <div className="detail-label">Gender</div>
               <div className="detail-value">
                 {faculty.gender
-                  ? faculty.gender.charAt(0).toUpperCase() + faculty.gender.slice(1)
-                  : '—'}
+                  ? faculty.gender.charAt(0).toUpperCase() +
+                    faculty.gender.slice(1)
+                  : "—"}
               </div>
             </div>
 
@@ -101,7 +105,7 @@ export default function FacultyDetail({ id, onClose, onEdit }: Props) {
               <div className="detail-label">Status</div>
               <div className="detail-value">
                 <span
-                  className={`status ${faculty.status === 'active' ? 'active' : 'inactive'}`}
+                  className={`status ${faculty.status === "active" ? "active" : "inactive"}`}
                 >
                   {faculty.status}
                 </span>
@@ -110,12 +114,12 @@ export default function FacultyDetail({ id, onClose, onEdit }: Props) {
 
             <div className="detail-item">
               <div className="detail-label">Address</div>
-              <div className="detail-value">{faculty.address || '—'}</div>
+              <div className="detail-value">{faculty.address || "—"}</div>
             </div>
 
             <div className="detail-item">
               <div className="detail-label">City</div>
-              <div className="detail-value">{faculty.city || '—'}</div>
+              <div className="detail-value">{faculty.city || "—"}</div>
             </div>
           </div>
         </section>
@@ -129,12 +133,12 @@ export default function FacultyDetail({ id, onClose, onEdit }: Props) {
           <div className="detail-grid">
             <div className="detail-item">
               <div className="detail-label">Designation</div>
-              <div className="detail-value">{faculty.designation || '—'}</div>
+              <div className="detail-value">{faculty.designation || "—"}</div>
             </div>
 
             <div className="detail-item">
               <div className="detail-label">Qualification</div>
-              <div className="detail-value">{faculty.qualification || '—'}</div>
+              <div className="detail-value">{faculty.qualification || "—"}</div>
             </div>
 
             <div className="detail-item">
@@ -142,7 +146,7 @@ export default function FacultyDetail({ id, onClose, onEdit }: Props) {
               <div className="detail-value">
                 {faculty.joiningDate
                   ? new Date(faculty.joiningDate).toLocaleDateString()
-                  : '—'}
+                  : "—"}
               </div>
             </div>
           </div>
@@ -163,19 +167,29 @@ export default function FacultyDetail({ id, onClose, onEdit }: Props) {
 
               <div className="detail-item">
                 <div className="detail-label">Total Credit Hours</div>
-                <div className="detail-value">{teachingLoad.totalCreditHours}</div>
+                <div className="detail-value">
+                  {teachingLoad.totalCreditHours}
+                </div>
               </div>
             </div>
 
             {teachingLoad.allocations.length > 0 && (
               <div style={{ marginTop: 12 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, color: 'var(--ink-faint)' }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    marginBottom: 8,
+                    color: "var(--ink-faint)",
+                  }}
+                >
                   Courses Assigned:
                 </div>
                 <ul style={{ margin: 0, paddingLeft: 20, fontSize: 13 }}>
                   {teachingLoad.allocations.map((alloc: any) => (
                     <li key={alloc.id} style={{ marginBottom: 4 }}>
-                      {alloc.course.code} - {alloc.course.name} ({alloc.section.name})
+                      {alloc.course.code} - {alloc.course.name} (
+                      {alloc.section.name})
                     </li>
                   ))}
                 </ul>

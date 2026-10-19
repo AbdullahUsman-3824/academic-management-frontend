@@ -1,50 +1,42 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useState } from "react";
 import {
   useEnrollments,
   useUpdateEnrollmentStatus,
   useDropEnrollment,
   useDeleteEnrollment,
-} from '../../../../../hooks/useEnrollmentQueries'
-import { academicsApi } from '../../../../../api/academics'
-import type { EnrollmentStatus } from '../../../../../api/enrollments'
-import EnrollmentForm from './EnrollmentForm'
-import BulkReEnrollModal from './BulkReEnrollModal'
+} from "../../hooks/useEnrollmentQueries";
+import { useBatches, useSections } from "../../hooks/useAcademicQueries";
+import type { EnrollmentStatus } from "../../../../api/enrollments";
+import EnrollmentForm from "./EnrollmentForm";
+import BulkReEnrollModal from "./BulkReEnrollModal";
 
 const statusClass: Record<EnrollmentStatus, string> = {
-  enrolled: 'active',
-  completed: 'active',
-  dropped: 'inactive',
-  failed: 'inactive',
-  reappear: 'inactive',
-}
+  enrolled: "active",
+  completed: "active",
+  dropped: "inactive",
+  failed: "inactive",
+  reappear: "inactive",
+};
 
 export default function EnrollmentsTab() {
-  const [statusFilter, setStatusFilter] = useState<EnrollmentStatus | 'all'>(
-    'all',
-  )
-  const [showForm, setShowForm] = useState(false)
-  const [showBulkReEnroll, setShowBulkReEnroll] = useState(false)
-  
+  const [statusFilter, setStatusFilter] = useState<EnrollmentStatus | "all">(
+    "all",
+  );
+  const [showForm, setShowForm] = useState(false);
+  const [showBulkReEnroll, setShowBulkReEnroll] = useState(false);
+
   // Search filters
-  const [batchFilter, setBatchFilter] = useState<string>('')
-  const [sectionFilter, setSectionFilter] = useState<string>('')
-  const [searchInput, setSearchInput] = useState('')
-  const [appliedSearch, setAppliedSearch] = useState('')
-  const [page, setPage] = useState(1)
+  const [batchFilter, setBatchFilter] = useState<string>("");
+  const [sectionFilter, setSectionFilter] = useState<string>("");
+  const [searchInput, setSearchInput] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
+  const [page, setPage] = useState(1);
 
   // Fetch batches for filter
-  const { data: batches } = useQuery({
-    queryKey: ['batches'],
-    queryFn: academicsApi.getBatches,
-  })
+  const { data: batches } = useBatches();
 
   // Fetch sections when batch is selected
-  const { data: sections } = useQuery({
-    queryKey: ['sections', batchFilter],
-    queryFn: () => academicsApi.getSections(batchFilter),
-    enabled: !!batchFilter,
-  })
+  const { data: sections } = useSections(batchFilter || null);
 
   // Fetch enrollments with pagination
   const {
@@ -53,98 +45,98 @@ export default function EnrollmentsTab() {
     error,
     refetch,
   } = useEnrollments({
-    status: statusFilter !== 'all' ? statusFilter : undefined,
+    status: statusFilter !== "all" ? statusFilter : undefined,
     batchId: batchFilter || undefined,
     sectionId: sectionFilter || undefined,
     search: appliedSearch || undefined,
     page,
     limit: 20,
-  })
+  });
 
-  const updateStatusMutation = useUpdateEnrollmentStatus()
-  const dropMutation = useDropEnrollment()
-  const deleteMutation = useDeleteEnrollment()
+  const updateStatusMutation = useUpdateEnrollmentStatus();
+  const dropMutation = useDropEnrollment();
+  const deleteMutation = useDeleteEnrollment();
 
   const handleUpdateStatus = async (id: string, status: EnrollmentStatus) => {
-    if (!confirm(`Change status to ${status}?`)) return
-    await updateStatusMutation.mutateAsync({ id, payload: { status } })
-  }
+    if (!confirm(`Change status to ${status}?`)) return;
+    await updateStatusMutation.mutateAsync({ id, payload: { status } });
+  };
 
   const handleDrop = async (id: string) => {
-    if (!confirm('Drop this course enrollment?')) return
-    await dropMutation.mutateAsync(id)
-  }
+    if (!confirm("Drop this course enrollment?")) return;
+    await dropMutation.mutateAsync(id);
+  };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Permanently delete this enrollment?')) return
-    await deleteMutation.mutateAsync(id)
-  }
+    if (!confirm("Permanently delete this enrollment?")) return;
+    await deleteMutation.mutateAsync(id);
+  };
 
   const handleSearch = () => {
-    setAppliedSearch(searchInput.trim())
-    setPage(1)
-  }
+    setAppliedSearch(searchInput.trim());
+    setPage(1);
+  };
 
   const handleClearSearch = () => {
-    setSearchInput('')
-    setAppliedSearch('')
-    setPage(1)
-  }
+    setSearchInput("");
+    setAppliedSearch("");
+    setPage(1);
+  };
 
-  const enrollments = enrollmentsResult?.data || []
-  const pagination = enrollmentsResult?.pagination
+  const enrollments = enrollmentsResult?.data || [];
+  const pagination = enrollmentsResult?.pagination;
 
-  const statuses: (EnrollmentStatus | 'all')[] = [
-    'all',
-    'enrolled',
-    'completed',
-    'dropped',
-    'failed',
-    'reappear',
-  ]
+  const statuses: (EnrollmentStatus | "all")[] = [
+    "all",
+    "enrolled",
+    "completed",
+    "dropped",
+    "failed",
+    "reappear",
+  ];
 
   return (
     <>
-      <div className="tabs-row" style={{ borderTop: '1px solid var(--line)' }}>
+      <div className="tabs-row" style={{ borderTop: "1px solid var(--line)" }}>
         {statuses.map((s) => (
           <button
             key={s}
             type="button"
-            className={`tab-btn${statusFilter === s ? ' active' : ''}`}
+            className={`tab-btn${statusFilter === s ? " active" : ""}`}
             onClick={() => {
-              setStatusFilter(s)
-              setPage(1)
+              setStatusFilter(s);
+              setPage(1);
             }}
           >
-            {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
+            {s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
           </button>
         ))}
       </div>
 
       <div
         className="card-head"
-        style={{ borderTop: 'none', borderBottom: '1px solid var(--line)' }}
+        style={{ borderTop: "none", borderBottom: "1px solid var(--line)" }}
       >
         <div
           style={{
-            display: 'flex',
+            display: "flex",
             gap: 8,
-            flexWrap: 'wrap',
-            alignItems: 'center',
+            flexWrap: "wrap",
+            alignItems: "center",
             flex: 1,
           }}
         >
           <select
             value={batchFilter}
             onChange={(e) => {
-              setBatchFilter(e.target.value)
-              setSectionFilter('')
-              setPage(1)
+              setBatchFilter(e.target.value);
+              setSectionFilter("");
+              setPage(1);
             }}
             style={{
-              padding: '6px 10px',
+              padding: "6px 10px",
               borderRadius: 5,
-              border: '1px solid var(--line)',
+              border: "1px solid var(--line)",
               fontSize: 13,
               minWidth: 150,
             }}
@@ -161,13 +153,13 @@ export default function EnrollmentsTab() {
             <select
               value={sectionFilter}
               onChange={(e) => {
-                setSectionFilter(e.target.value)
-                setPage(1)
+                setSectionFilter(e.target.value);
+                setPage(1);
               }}
               style={{
-                padding: '6px 10px',
+                padding: "6px 10px",
                 borderRadius: 5,
-                border: '1px solid var(--line)',
+                border: "1px solid var(--line)",
                 fontSize: 13,
                 minWidth: 150,
               }}
@@ -187,13 +179,13 @@ export default function EnrollmentsTab() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSearch()
+                if (e.key === "Enter") handleSearch();
               }}
               placeholder="Search by reg no, name, or CNIC..."
               style={{
-                padding: '6px 10px',
+                padding: "6px 10px",
                 borderRadius: 5,
-                border: '1px solid var(--line)',
+                border: "1px solid var(--line)",
                 fontSize: 13,
                 minWidth: 200,
                 flex: 1,
@@ -207,7 +199,7 @@ export default function EnrollmentsTab() {
               className="btn"
               onClick={handleSearch}
               disabled={isLoading}
-              style={{ padding: '6px 16px' }}
+              style={{ padding: "6px 16px" }}
             >
               Search
             </button>
@@ -218,7 +210,7 @@ export default function EnrollmentsTab() {
               type="button"
               className="btn secondary"
               onClick={handleClearSearch}
-              style={{ padding: '6px 12px' }}
+              style={{ padding: "6px 12px" }}
             >
               Clear
             </button>
@@ -228,7 +220,7 @@ export default function EnrollmentsTab() {
             type="button"
             className="btn secondary"
             onClick={() => setShowBulkReEnroll(true)}
-            style={{ marginLeft: 'auto' }}
+            style={{ marginLeft: "auto" }}
             title="Enroll students with missing course enrollments"
           >
             🔄 Bulk Re-enroll
@@ -249,27 +241,28 @@ export default function EnrollmentsTab() {
           className="card-body"
           style={{
             padding: 16,
-            backgroundColor: '#fee',
-            border: '1px solid #f88',
+            backgroundColor: "#fee",
+            border: "1px solid #f88",
           }}
         >
-          <p style={{ color: '#d00', margin: 0 }}>
-            <strong>Error:</strong>{' '}
-            {(error as any)?.response?.data?.message || (error as Error).message}
+          <p style={{ color: "#d00", margin: 0 }}>
+            <strong>Error:</strong>{" "}
+            {(error as any)?.response?.data?.message ||
+              (error as Error).message}
           </p>
         </div>
       )}
 
       <div
         className="card-head"
-        style={{ borderTop: 'none', borderBottom: '1px solid var(--line)' }}
+        style={{ borderTop: "none", borderBottom: "1px solid var(--line)" }}
       >
         <span className="meta">
           {isLoading
-            ? 'Loading...'
+            ? "Loading..."
             : pagination
-              ? `${pagination.total} enrollment${pagination.total !== 1 ? 's' : ''} (Page ${pagination.page} of ${pagination.totalPages})`
-              : 'Select batch to view enrollments'}
+              ? `${pagination.total} enrollment${pagination.total !== 1 ? "s" : ""} (Page ${pagination.page} of ${pagination.totalPages})`
+              : "Select batch to view enrollments"}
         </span>
         <button
           type="button"
@@ -300,10 +293,10 @@ export default function EnrollmentsTab() {
                 <td
                   colSpan={7}
                   style={{
-                    textAlign: 'center',
-                    color: 'var(--ink-faint)',
-                    padding: '40px 16px',
-                    fontStyle: 'italic',
+                    textAlign: "center",
+                    color: "var(--ink-faint)",
+                    padding: "40px 16px",
+                    fontStyle: "italic",
                   }}
                 >
                   Please select a batch to view enrollments
@@ -313,7 +306,7 @@ export default function EnrollmentsTab() {
               <tr>
                 <td
                   colSpan={7}
-                  style={{ textAlign: 'center', color: 'var(--ink-faint)' }}
+                  style={{ textAlign: "center", color: "var(--ink-faint)" }}
                 >
                   Loading enrollments...
                 </td>
@@ -323,14 +316,14 @@ export default function EnrollmentsTab() {
                 <td
                   colSpan={7}
                   style={{
-                    textAlign: 'center',
-                    color: 'var(--ink-faint)',
-                    fontStyle: 'italic',
+                    textAlign: "center",
+                    color: "var(--ink-faint)",
+                    fontStyle: "italic",
                   }}
                 >
                   {appliedSearch
-                    ? 'No matching enrollments found'
-                    : 'No enrollments found for this batch'}
+                    ? "No matching enrollments found"
+                    : "No enrollments found for this batch"}
                 </td>
               </tr>
             ) : (
@@ -338,8 +331,7 @@ export default function EnrollmentsTab() {
                 <tr key={enr.id}>
                   <td>
                     <div className="subj-title">
-                      {enr.studentAcademicRecord?.student?.firstName}{' '}
-                      {enr.studentAcademicRecord?.student?.lastName}
+                      {enr.studentAcademicRecord?.student?.firstName}
                     </div>
                     <div className="subj-sub">
                       {enr.studentAcademicRecord?.student?.studentNumber}
@@ -347,7 +339,7 @@ export default function EnrollmentsTab() {
                   </td>
                   <td>
                     <div className="subj-sub">
-                      {enr.studentAcademicRecord?.student?.batch?.name || 'N/A'}
+                      {enr.studentAcademicRecord?.student?.batch?.name || "N/A"}
                     </div>
                   </td>
                   <td>
@@ -355,19 +347,18 @@ export default function EnrollmentsTab() {
                     <div className="subj-sub col-hide-sm">
                       {enr.course?.name}
                     </div>
-                    {enr.isExtra && enr.allocation && (
+                    {/* {enr.isExtra && enr.allocation && (
                       <div
                         style={{
                           fontSize: 11,
-                          color: '#6c757d',
+                          color: "#6c757d",
                           marginTop: 4,
                         }}
                       >
-                        📚 Extra • Batch{' '}
-                        {enr.allocation.section?.batch?.name} - Sec{' '}
-                        {enr.allocation.section?.name}
+                        📚 Extra • Batch {enr.allocation.section?.batch?.name} -
+                        Sec {enr.allocation.section?.name}
                       </div>
-                    )}
+                    )} */}
                   </td>
                   <td className="subj-sub col-hide-sm">
                     {enr.course?.creditHours}
@@ -376,7 +367,7 @@ export default function EnrollmentsTab() {
                         style={{
                           marginLeft: 4,
                           fontSize: 11,
-                          color: 'var(--ink-faint)',
+                          color: "var(--ink-faint)",
                         }}
                       >
                         (Extra)
@@ -395,25 +386,28 @@ export default function EnrollmentsTab() {
                     <select
                       value="actions"
                       onChange={(e) => {
-                        const action = e.target.value
-                        if (action === 'drop') {
-                          handleDrop(enr.id)
-                        } else if (action === 'delete') {
-                          handleDelete(enr.id)
+                        const action = e.target.value;
+                        if (action === "drop") {
+                          handleDrop(enr.id);
+                        } else if (action === "delete") {
+                          handleDelete(enr.id);
                         } else if (
-                          action === 'enrolled' ||
-                          action === 'completed' ||
-                          action === 'failed' ||
-                          action === 'reappear'
+                          action === "enrolled" ||
+                          action === "completed" ||
+                          action === "failed" ||
+                          action === "reappear"
                         ) {
-                          handleUpdateStatus(enr.id, action as EnrollmentStatus)
+                          handleUpdateStatus(
+                            enr.id,
+                            action as EnrollmentStatus,
+                          );
                         }
-                        e.target.value = 'actions'
+                        e.target.value = "actions";
                       }}
                       style={{
-                        padding: '4px 8px',
+                        padding: "4px 8px",
                         fontSize: 12,
-                        border: '1px solid var(--line)',
+                        border: "1px solid var(--line)",
                         borderRadius: 4,
                       }}
                     >
@@ -438,8 +432,8 @@ export default function EnrollmentsTab() {
         <div
           className="card-head"
           style={{
-            borderTop: '1px solid var(--line)',
-            justifyContent: 'center',
+            borderTop: "1px solid var(--line)",
+            justifyContent: "center",
             gap: 8,
           }}
         >
@@ -448,7 +442,7 @@ export default function EnrollmentsTab() {
             className="btn secondary"
             disabled={page === 1 || isLoading}
             onClick={() => setPage(page - 1)}
-            style={{ padding: '4px 12px', fontSize: 13 }}
+            style={{ padding: "4px 12px", fontSize: 13 }}
           >
             ← Previous
           </button>
@@ -460,7 +454,7 @@ export default function EnrollmentsTab() {
             className="btn secondary"
             disabled={page === pagination.totalPages || isLoading}
             onClick={() => setPage(page + 1)}
-            style={{ padding: '4px 12px', fontSize: 13 }}
+            style={{ padding: "4px 12px", fontSize: 13 }}
           >
             Next →
           </button>
@@ -472,5 +466,5 @@ export default function EnrollmentsTab() {
         <BulkReEnrollModal onClose={() => setShowBulkReEnroll(false)} />
       )}
     </>
-  )
+  );
 }

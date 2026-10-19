@@ -1,19 +1,22 @@
-import { useState } from 'react'
+import { useState } from "react";
 import {
   useAllocations,
   useDeleteAllocation,
-} from '../../../../../hooks/useAllocationQueries'
-import { useBatches, useEnrollmentSections } from '../../../hooks/useAcademicQueries'
-import AllocationForm from './AllocationForm'
+} from "../../hooks/useAllocationQueries";
+import {
+  useBatches,
+  useEnrollmentSections,
+} from "../../hooks/useAcademicQueries";
+import AllocationForm from "./AllocationForm";
 
 export default function AllocationsTab() {
-  const [sectionId, setSectionId] = useState<string>('')
-  const [batchId, setBatchId] = useState<string>('')
-  const [page, setPage] = useState(1)
-  const [showForm, setShowForm] = useState(false)
+  const [sectionId, setSectionId] = useState<string>("");
+  const [batchId, setBatchId] = useState<string>("");
+  const [page, setPage] = useState(1);
+  const [showForm, setShowForm] = useState(false);
 
-  const { data: batches } = useBatches('ACTIVE')
-  const { data: sections } = useEnrollmentSections(batchId || null)
+  const { data: batches } = useBatches("ACTIVE");
+  const { data: sections } = useEnrollmentSections(batchId || null);
 
   const {
     data: allocationsResult,
@@ -21,61 +24,57 @@ export default function AllocationsTab() {
     refetch,
   } = useAllocations({
     sectionId: sectionId || undefined,
-    status: 'active',
+    status: "active",
     page,
     limit: 20,
-  })
+  });
 
-  const deleteMutation = useDeleteAllocation()
+  const deleteMutation = useDeleteAllocation();
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Remove this allocation?')) return
-    await deleteMutation.mutateAsync(id)
-  }
+    if (!confirm("Remove this allocation?")) return;
+    await deleteMutation.mutateAsync(id);
+  };
 
-  const allocations = allocationsResult?.data || []
-  const pagination = allocationsResult?.pagination
+  const allocations = allocationsResult?.data || [];
+  const pagination = allocationsResult?.pagination;
 
   return (
     <>
       <div
         className="card-head"
-        style={{ borderBottom: '1px solid var(--line)' }}
+        style={{ borderBottom: "1px solid var(--line)" }}
       >
         <h2 style={{ margin: 0, fontSize: 16 }}>Course Allocations</h2>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => setShowForm(true)}
-        >
+        <button type="button" className="btn" onClick={() => setShowForm(true)}>
           + New Allocation
         </button>
       </div>
 
       <div
         className="card-head"
-        style={{ borderTop: 'none', borderBottom: '1px solid var(--line)' }}
+        style={{ borderTop: "none", borderBottom: "1px solid var(--line)" }}
       >
         <div
           style={{
-            display: 'flex',
+            display: "flex",
             gap: 8,
-            flexWrap: 'wrap',
-            alignItems: 'center',
+            flexWrap: "wrap",
+            alignItems: "center",
             flex: 1,
           }}
         >
           <select
             value={batchId}
             onChange={(e) => {
-              setBatchId(e.target.value)
-              setSectionId('')
-              setPage(1)
+              setBatchId(e.target.value);
+              setSectionId("");
+              setPage(1);
             }}
             style={{
-              padding: '6px 10px',
+              padding: "6px 10px",
               borderRadius: 5,
-              border: '1px solid var(--line)',
+              border: "1px solid var(--line)",
               fontSize: 13,
               minWidth: 150,
             }}
@@ -92,13 +91,13 @@ export default function AllocationsTab() {
             <select
               value={sectionId}
               onChange={(e) => {
-                setSectionId(e.target.value)
-                setPage(1)
+                setSectionId(e.target.value);
+                setPage(1);
               }}
               style={{
-                padding: '6px 10px',
+                padding: "6px 10px",
                 borderRadius: 5,
-                border: '1px solid var(--line)',
+                border: "1px solid var(--line)",
                 fontSize: 13,
                 minWidth: 150,
               }}
@@ -116,7 +115,7 @@ export default function AllocationsTab() {
             type="button"
             className="btn secondary"
             onClick={() => refetch()}
-            style={{ marginLeft: 'auto' }}
+            style={{ marginLeft: "auto" }}
             disabled={!sectionId}
           >
             Refresh
@@ -126,14 +125,14 @@ export default function AllocationsTab() {
 
       <div
         className="card-head"
-        style={{ borderTop: 'none', borderBottom: '1px solid var(--line)' }}
+        style={{ borderTop: "none", borderBottom: "1px solid var(--line)" }}
       >
         <span className="meta">
           {isLoading
-            ? 'Loading...'
+            ? "Loading..."
             : pagination
-              ? `${pagination.total} allocation${pagination.total !== 1 ? 's' : ''} (Page ${pagination.page} of ${pagination.totalPages})`
-              : 'Select batch and section to view allocations'}
+              ? `${pagination.total} allocation${pagination.total !== 1 ? "s" : ""} (Page ${pagination.page} of ${pagination.totalPages})`
+              : "Select batch and section to view allocations"}
         </span>
       </div>
 
@@ -154,10 +153,10 @@ export default function AllocationsTab() {
                 <td
                   colSpan={5}
                   style={{
-                    textAlign: 'center',
-                    color: 'var(--ink-faint)',
-                    fontStyle: 'italic',
-                    padding: '40px 20px',
+                    textAlign: "center",
+                    color: "var(--ink-faint)",
+                    fontStyle: "italic",
+                    padding: "40px 20px",
                   }}
                 >
                   Please select a batch and section to view allocations
@@ -167,7 +166,7 @@ export default function AllocationsTab() {
               <tr>
                 <td
                   colSpan={5}
-                  style={{ textAlign: 'center', color: 'var(--ink-faint)' }}
+                  style={{ textAlign: "center", color: "var(--ink-faint)" }}
                 >
                   Loading allocations...
                 </td>
@@ -177,9 +176,9 @@ export default function AllocationsTab() {
                 <td
                   colSpan={5}
                   style={{
-                    textAlign: 'center',
-                    color: 'var(--ink-faint)',
-                    fontStyle: 'italic',
+                    textAlign: "center",
+                    color: "var(--ink-faint)",
+                    fontStyle: "italic",
                   }}
                 >
                   No allocations found for this section
@@ -212,7 +211,7 @@ export default function AllocationsTab() {
                     <button
                       type="button"
                       className="btn secondary"
-                      style={{ padding: '4px 10px', fontSize: 12 }}
+                      style={{ padding: "4px 10px", fontSize: 12 }}
                       disabled={deleteMutation.isPending}
                       onClick={() => handleDelete(alloc.id)}
                     >
@@ -231,8 +230,8 @@ export default function AllocationsTab() {
         <div
           className="card-head"
           style={{
-            borderTop: '1px solid var(--line)',
-            justifyContent: 'center',
+            borderTop: "1px solid var(--line)",
+            justifyContent: "center",
             gap: 8,
           }}
         >
@@ -241,7 +240,7 @@ export default function AllocationsTab() {
             className="btn secondary"
             disabled={page === 1 || isLoading}
             onClick={() => setPage(page - 1)}
-            style={{ padding: '4px 12px', fontSize: 13 }}
+            style={{ padding: "4px 12px", fontSize: 13 }}
           >
             ← Previous
           </button>
@@ -253,7 +252,7 @@ export default function AllocationsTab() {
             className="btn secondary"
             disabled={page === pagination.totalPages || isLoading}
             onClick={() => setPage(page + 1)}
-            style={{ padding: '4px 12px', fontSize: 13 }}
+            style={{ padding: "4px 12px", fontSize: 13 }}
           >
             Next →
           </button>
@@ -262,5 +261,5 @@ export default function AllocationsTab() {
 
       {showForm && <AllocationForm onClose={() => setShowForm(false)} />}
     </>
-  )
+  );
 }

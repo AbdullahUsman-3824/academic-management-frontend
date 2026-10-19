@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useYear, useUpdateYear } from "../../../hooks/useAcademicQueries";
-import { YearForm } from "../../../components/academic/YearForm";
-import { AcademicYearStatus } from "../../../api/academic";
+import { YearForm } from "../../../components/academics/YearForm";
+import { AcademicYearStatus } from "../../../types/academics.types";
 import { adminPaths } from "../../../data/navData";
 import {
   EMPTY_YEAR_FORM,

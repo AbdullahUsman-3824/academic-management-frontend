@@ -1,24 +1,24 @@
-import { useUpdateFacultyStatus } from '../../../../../hooks/useFacultyQueries';
-import type { FacultyStatus } from '../../../../../api/faculty';
-import type { useFaculty } from '../../../../../hooks/useFacultyQueries';
+import { useUpdateFacultyStatus } from "../../hooks/useFacultyQueries";
+import type { FacultyStatus } from "../../api/faculty";
+import type { useFaculty } from "../../hooks/useFacultyQueries";
 
 const statusClass: Record<FacultyStatus, string> = {
-  active: 'active',
-  inactive: 'inactive',
+  active: "active",
+  inactive: "inactive",
 };
 
 const inputStyle: React.CSSProperties = {
-  padding: '6px 10px',
+  padding: "6px 10px",
   borderRadius: 5,
-  border: '1px solid var(--line)',
+  border: "1px solid var(--line)",
   fontSize: 13,
-  width: '100%',
+  width: "100%",
   maxWidth: 360,
 };
 
 type Props = {
-  statusFilter: FacultyStatus | 'all';
-  setStatusFilter: (s: FacultyStatus | 'all') => void;
+  statusFilter: FacultyStatus | "all";
+  setStatusFilter: (s: FacultyStatus | "all") => void;
   searchInput: string;
   setSearchInput: (v: string) => void;
   onSearch: () => void;
@@ -46,7 +46,7 @@ export default function FacultyList({
   const rows = data?.data ?? [];
   const meta = data?.meta;
 
-  const statuses: (FacultyStatus | 'all')[] = ['all', 'active', 'inactive'];
+  const statuses: (FacultyStatus | "all")[] = ["all", "active", "inactive"];
 
   return (
     <>
@@ -55,30 +55,30 @@ export default function FacultyList({
           <button
             key={s}
             type="button"
-            className={`tab-btn${statusFilter === s ? ' active' : ''}`}
+            className={`tab-btn${statusFilter === s ? " active" : ""}`}
             onClick={() => setStatusFilter(s)}
           >
-            {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
+            {s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
           </button>
         ))}
       </div>
 
       <div
         className="card-head"
-        style={{ borderTop: 'none', borderBottom: '1px solid var(--line)' }}
+        style={{ borderTop: "none", borderBottom: "1px solid var(--line)" }}
       >
         <span className="meta">
           {isLoading
-            ? 'Loading…'
-            : `${meta?.total ?? 0} faculty member${(meta?.total ?? 0) !== 1 ? 's' : ''}`}
-          {statusFilter !== 'all' ? ` · ${statusFilter}` : ''}
+            ? "Loading…"
+            : `${meta?.total ?? 0} faculty member${(meta?.total ?? 0) !== 1 ? "s" : ""}`}
+          {statusFilter !== "all" ? ` · ${statusFilter}` : ""}
         </span>
 
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <input
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && onSearch()}
+            onKeyDown={(e) => e.key === "Enter" && onSearch()}
             placeholder="Search name, email, or employee #…"
             style={{ ...inputStyle, maxWidth: 250 }}
           />
@@ -97,10 +97,14 @@ export default function FacultyList({
 
       {isError && (
         <div className="card-body">
-          <p style={{ color: 'var(--ink-faint)', marginBottom: 12 }}>
-            {(error as Error)?.message ?? 'Failed to load faculty'}
+          <p style={{ color: "var(--ink-faint)", marginBottom: 12 }}>
+            {(error as Error)?.message ?? "Failed to load faculty"}
           </p>
-          <button type="button" className="btn secondary" onClick={() => refetch()}>
+          <button
+            type="button"
+            className="btn secondary"
+            onClick={() => refetch()}
+          >
             Retry
           </button>
         </div>
@@ -123,7 +127,10 @@ export default function FacultyList({
             <tbody>
               {isLoading && (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', color: 'var(--ink-faint)' }}>
+                  <td
+                    colSpan={7}
+                    style={{ textAlign: "center", color: "var(--ink-faint)" }}
+                  >
                     Loading faculty…
                   </td>
                 </tr>
@@ -133,9 +140,9 @@ export default function FacultyList({
                   <td
                     colSpan={7}
                     style={{
-                      textAlign: 'center',
-                      color: 'var(--ink-faint)',
-                      fontStyle: 'italic',
+                      textAlign: "center",
+                      color: "var(--ink-faint)",
+                      fontStyle: "italic",
                     }}
                   >
                     No faculty members found
@@ -153,9 +160,11 @@ export default function FacultyList({
                         {f.firstName} {f.middleName} {f.lastName}
                       </div>
                     </td>
-                    <td className="subj-sub col-hide-sm">{f.designation || '—'}</td>
-                    <td className="subj-sub col-hide-sm">{f.email || '—'}</td>
-                    <td className="subj-sub col-hide-sm">{f.phone || '—'}</td>
+                    <td className="subj-sub col-hide-sm">
+                      {f.designation || "—"}
+                    </td>
+                    <td className="subj-sub col-hide-sm">{f.email || "—"}</td>
+                    <td className="subj-sub col-hide-sm">{f.phone || "—"}</td>
                     <td>
                       <span className={`status ${statusClass[f.status]}`}>
                         {f.status}
@@ -165,7 +174,11 @@ export default function FacultyList({
                       <button
                         type="button"
                         className="btn secondary"
-                        style={{ padding: '4px 10px', fontSize: 12, marginRight: 4 }}
+                        style={{
+                          padding: "4px 10px",
+                          fontSize: 12,
+                          marginRight: 4,
+                        }}
                         onClick={() => onView(f.id)}
                       >
                         View
@@ -173,7 +186,11 @@ export default function FacultyList({
                       <button
                         type="button"
                         className="btn secondary"
-                        style={{ padding: '4px 10px', fontSize: 12, marginRight: 4 }}
+                        style={{
+                          padding: "4px 10px",
+                          fontSize: 12,
+                          marginRight: 4,
+                        }}
                         onClick={() => onEdit(f.id)}
                       >
                         Edit
@@ -181,16 +198,17 @@ export default function FacultyList({
                       <button
                         type="button"
                         className="btn secondary"
-                        style={{ padding: '4px 10px', fontSize: 12 }}
+                        style={{ padding: "4px 10px", fontSize: 12 }}
                         disabled={statusMutation.isPending}
                         onClick={() =>
                           statusMutation.mutate({
                             id: f.id,
-                            status: f.status === 'active' ? 'inactive' : 'active',
+                            status:
+                              f.status === "active" ? "inactive" : "active",
                           })
                         }
                       >
-                        {f.status === 'active' ? 'Deactivate' : 'Activate'}
+                        {f.status === "active" ? "Deactivate" : "Activate"}
                       </button>
                     </td>
                   </tr>
@@ -203,7 +221,7 @@ export default function FacultyList({
       {meta && meta.totalPages > 1 && (
         <div
           className="card-body"
-          style={{ display: 'flex', gap: 8, alignItems: 'center' }}
+          style={{ display: "flex", gap: 8, alignItems: "center" }}
         >
           <button
             type="button"

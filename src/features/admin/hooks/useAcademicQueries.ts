@@ -1,5 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import * as academicApi from "../api/academic";
+import {
+  academicsApi,
+  yearsApi,
+  sessionsApi,
+  batchesApi,
+  sectionsApi,
+  progressionApi,
+} from "../api/academics.api";
 import type {
   AcademicYearStatus,
   AcademicSessionStatus,
@@ -11,7 +18,7 @@ import type {
   UpdateSectionDto,
   MoveStudentsSectionDto,
   ImplementProgressionDto,
-} from "../api/academic";
+} from "../types/academics.types";
 
 export const academicKeys = {
   all: ["academics"] as const,
@@ -19,8 +26,10 @@ export const academicKeys = {
   years: (status?: string) => [...academicKeys.all, "years", status] as const,
   sessions: (params?: { status?: string; academicYearId?: string }) =>
     [...academicKeys.all, "sessions", params] as const,
-  batches: (status?: string) => [...academicKeys.all, "batches", status] as const,
-  sections: (batchId: string) => [...academicKeys.all, "sections", batchId] as const,
+  batches: (status?: string) =>
+    [...academicKeys.all, "batches", status] as const,
+  sections: (batchId: string) =>
+    [...academicKeys.all, "sections", batchId] as const,
   progressionPreview: (academicSessionId?: string) =>
     [...academicKeys.all, "progression-preview", academicSessionId] as const,
 };
@@ -30,14 +39,14 @@ export const academicKeys = {
 export function useAcademicOverview() {
   return useQuery({
     queryKey: academicKeys.overview(),
-    queryFn: academicApi.getOverview,
+    queryFn: () => academicsApi.overview(),
   });
 }
 
 export function useSetupAcademic() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: academicApi.setupAcademic,
+    mutationFn: academicsApi.setup,
     onSuccess: () => qc.invalidateQueries({ queryKey: academicKeys.all }),
   });
 }
@@ -48,7 +57,7 @@ export function useAcademicYears(status?: AcademicYearStatus | "all" | string) {
   const s = status === "all" ? undefined : status;
   return useQuery({
     queryKey: academicKeys.years(s),
-    queryFn: () => academicApi.getYears(s as AcademicYearStatus | undefined),
+    queryFn: () => yearsApi.list(s as AcademicYearStatus | undefined),
   });
 }
 export const useYears = useAcademicYears;
@@ -56,16 +65,8 @@ export const useYears = useAcademicYears;
 export function useYear(id: string | null) {
   return useQuery({
     queryKey: [...academicKeys.all, "year", id],
-    queryFn: () => academicApi.getYear(id!),
+    queryFn: () => yearsApi.get(id!),
     enabled: !!id,
-  });
-}
-
-export function useCreateYear() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: academicApi.createYear,
-    onSuccess: () => qc.invalidateQueries({ queryKey: academicKeys.all }),
   });
 }
 
@@ -73,7 +74,7 @@ export function useUpdateYear() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateAcademicYearDto }) =>
-      academicApi.updateYear(id, dto),
+      yearsApi.update(id, dto),
     onSuccess: () => qc.invalidateQueries({ queryKey: academicKeys.all }),
   });
 }
@@ -90,7 +91,7 @@ export function useAcademicSessions(params?: {
   return useQuery({
     queryKey: academicKeys.sessions({ status, academicYearId }),
     queryFn: () =>
-      academicApi.getSessions({
+      sessionsApi.list({
         status: status as AcademicSessionStatus | undefined,
         academicYearId,
       }),
@@ -101,16 +102,8 @@ export const useSessions = useAcademicSessions;
 export function useSession(id: string | null) {
   return useQuery({
     queryKey: [...academicKeys.all, "session", id],
-    queryFn: () => academicApi.getSession(id!),
+    queryFn: () => sessionsApi.get(id!),
     enabled: !!id,
-  });
-}
-
-export function useCreateSession() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: academicApi.createSession,
-    onSuccess: () => qc.invalidateQueries({ queryKey: academicKeys.all }),
   });
 }
 
@@ -118,7 +111,7 @@ export function useUpdateSession() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateAcademicSessionDto }) =>
-      academicApi.updateSession(id, dto),
+      sessionsApi.update(id, dto),
     onSuccess: () => qc.invalidateQueries({ queryKey: academicKeys.all }),
   });
 }
@@ -126,7 +119,7 @@ export function useUpdateSession() {
 export function useActivateSession() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: academicApi.activateSession,
+    mutationFn: sessionsApi.activate,
     onSuccess: () => qc.invalidateQueries({ queryKey: academicKeys.all }),
   });
 }
@@ -134,7 +127,7 @@ export function useActivateSession() {
 export function useCompleteSession() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: academicApi.completeSession,
+    mutationFn: sessionsApi.complete,
     onSuccess: () => qc.invalidateQueries({ queryKey: academicKeys.all }),
   });
 }
@@ -145,14 +138,14 @@ export function useBatches(status?: BatchStatus | "all" | string) {
   const s = status === "all" ? undefined : status;
   return useQuery({
     queryKey: academicKeys.batches(s),
-    queryFn: () => academicApi.getBatches(s as BatchStatus | undefined),
+    queryFn: () => batchesApi.list(s as BatchStatus | undefined),
   });
 }
 
 export function useBatch(id: string | null) {
   return useQuery({
     queryKey: [...academicKeys.all, "batch", id],
-    queryFn: () => academicApi.getBatch(id!),
+    queryFn: () => batchesApi.get(id!),
     enabled: !!id,
   });
 }
@@ -161,7 +154,7 @@ export function useUpdateBatch() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateBatchDto }) =>
-      academicApi.updateBatch(id, dto),
+      batchesApi.update(id, dto),
     onSuccess: () => qc.invalidateQueries({ queryKey: academicKeys.all }),
   });
 }
@@ -169,7 +162,7 @@ export function useUpdateBatch() {
 export function useActivateBatch() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: academicApi.activateBatch,
+    mutationFn: batchesApi.activate,
     onSuccess: () => qc.invalidateQueries({ queryKey: academicKeys.all }),
   });
 }
@@ -179,7 +172,7 @@ export function useActivateBatch() {
 export function useSections(batchId: string | null) {
   return useQuery({
     queryKey: academicKeys.sections(batchId ?? ""),
-    queryFn: () => academicApi.sectionsApi.list(batchId!),
+    queryFn: () => sectionsApi.list(batchId!),
     enabled: !!batchId,
   });
 }
@@ -187,8 +180,13 @@ export function useSections(batchId: string | null) {
 export function useCreateSection() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ batchId, dto }: { batchId: string; dto: CreateSectionDto }) =>
-      academicApi.sectionsApi.create(batchId, dto),
+    mutationFn: ({
+      batchId,
+      dto,
+    }: {
+      batchId: string;
+      dto: CreateSectionDto;
+    }) => sectionsApi.create(batchId, dto),
     onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: academicKeys.sections(vars.batchId) });
       qc.invalidateQueries({ queryKey: academicKeys.all }); // batch section count
@@ -207,7 +205,7 @@ export function useUpdateSection() {
       batchId: string;
       sectionId: string;
       dto: UpdateSectionDto;
-    }) => academicApi.sectionsApi.update(batchId, sectionId, dto),
+    }) => sectionsApi.update(batchId, sectionId, dto),
     onSuccess: (_d, vars) =>
       qc.invalidateQueries({ queryKey: academicKeys.sections(vars.batchId) }),
   });
@@ -216,8 +214,13 @@ export function useUpdateSection() {
 export function useDeleteSection() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ batchId, sectionId }: { batchId: string; sectionId: string }) =>
-      academicApi.sectionsApi.remove(batchId, sectionId),
+    mutationFn: ({
+      batchId,
+      sectionId,
+    }: {
+      batchId: string;
+      sectionId: string;
+    }) => sectionsApi.remove(batchId, sectionId),
     onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: academicKeys.sections(vars.batchId) });
       qc.invalidateQueries({ queryKey: academicKeys.all });
@@ -234,7 +237,7 @@ export function useMoveStudentsSection() {
     }: {
       batchId: string;
       dto: MoveStudentsSectionDto;
-    }) => academicApi.sectionsApi.moveStudents(batchId, dto),
+    }) => sectionsApi.moveStudents(batchId, dto),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["students"] });
     },
@@ -249,7 +252,7 @@ export function useProgressionPreview(
 ) {
   return useQuery({
     queryKey: academicKeys.progressionPreview(academicSessionId),
-    queryFn: () => academicApi.progressionApi.getPreview(academicSessionId),
+    queryFn: () => progressionApi.getPreview(academicSessionId),
     enabled,
   });
 }
@@ -257,8 +260,7 @@ export function useProgressionPreview(
 export function useImplementProgression() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (dto: ImplementProgressionDto) =>
-      academicApi.progressionApi.implement(dto),
+    mutationFn: (dto: ImplementProgressionDto) => progressionApi.implement(dto),
     onSuccess: () => qc.invalidateQueries({ queryKey: academicKeys.all }),
   });
 }
@@ -268,7 +270,7 @@ export function useImplementProgression() {
 export function useEnrollmentSections(batchId: string | null) {
   return useQuery({
     queryKey: ["enrollment-sections", batchId],
-    queryFn: () => academicApi.getSectionsForBatch(batchId!),
+    queryFn: () => sectionsApi.list(batchId!),
     enabled: !!batchId,
   });
 }
@@ -276,7 +278,7 @@ export function useEnrollmentSections(batchId: string | null) {
 export function useAcademicSessionsList(enabled: boolean = true) {
   return useQuery({
     queryKey: ["enrollment-academic-sessions"],
-    queryFn: academicApi.getAcademicSessionsList,
+    queryFn: () => sessionsApi.options(),
     enabled,
   });
 }

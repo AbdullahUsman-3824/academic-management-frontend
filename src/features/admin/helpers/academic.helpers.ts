@@ -3,7 +3,7 @@ import {
   AcademicYearStatus,
   AcademicSessionStatus,
   BatchStatus,
-} from "../api/academic";
+} from "../types/academics.types";
 
 // ── Formatting ───────────────────────────────────────────────────────────────
 
@@ -44,6 +44,7 @@ export const yearStatusClass: Record<AcademicYearStatus, string> = {
 export const sessionStatusClass: Record<AcademicSessionStatus, string> = {
   [AcademicSessionStatus.UPCOMING]: "upcoming",
   [AcademicSessionStatus.ACTIVE]: "active",
+  [AcademicSessionStatus.INACTIVE]: "inactive",
   [AcademicSessionStatus.COMPLETED]: "ok",
   [AcademicSessionStatus.CANCELLED]: "inactive",
 };

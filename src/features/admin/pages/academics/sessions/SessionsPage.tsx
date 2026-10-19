@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AcademicSessionStatus } from "../../../api/academic";
-import type { AcademicSession } from "../../../api/academic";
+import { AcademicSessionStatus } from "../../../types/academics.types";
+import type { AcademicSession } from "../../../types/academics.types";
 import {
   useSessions,
   useActivateSession,
