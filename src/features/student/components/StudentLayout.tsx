@@ -1,13 +1,14 @@
 import { useState, useEffect, type ReactNode } from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { studentNavItems, studentRoutes } from "../data/navData";
 import { student } from "../data/mockStudent";
+import { useAuth } from "../../../hooks/useAuth";
 import "../../../styles/student-portal.css";
 import logo from "../../../assets/icons/law-college-logo.png";
 
 import {
   DashboardRounded as DashboardIcon,
-  MenuBookRounded as MenuBookIcon,
+  // MenuBookRounded as MenuBookIcon,
   AssignmentRounded as AssignmentIcon,
   BarChartRounded as BarChartIcon,
   ReceiptLongRounded as ReceiptLongIcon,
@@ -20,7 +21,7 @@ import {
 
 const navIcons: Record<string, ReactNode> = {
   [studentRoutes.dashboard]: <DashboardIcon fontSize="small" />,
-  [studentRoutes.subjects]: <MenuBookIcon fontSize="small" />,
+  // [studentRoutes.subjects]: <MenuBookIcon fontSize="small" />,
   [studentRoutes.marks]: <AssignmentIcon fontSize="small" />,
   [studentRoutes.results]: <BarChartIcon fontSize="small" />,
   [studentRoutes.fees]: <ReceiptLongIcon fontSize="small" />,
@@ -31,6 +32,19 @@ const navIcons: Record<string, ReactNode> = {
 function StudentLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logoutAsync, isLoggingOut } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logoutAsync();
+    } finally {
+      // useAuth clears the Redux user on both success and failure, so
+      // navigating unconditionally here is safe — it never leaves the
+      // portal stuck on a logged-out page without redirecting.
+      navigate("/login", { replace: true });
+    }
+  };
 
   useEffect(() => {
     setDrawerOpen(false);
@@ -106,10 +120,15 @@ function StudentLayout() {
         </NavLink>
       )}
 
-      <a className="nav-item logout-item" href="#">
+      <button
+        type="button"
+        className="nav-item logout-item"
+        onClick={handleLogout}
+        disabled={isLoggingOut}
+      >
         <LogoutIcon sx={{ fontSize: 22 }} />
-        Log out
-      </a>
+        {isLoggingOut ? "Logging out…" : "Log out"}
+      </button>
     </>
   );
 

@@ -7,7 +7,24 @@
   height: 100vh;
   overflow: hidden;
 }
-
+.student-portal .logout-item {
+  border-top: 1px solid rgba(255,255,255,.2);
+  margin-top: 8px;
+  padding-top: 14px;
+  border-radius: 0;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.student-portal .logout-item:disabled {
+  opacity: .6;
+  cursor: default;
+}
 .student-portal :focus-visible {
   outline: 2px solid var(--green-800);
   outline-offset: 2px;
@@ -523,6 +540,7 @@
 .student-portal .results-tabs {
   gap: 6px;
   flex-wrap: wrap;
+  justify-content: flex-start;   /* added */
   border-bottom: 1px solid var(--line);
   padding: 12px 14px;
 }
