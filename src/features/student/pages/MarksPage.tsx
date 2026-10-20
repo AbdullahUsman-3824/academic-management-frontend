@@ -38,13 +38,12 @@ function MarksPage() {
                 <th>Assessment</th>
                 <th className="col-hide-sm">Category</th>
                 <th>Score</th>
-                <th>Status</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="page-placeholder__todo">
+                  <td colSpan={4} className="page-placeholder__todo">
                     No marks in this category yet.
                   </td>
                 </tr>
@@ -58,9 +57,6 @@ function MarksPage() {
                     <td className="subj-title">{entry.title}</td>
                     <td className="subj-sub col-hide-sm">{entry.category}</td>
                     <td>{entry.score}</td>
-                    <td>
-                      <span className={`status ${entry.status}`}>{entry.statusLabel}</span>
-                    </td>
                   </tr>
                 ))
               )}

@@ -1,7 +1,7 @@
 export const studentRoutes = {
   root: "/",
   dashboard: "/",
-  subjects: "/subjects",
+  // subjects: "/subjects",
   results: "/results",
   marks: "/marks",
   fees: "/fees",
@@ -11,7 +11,7 @@ export const studentRoutes = {
 
 export const studentNavItems = [
   { label: "Dashboard", path: studentRoutes.dashboard },
-  { label: "Subjects", path: studentRoutes.subjects },
+  // { label: "Subjects", path: studentRoutes.subjects },
   { label: "Marks", path: studentRoutes.marks },
   { label: "Results", path: studentRoutes.results },
   { label: "Fees", path: studentRoutes.fees },
