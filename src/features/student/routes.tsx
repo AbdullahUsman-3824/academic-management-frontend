@@ -1,7 +1,7 @@
 import {
   StudentLayout,
   DashboardPage,
-  SubjectsPage,
+  // SubjectsPage,
   ResultsPage,
   MarksPage,
   FeesPage,
@@ -14,11 +14,11 @@ export const studentRoutes = {
   layout: StudentLayout,
   children: [
     { index: true, element: <DashboardPage /> },
-    { path: "subjects", element: <SubjectsPage /> },
+    // { path: "subjects", element: <SubjectsPage /> },
     { path: "results", element: <ResultsPage /> },
     { path: "marks", element: <MarksPage /> },
     { path: "fees", element: <FeesPage /> },
-    { path: "announcements", element: <AnnouncementsPage /> },
+    // { path: "announcements", element: <AnnouncementsPage /> },
     { path: "profile", element: <ProfilePage /> },
   ],
 };

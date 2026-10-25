@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 
-export type Portal = "admin" | "student" | "teacher" | "parent";
+export type Portal = "admin" | "student" | "faculty" | "finance";
 
 interface PortalContextValue {
   portal: Portal;

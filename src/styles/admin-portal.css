@@ -105,6 +105,12 @@
   margin-top: 8px;
   padding-top: 14px;
   border-radius: 0;
+  color: #fff;
+  opacity: 0.8;
+}
+.admin-portal .logout-item:hover {
+  background: rgba(255,255,255,.1);
+  opacity: 1;
 }
 
 /* ---------- Mobile top bar (hidden on desktop) ---------- */
@@ -333,6 +339,9 @@
   color: var(--ink-soft);
   margin-top: 1px;
 }
+.admin-portal .subj-sub.center {
+  text-align: center;
+}
 .admin-portal .credit-pill {
   display: inline-block;
   font-size: 11px;
@@ -544,6 +553,10 @@
   gap: 12px;
 }
 
+.admin-portal .toolbar-grid.four-col {
+  grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+}
+
 .admin-portal .form-grid {
   display: grid;
   gap: 12px;
@@ -717,7 +730,7 @@
     align-items: flex-start;
     gap: 10px;
   }
-
+  .admin-portal .toolbar-grid.four-col { grid-template-columns: 1fr; }
   .admin-portal .layout       { grid-template-columns: 1fr; }
   .admin-portal .profile-grid { grid-template-columns: 1fr; }
   .admin-portal .kpi-grid     { grid-template-columns: repeat(2, 1fr); }
