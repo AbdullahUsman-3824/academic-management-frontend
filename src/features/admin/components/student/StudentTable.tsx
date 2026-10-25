@@ -61,8 +61,7 @@ export function StudentTable({
             <th>Reg. Number</th>
             <th>Student</th>
             <th className="col-hide-sm">Batch</th>
-            <th className="col-hide-sm">Semester</th>
-            <th className="col-hide-sm">Section</th>
+            <th className="col-hide-sm">Semester-Section</th>
             <th className="col-hide-sm">Phone</th>
             <th className="col-hide-sm">Email</th>
             <th>Status</th>
@@ -117,10 +116,8 @@ export function StudentTable({
                 <td className="subj-sub col-hide-sm">
                   {student.batchName ?? EMPTY}
                 </td>
-                <td className="subj-sub col-hide-sm">
-                  {student.currentSemester ?? EMPTY}
-                </td>
-                <td className="subj-sub col-hide-sm">
+                <td className="subj-sub center col-hide-sm">
+                  {student.currentSemester ?? EMPTY}-
                   {student.currentSection ?? EMPTY}
                 </td>
                 <td className="subj-sub col-hide-sm">

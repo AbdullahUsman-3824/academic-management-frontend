@@ -85,10 +85,10 @@ function ViewStudentPage() {
             ← Back
           </button>
           <div>
-<h1 style={{ marginBottom: 2 }}>{student.fullName}</h1>
-<div className="today">
-  {student.stdRegNumber} · {student.batchName ?? "No batch"}
-</div>
+            <h1 style={{ marginBottom: 2 }}>{student.fullName}</h1>
+            <div className="today">
+              {student.stdRegNumber} · {student.batchName ?? "No batch"}
+            </div>
           </div>
         </div>
         <div className="inline-actions">

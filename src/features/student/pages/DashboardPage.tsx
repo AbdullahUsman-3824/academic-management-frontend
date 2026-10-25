@@ -31,9 +31,8 @@ function DashboardPage() {
         </div>
         <div className="topbar-right">
           <div className="tags">
-            <span className="tag">{student.program}</span>
+            <span className="tag">{student.semester}</span>
             <span className="tag">{student.section}</span>
-            <span className="tag">{student.enrollmentStatus}</span>
           </div>
           <Link className="profile" to={studentRoutes.profile}>
             <div className="avatar">{student.initials}</div>
@@ -145,7 +144,7 @@ function DashboardPage() {
             </div>
           </div>
 
-          <div className="card">
+          {/* <div className="card">
             <div className="card-head">
               <h2>Announcements</h2>
             </div>
@@ -159,7 +158,7 @@ function DashboardPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
 
           <div className="card">
             <div className="card-head">

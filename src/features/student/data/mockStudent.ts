@@ -2,8 +2,8 @@ export const student = {
   name: 'Ahmad Raza',
   greetingName: 'Ahmad',
   initials: 'AR',
-  regNo: 'MLC-LLB-24-118',
-  program: 'LLB · Semester 3',
+  regNo: '2027-mss-001',
+  semester: 'Semester 3',
   section: 'Section A',
   enrollmentStatus: 'Enrollment Active',
 

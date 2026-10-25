@@ -339,6 +339,9 @@
   color: var(--ink-soft);
   margin-top: 1px;
 }
+.admin-portal .subj-sub.center {
+  text-align: center;
+}
 .admin-portal .credit-pill {
   display: inline-block;
   font-size: 11px;

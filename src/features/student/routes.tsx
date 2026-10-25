@@ -18,7 +18,7 @@ export const studentRoutes = {
     { path: "results", element: <ResultsPage /> },
     { path: "marks", element: <MarksPage /> },
     { path: "fees", element: <FeesPage /> },
-    { path: "announcements", element: <AnnouncementsPage /> },
+    // { path: "announcements", element: <AnnouncementsPage /> },
     { path: "profile", element: <ProfilePage /> },
   ],
 };
