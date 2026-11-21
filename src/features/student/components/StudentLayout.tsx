@@ -1,7 +1,8 @@
 import { useState, useEffect, type ReactNode } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { studentNavItems, studentRoutes } from "../data/navData";
-import { student } from "../data/mockStudent";
+import { useStudentMe } from "../hooks/useStudentQueries";
+import { getInitials } from "../utils";
 import { useAuth } from "../../../hooks/useAuth";
 import "../../../styles/student-portal.css";
 import logo from "../../../assets/icons/law-college-logo.png";
@@ -25,7 +26,7 @@ const navIcons: Record<string, ReactNode> = {
   [studentRoutes.marks]: <AssignmentIcon fontSize="small" />,
   [studentRoutes.results]: <BarChartIcon fontSize="small" />,
   [studentRoutes.fees]: <ReceiptLongIcon fontSize="small" />,
-  [studentRoutes.announcements]: <CampaignIcon fontSize="small" />,
+  // [studentRoutes.announcements]: <CampaignIcon fontSize="small" />,
   [studentRoutes.profile]: <PersonIcon fontSize="small" />,
 };
 
@@ -34,6 +35,7 @@ function StudentLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { logoutAsync, isLoggingOut } = useAuth();
+  const { data: student } = useStudentMe();
 
   const handleLogout = async () => {
     try {
@@ -112,10 +114,16 @@ function StudentLayout() {
             `sidebar-profile${isActive ? " active" : ""}`
           }
         >
-          <div className="sidebar-profile__avatar">{student.initials}</div>
+          <div className="sidebar-profile__avatar">
+            {getInitials(student?.fullName)}
+          </div>
           <div className="sidebar-profile__info">
-            <div className="sidebar-profile__name">{student.name}</div>
-            <div className="sidebar-profile__reg">{student.regNo}</div>
+            <div className="sidebar-profile__name">
+              {student?.fullName ?? "—"}
+            </div>
+            <div className="sidebar-profile__reg">
+              {student?.stdRegNumber ?? ""}
+            </div>
           </div>
         </NavLink>
       )}

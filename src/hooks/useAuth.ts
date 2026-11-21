@@ -52,12 +52,14 @@ export const useAuth = () => {
     onSuccess: () => {
       dispatch(clearUser());
       queryClient.removeQueries({ queryKey: ["auth", "me"] });
+      queryClient.removeQueries({ queryKey: ["student"] });
     },
     onError: () => {
       // Even if the network call fails, clear client-side state
       // so the user isn't stuck looking "logged in" in the UI.
       dispatch(clearUser());
       queryClient.removeQueries({ queryKey: ["auth", "me"] });
+      queryClient.removeQueries({ queryKey: ["student"] });
     },
   });
 
