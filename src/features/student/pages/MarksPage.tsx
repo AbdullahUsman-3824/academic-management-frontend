@@ -1,81 +1,56 @@
 import { useMemo, useState } from "react";
 import Button from "@mui/material/Button";
-import { marks } from "../data/mockStudent";
 import FilterDropdown, {
   type FilterOption,
 } from "../components/FilterDropdown";
-
-/* ---------- Types ---------- */
-
-export interface Mark {
-  subjectCode: string;
-  subjectTitle: string;
-  title: string;
-  category: string;
-  score: string;
-}
-
-const data: Mark[] = marks;
-
-/* ---------- Page ---------- */
+import {
+  useStudentCourseOptions,
+  useStudentMarks,
+} from "../hooks/useStudentQueries";
+import { getErrorMessage } from "../utils";
 
 function MarksPage() {
-  const [selectedCategories, setSelectedCategories] = useState<FilterOption[]>(
-    [],
-  );
+  // Both dropdowns are single-select. The course is filtered by the server
+  // (?courseId=). The category is matched client-side against each mark's
+  // `assessment` label, so the dropdown options always agree with the rows
+  // (the backend's category name may differ from the assessment label).
+  const [selectedCategory, setSelectedCategory] = useState<FilterOption[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<FilterOption[]>([]);
 
-  const [selectedCourses, setSelectedCourses] = useState<FilterOption[]>([]);
+  const category = selectedCategory[0]?.value;
+  const courseId = selectedCourse[0]?.value;
+  const hasFilters = Boolean(category || courseId);
 
-  const categoryOptions = useMemo<FilterOption[]>(
-    () =>
-      Array.from(new Set(data.map((m) => m.category))).map((category) => ({
-        value: category,
-        label: category,
-      })),
-    [],
-  );
+  // GET /students/me/course-options -> Course dropdown
+  const courseOptionsQuery = useStudentCourseOptions();
+
+  // GET /students/me/marks?courseId=
+  const marksQuery = useStudentMarks({ courseId });
 
   const courseOptions = useMemo<FilterOption[]>(
     () =>
-      Array.from(
-        new Map(data.map((m) => [m.subjectCode, m.subjectTitle])).entries(),
-      ).map(([code, title]) => ({
-        value: code,
-        label: `${code} — ${title}`,
+      (courseOptionsQuery.data ?? []).map((c) => ({
+        value: c.id,
+        label: `${c.code} — ${c.name}`,
       })),
-    [],
+    [courseOptionsQuery.data],
   );
 
-  const hasFilters =
-    selectedCategories.length > 0 || selectedCourses.length > 0;
-
-  const categorySet = useMemo(
-    () => new Set(selectedCategories.map((o) => o.value)),
-    [selectedCategories],
-  );
-
-  const courseSet = useMemo(
-    () => new Set(selectedCourses.map((o) => o.value)),
-    [selectedCourses],
-  );
-
-  const filtered = useMemo(
+  const categoryOptions = useMemo<FilterOption[]>(
     () =>
-      data.filter((mark) => {
-        const matchesCategory =
-          categorySet.size === 0 || categorySet.has(mark.category);
+      Array.from(new Set((marksQuery.data ?? []).map((m) => m.assessment)))
+        .sort()
+        .map((name) => ({ value: name, label: name })),
+    [marksQuery.data],
+  );
 
-        const matchesCourse =
-          courseSet.size === 0 || courseSet.has(mark.subjectCode);
-
-        return matchesCategory && matchesCourse;
-      }),
-    [categorySet, courseSet],
+  const rows = (marksQuery.data ?? []).filter(
+    (m) => !category || m.assessment === category,
   );
 
   function clearFilters() {
-    setSelectedCategories([]);
-    setSelectedCourses([]);
+    setSelectedCategory([]);
+    setSelectedCourse([]);
   }
 
   return (
@@ -96,11 +71,7 @@ function MarksPage() {
               variant="text"
               size="small"
               onClick={clearFilters}
-              sx={{
-                fontSize: 12,
-                textTransform: "none",
-                mb: "1px",
-              }}
+              sx={{ fontSize: 12, textTransform: "none", mb: "1px" }}
             >
               Clear all filters
             </Button>
@@ -109,8 +80,9 @@ function MarksPage() {
             <FilterDropdown
               label="Category"
               options={categoryOptions}
-              value={selectedCategories}
-              onChange={setSelectedCategories}
+              value={selectedCategory}
+              onChange={setSelectedCategory}
+              multiple={false}
             />
           </div>
 
@@ -118,8 +90,9 @@ function MarksPage() {
             <FilterDropdown
               label="Course"
               options={courseOptions}
-              value={selectedCourses}
-              onChange={setSelectedCourses}
+              value={selectedCourse}
+              onChange={setSelectedCourse}
+              multiple={false}
             />
           </div>
         </div>
@@ -130,30 +103,42 @@ function MarksPage() {
               <tr>
                 <th>Subject</th>
                 <th>Assessment</th>
-                <th>Score</th>
+                <th>Marks</th>
               </tr>
             </thead>
 
             <tbody>
-              {filtered.length === 0 ? (
+              {marksQuery.isLoading ? (
                 <tr>
-                  <td colSpan={4} className="page-placeholder__todo">
+                  <td colSpan={3} className="page-placeholder__todo">
+                    Loading marks…
+                  </td>
+                </tr>
+              ) : marksQuery.isError ? (
+                <tr>
+                  <td colSpan={3} className="page-placeholder__todo">
+                    {getErrorMessage(marksQuery.error, "Failed to load marks.")}
+                  </td>
+                </tr>
+              ) : rows.length === 0 ? (
+                <tr>
+                  <td colSpan={3} className="page-placeholder__todo">
                     {hasFilters
                       ? "No marks match the selected filters."
                       : "No marks recorded yet."}
                   </td>
                 </tr>
               ) : (
-                filtered.map((entry) => (
-                  <tr key={entry.subjectCode + entry.title}>
+                rows.map((entry) => (
+                  <tr key={entry.id}>
                     <td>
-                      <div className="code">{entry.subjectCode}</div>
-                      <div className="subj-sub">{entry.subjectTitle}</div>
+                      <div className="code">{entry.course.code}</div>
+                      <div className="subj-sub">{entry.course.name}</div>
                     </td>
-
-                    <td className="subj-title">{entry.title}</td>
-
-                    <td>{entry.score}</td>
+                    <td className="subj-title">{entry.assessment}</td>
+                    <td>
+                      {entry.marks.obtained} / {entry.marks.total}
+                    </td>
                   </tr>
                 ))
               )}
