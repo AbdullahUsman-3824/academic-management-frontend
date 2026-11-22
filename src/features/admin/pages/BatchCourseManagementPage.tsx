@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useBatches, useSections } from "../hooks/useAcademicQueries";
+import { useBatches } from "../hooks/useAcademicQueries";
 import { batchCoursesAPI } from "../../../api/batchCourses";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 
@@ -21,18 +21,12 @@ export default function BatchCourseManagementPage() {
   const queryClient = useQueryClient();
   const [selectedBatchId, setSelectedBatchId] = useState<string>("");
   const [selectedSemester, setSelectedSemester] = useState<number>(1);
-  const [selectedSectionId, setSelectedSectionId] = useState<string>("all"); // 'all' or specific section ID
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
 
   // Fetch batches
   const { data: batches, isLoading: batchesLoading } = useBatches();
 
-  // Fetch sections for selected batch
-  const { data: sections, error: sectionsError } = useSections(
-    selectedBatchId || null,
-  );
-
-  // Fetch assigned courses for selected batch/semester/section
+  // Fetch assigned courses for selected batch/semester
   const {
     data: assignments,
     isLoading: assignmentsLoading,
@@ -43,13 +37,11 @@ export default function BatchCourseManagementPage() {
       "batch-courses",
       selectedBatchId,
       selectedSemester,
-      selectedSectionId,
     ],
     queryFn: () =>
       batchCoursesAPI.getAssignments({
         batchId: selectedBatchId,
         semesterNumber: selectedSemester,
-        sectionId: selectedSectionId === "all" ? undefined : selectedSectionId,
       }),
     enabled: !!selectedBatchId,
   });
@@ -60,13 +52,11 @@ export default function BatchCourseManagementPage() {
       "template-preview",
       selectedBatchId,
       selectedSemester,
-      selectedSectionId,
     ],
     queryFn: () =>
       batchCoursesAPI.previewTemplateCopy({
         batchId: selectedBatchId,
         semesterNumber: selectedSemester,
-        sectionId: selectedSectionId === "all" ? undefined : selectedSectionId,
       }),
     enabled: previewDialogOpen && !!selectedBatchId,
   });
@@ -98,11 +88,6 @@ export default function BatchCourseManagementPage() {
 
   const handleBatchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedBatchId(e.target.value);
-    setSelectedSectionId("all"); // Reset to "All Sections"
-  };
-
-  const handleSectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedSectionId(e.target.value);
   };
 
   const handleSemesterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -122,23 +107,17 @@ export default function BatchCourseManagementPage() {
 
     if (
       window.confirm(
-        `Copy ${templatePreview?.summary.newCourses || 0} new courses from template to ${selectedBatch?.name}, ${sectionLabel}, Semester ${selectedSemester}?`,
+        `Copy ${templatePreview?.summary.newCourses || 0} new courses from template to ${selectedBatch?.name}, Semester ${selectedSemester}?`,
       )
     ) {
       copyFromTemplateMutation.mutate({
         batchId: selectedBatchId,
         semesterNumber: selectedSemester,
-        sectionId: selectedSectionId === "all" ? undefined : selectedSectionId,
       });
     }
   };
 
   const selectedBatch = batches?.find((b) => b.id === selectedBatchId);
-  const selectedSection = sections?.find((s) => s.id === selectedSectionId);
-  const sectionLabel =
-    selectedSectionId === "all"
-      ? "All Sections"
-      : `Section ${selectedSection?.name || ""}`;
   const isLoading = batchesLoading;
 
   return (
@@ -147,7 +126,7 @@ export default function BatchCourseManagementPage() {
         <div>
           <h1>Batch Course Management</h1>
           <div className="today">
-            Assign courses to each batch at specific semester levels. Students
+            Assign courses to each batch at specific semester levels (shared across all sections). Students
             will be automatically enrolled during progression.
           </div>
         </div>
@@ -185,31 +164,6 @@ export default function BatchCourseManagementPage() {
               {batches?.map((batch) => (
                 <option key={batch.id} value={batch.id}>
                   Batch {batch.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <label style={{ fontSize: 12, color: "var(--ink-faint)" }}>
-              Section
-            </label>
-            <select
-              value={selectedSectionId}
-              onChange={handleSectionChange}
-              disabled={!selectedBatchId}
-              style={{
-                padding: "6px 10px",
-                borderRadius: 5,
-                border: "1px solid var(--line)",
-                fontSize: 13,
-                minWidth: 150,
-              }}
-            >
-              <option value="all">All Sections</option>
-              {sections?.map((section) => (
-                <option key={section.id} value={section.id}>
-                  Section {section.name}
                 </option>
               ))}
             </select>
@@ -270,8 +224,8 @@ export default function BatchCourseManagementPage() {
             style={{ borderTop: "none", borderBottom: "1px solid var(--line)" }}
           >
             <span className="meta">
-              {selectedBatch?.name}, {sectionLabel}, Semester {selectedSemester}{" "}
-              · {assignments?.length || 0} courses assigned
+              {selectedBatch?.name}, Semester {selectedSemester}{" "}
+              · {assignments?.length || 0} courses assigned (shared across all sections)
             </span>
           </div>
 
@@ -293,24 +247,6 @@ export default function BatchCourseManagementPage() {
             </div>
           )}
 
-          {sectionsError && (
-            <div
-              className="card-body"
-              style={{
-                padding: 16,
-                backgroundColor: "#fee",
-                border: "1px solid #f88",
-              }}
-            >
-              <p style={{ color: "#d00", margin: 0 }}>
-                <strong>Error loading sections:</strong>{" "}
-                {(sectionsError as any)?.response?.data?.message ||
-                  (sectionsError as Error).message ||
-                  "Unknown error"}
-              </p>
-            </div>
-          )}
-
           {assignmentsLoading ? (
             <LoadingSpinner label="Loading assignments…" />
           ) : assignments?.length === 0 ? (
@@ -320,7 +256,7 @@ export default function BatchCourseManagementPage() {
             >
               <p style={{ color: "var(--ink-faint)", fontStyle: "italic" }}>
                 No courses assigned yet. Click "Copy from Template" to add
-                courses to this batch/semester.
+                courses to this batch/semester (will be shared across all sections).
               </p>
             </div>
           ) : (
@@ -407,13 +343,7 @@ export default function BatchCourseManagementPage() {
             <div className="modal-body">
               <p className="meta" style={{ marginBottom: 16 }}>
                 Preview courses from Semester {selectedSemester} template that
-                will be copied to <strong>{selectedBatch?.name}</strong>
-                {selectedSectionId !== "all" && (
-                  <>
-                    {" "}
-                    → <strong>{sectionLabel}</strong>
-                  </>
-                )}
+                will be copied to <strong>{selectedBatch?.name}</strong> (shared across all sections)
               </p>
 
               {previewLoading ? (
@@ -498,7 +428,7 @@ export default function BatchCourseManagementPage() {
                           }}
                         >
                           All courses from Semester {selectedSemester} template
-                          are already assigned to this batch/section.
+                          are already assigned to this batch.
                         </p>
                       )}
                       <div

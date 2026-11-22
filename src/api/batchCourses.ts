@@ -3,7 +3,6 @@ import apiClient from './client';
 export interface BatchCourseAssignment {
   id: string;
   batchId: string;
-  sectionId: string | null;
   courseId: string;
   semesterNumber: number;
   isCompulsory: boolean;
@@ -14,10 +13,6 @@ export interface BatchCourseAssignment {
     id: string;
     name: string;
   };
-  section?: {
-    id: string;
-    name: string;
-  } | null;
   course?: {
     id: string;
     code: string;
@@ -28,7 +23,6 @@ export interface BatchCourseAssignment {
 
 export interface CreateBatchCourseAssignmentDto {
   batchId: string;
-  sectionId?: string;
   courseId: string;
   semesterNumber: number;
   isCompulsory?: boolean;
@@ -37,7 +31,6 @@ export interface CreateBatchCourseAssignmentDto {
 
 export interface BulkAssignCoursesDto {
   batchId: string;
-  sectionId?: string;
   semesterNumber: number;
   courseIds: string[];
   isCompulsory?: boolean;
@@ -48,7 +41,6 @@ export const batchCoursesAPI = {
   getAssignments: async (params: {
     batchId: string;
     semesterNumber?: number;
-    sectionId?: string;
   }): Promise<BatchCourseAssignment[]> => {
     const { data } = await apiClient.get<BatchCourseAssignment[]>('/batch-course-assignments', {
       params,
@@ -93,7 +85,6 @@ export const batchCoursesAPI = {
   removeAll: async (params: {
     batchId: string;
     semesterNumber?: number;
-    sectionId?: string;
   }): Promise<{ count: number }> => {
     const { data } = await apiClient.delete<{ count: number }>('/batch-course-assignments', {
       params,
@@ -105,7 +96,6 @@ export const batchCoursesAPI = {
   previewTemplateCopy: async (params: {
     batchId: string;
     semesterNumber: number;
-    sectionId?: string;
   }): Promise<{
     preview: Array<{
       semesterNumber: number;
@@ -129,7 +119,6 @@ export const batchCoursesAPI = {
       {
         params: {
           semesterNumber: params.semesterNumber,
-          sectionId: params.sectionId,
         },
       }
     );
@@ -140,7 +129,6 @@ export const batchCoursesAPI = {
   copyFromTemplate: async (params: {
     batchId: string;
     semesterNumber: number;
-    sectionId?: string;
   }): Promise<{ count: number; message: string }> => {
     const { data } = await apiClient.post<{ count: number; message: string }>(
       '/batch-course-assignments/copy-from-template',
