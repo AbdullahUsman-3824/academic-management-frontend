@@ -1,10 +1,4 @@
-import { useUpdateCourseStatus } from "../../hooks/useCourseQueries";
-import type { CourseStatus, CoursesListResult } from "../../api/courses";
-
-const statusClass: Record<CourseStatus, string> = {
-  active: "active",
-  inactive: "inactive",
-};
+import type { CoursesListResult } from "../../types/course.types";
 
 const inputStyle: React.CSSProperties = {
   padding: "6px 10px",
@@ -16,8 +10,6 @@ const inputStyle: React.CSSProperties = {
 };
 
 type Props = {
-  statusFilter: CourseStatus | "all";
-  setStatusFilter: (s: CourseStatus | "all") => void;
   searchInput: string;
   setSearchInput: (v: string) => void;
   onSearch: () => void;
@@ -33,8 +25,6 @@ type Props = {
 };
 
 export default function CatalogTab({
-  statusFilter,
-  setStatusFilter,
   searchInput,
   setSearchInput,
   onSearch,
@@ -48,36 +38,19 @@ export default function CatalogTab({
   onView,
   onEdit,
 }: Props) {
-  const statusMutation = useUpdateCourseStatus();
   const rows = data?.data ?? [];
   const meta = data?.meta;
 
-  const statuses: (CourseStatus | "all")[] = ["all", "active", "inactive"];
-
   return (
     <>
-      <div className="tabs-row" style={{ borderTop: "1px solid var(--line)" }}>
-        {statuses.map((s) => (
-          <button
-            key={s}
-            type="button"
-            className={`tab-btn${statusFilter === s ? " active" : ""}`}
-            onClick={() => setStatusFilter(s)}
-          >
-            {s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
-          </button>
-        ))}
-      </div>
-
       <div
         className="card-head"
-        style={{ borderTop: "none", borderBottom: "1px solid var(--line)" }}
+        style={{ borderBottom: "1px solid var(--line)" }}
       >
         <span className="meta">
           {isLoading
             ? "Loading…"
             : `${meta?.total ?? 0} course${(meta?.total ?? 0) !== 1 ? "s" : ""}`}
-          {statusFilter !== "all" ? ` · ${statusFilter}` : ""}
         </span>
 
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -124,7 +97,7 @@ export default function CatalogTab({
                 <th>Code</th>
                 <th>Name</th>
                 <th className="col-hide-sm">Credits</th>
-                <th>Status</th>
+                <th>Usage Count</th>
                 <th></th>
               </tr>
             </thead>
@@ -170,11 +143,7 @@ export default function CatalogTab({
                       )}
                     </td>
                     <td className="subj-sub col-hide-sm">{c.creditHours}</td>
-                    <td>
-                      <span className={`status ${statusClass[c.status]}`}>
-                        {c.status}
-                      </span>
-                    </td>
+                    <td>{c.usageCount ?? "—"}</td>
                     <td>
                       <button
                         type="button"
@@ -199,21 +168,6 @@ export default function CatalogTab({
                         onClick={() => onEdit(c.id)}
                       >
                         Edit
-                      </button>
-                      <button
-                        type="button"
-                        className="btn secondary"
-                        style={{ padding: "4px 10px", fontSize: 12 }}
-                        disabled={statusMutation.isPending}
-                        onClick={() =>
-                          statusMutation.mutate({
-                            id: c.id,
-                            status:
-                              c.status === "active" ? "inactive" : "active",
-                          })
-                        }
-                      >
-                        {c.status === "active" ? "Deactivate" : "Activate"}
                       </button>
                     </td>
                   </tr>

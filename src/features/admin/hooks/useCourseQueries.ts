@@ -1,43 +1,46 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getCourses,
-  getCourse,
-  createCourse,
-  updateCourse,
-  updateCourseStatus,
-  type CourseStatus,
-  type CreateCoursePayload,
-  type UpdateCoursePayload,
-} from "../api/courses";
+import { batchCurriculumApi, coursesApi } from "../api/courses";
+import type {
+  CreateCoursePayload,
+  SaveBatchCurriculumPayload,
+  UpdateCoursePayload,
+} from "../types/course.types";
 
 export const courseKeys = {
   all: ["courses"] as const,
   lists: () => [...courseKeys.all, "list"] as const,
-  list: (filters: {
-    page?: number;
-    search?: string;
-    status?: CourseStatus | "all";
-  }) => [...courseKeys.lists(), filters] as const,
+  list: (filters: { page?: number; search?: string }) =>
+    [...courseKeys.lists(), filters] as const,
   details: () => [...courseKeys.all, "detail"] as const,
   detail: (id: string) => [...courseKeys.details(), id] as const,
+  curriculum: () => [...courseKeys.all, "curriculum"] as const,
+  batchCurriculum: (batchId: string) =>
+    [...courseKeys.curriculum(), batchId] as const,
+  batchCurriculumCopyPreview: (
+    targetBatchId: string,
+    sourceBatchId: string,
+    semesterId?: string | null,
+  ) =>
+    [
+      ...courseKeys.curriculum(),
+      "copy-preview",
+      targetBatchId,
+      sourceBatchId,
+      semesterId ?? null,
+    ] as const,
 };
 
 export function useCourses(filters: {
   page?: number;
   search?: string;
-  status?: CourseStatus | "all";
 }) {
-  const status =
-    filters.status && filters.status !== "all" ? filters.status : undefined;
-
   return useQuery({
     queryKey: courseKeys.list(filters),
     queryFn: () =>
-      getCourses({
+      coursesApi.list({
         page: filters.page ?? 1,
         limit: 20,
         search: filters.search || undefined,
-        status,
       }),
     staleTime: 30_000,
   });
@@ -46,7 +49,7 @@ export function useCourses(filters: {
 export function useCourse(id: string | null) {
   return useQuery({
     queryKey: courseKeys.detail(id ?? ""),
-    queryFn: () => getCourse(id!),
+    queryFn: () => coursesApi.get(id!),
     enabled: !!id,
   });
 }
@@ -54,7 +57,7 @@ export function useCourse(id: string | null) {
 export function useCreateCourse() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (payload: CreateCoursePayload) => createCourse(payload),
+    mutationFn: (payload: CreateCoursePayload) => coursesApi.create(payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: courseKeys.lists() });
     },
@@ -70,7 +73,7 @@ export function useUpdateCourse() {
     }: {
       id: string;
       payload: UpdateCoursePayload;
-    }) => updateCourse(id, payload),
+    }) => coursesApi.update(id, payload),
     onSuccess: (_d, v) => {
       qc.invalidateQueries({ queryKey: courseKeys.lists() });
       qc.invalidateQueries({ queryKey: courseKeys.detail(v.id) });
@@ -78,13 +81,50 @@ export function useUpdateCourse() {
   });
 }
 
-export function useUpdateCourseStatus() {
+export function useBatchCurriculum(batchId: string | null) {
+  return useQuery({
+    queryKey: courseKeys.batchCurriculum(batchId ?? ""),
+    queryFn: () => batchCurriculumApi.get(batchId!),
+    enabled: !!batchId,
+  });
+}
+
+export function useBatchCurriculumCopyPreview(
+  targetBatchId: string | null,
+  sourceBatchId: string | null,
+  semesterId?: string | null,
+) {
+  return useQuery({
+    queryKey: courseKeys.batchCurriculumCopyPreview(
+      targetBatchId ?? "",
+      sourceBatchId ?? "",
+      semesterId,
+    ),
+    queryFn: () =>
+      batchCurriculumApi.copyPreview(
+        targetBatchId!,
+        sourceBatchId!,
+        semesterId ?? undefined,
+      ),
+    enabled: !!targetBatchId && !!sourceBatchId,
+  });
+}
+
+export function useSaveBatchCurriculum() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: CourseStatus }) =>
-      updateCourseStatus(id, status),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: courseKeys.all });
+    mutationFn: ({
+      batchId,
+      payload,
+    }: {
+      batchId: string;
+      payload: SaveBatchCurriculumPayload;
+    }) => batchCurriculumApi.save(batchId, payload),
+    onSuccess: (data, variables) => {
+      qc.setQueryData(courseKeys.batchCurriculum(variables.batchId), data);
+      qc.invalidateQueries({
+        queryKey: courseKeys.batchCurriculum(variables.batchId),
+      });
     },
   });
 }

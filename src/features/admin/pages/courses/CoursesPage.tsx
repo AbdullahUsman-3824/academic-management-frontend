@@ -1,30 +1,57 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useCourses } from "../../hooks/useCourseQueries";
-import type { CourseStatus } from "../../../../features/admin/api/courses";
 import CatalogTab from "../../components/courses/CatalogTab";
-import CourseDetail from "./CourseDetail";
 import CourseForm from "../../components/courses/CourseForm";
-import SemesterCoursesTab from "../../components/courses/SemesterCoursesTab";
-import AllocationsTab from "../../components/courses/AllocationsTab";
-import EnrollmentsTab from "../../components/courses/EnrollmentsTab";
+import CourseManagementOverview from "../../components/courses/CourseManagementOverview";
+import BatchCurriculumTab from "../../components/courses/BatchCurriculumTab";
+import CourseAllocationTab from "../../components/courses/CourseAllocationTab";
+import StudentEnrollmentsTab from "../../components/courses/StudentEnrollmentsTab";
 
-type MainTab = "catalog" | "semester-courses" | "allocations" | "enrollments";
+type MainTab =
+  | "overview"
+  | "catalog"
+  | "curriculum"
+  | "allocations"
+  | "enrollments";
+
+type CourseDialogState = {
+  mode: "create" | "edit" | "view";
+  courseId?: string;
+} | null;
+
+const TABS: ReadonlyArray<readonly [MainTab, string]> = [
+  ["overview", "Overview"],
+  ["catalog", "Catalog"],
+  ["curriculum", "Batch Curriculum"],
+  ["allocations", "Course Allocation"],
+  ["enrollments", "Student Enrollments"],
+];
+
+const isMainTab = (value: string | null): value is MainTab =>
+  value !== null && TABS.some(([key]) => key === value);
 
 export default function CoursesPage() {
-  const [mainTab, setMainTab] = useState<MainTab>("catalog");
-  const [statusFilter, setStatusFilter] = useState<CourseStatus | "all">("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const rawTab = searchParams.get("tab");
+  const mainTab: MainTab = isMainTab(rawTab) ? rawTab : "overview";
+
+  const setMainTab = (tab: MainTab) => {
+    const next = new URLSearchParams(searchParams);
+    if (tab === "overview") next.delete("tab");
+    else next.set("tab", tab);
+    setSearchParams(next);
+  };
+
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [page, setPage] = useState(1);
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [creating, setCreating] = useState(false);
+  const [courseDialog, setCourseDialog] = useState<CourseDialogState>(null);
 
   const list = useCourses({
     page,
     search: search || undefined,
-    status: statusFilter,
   });
 
   const applySearch = () => {
@@ -38,18 +65,15 @@ export default function CoursesPage() {
         <div>
           <h1>Course Management</h1>
           <div className="today">
-            Course catalog, semester mappings, allocations, and enrollments.
+            Operate the centralized catalog, batch curricula, faculty
+            allocations, and student enrollments.
           </div>
         </div>
         {mainTab === "catalog" && (
           <button
             type="button"
             className="btn"
-            onClick={() => {
-              setCreating(true);
-              setEditingId(null);
-              setSelectedId(null);
-            }}
+            onClick={() => setCourseDialog({ mode: "create" })}
           >
             + New Course
           </button>
@@ -57,18 +81,17 @@ export default function CoursesPage() {
       </div>
 
       <div className="card">
-        <div className="tabs-row">
-          {(
-            [
-              ["catalog", "Catalog"],
-              ["semester-courses", "Semester Courses"],
-              ["allocations", "Allocations"],
-              ["enrollments", "Enrollments"],
-            ] as const
-          ).map(([key, label]) => (
+        <div
+          className="tabs-row"
+          role="tablist"
+          aria-label="Course management sections"
+        >
+          {TABS.map(([key, label]) => (
             <button
               key={key}
               type="button"
+              role="tab"
+              aria-selected={mainTab === key}
               className={`tab-btn${mainTab === key ? " active" : ""}`}
               onClick={() => setMainTab(key)}
             >
@@ -77,13 +100,12 @@ export default function CoursesPage() {
           ))}
         </div>
 
+        {mainTab === "overview" && (
+          <CourseManagementOverview onNavigate={setMainTab} />
+        )}
+
         {mainTab === "catalog" && (
           <CatalogTab
-            statusFilter={statusFilter}
-            setStatusFilter={(s) => {
-              setStatusFilter(s);
-              setPage(1);
-            }}
             searchInput={searchInput}
             setSearchInput={setSearchInput}
             onSearch={applySearch}
@@ -94,40 +116,22 @@ export default function CoursesPage() {
             isError={list.isError}
             error={list.error}
             refetch={list.refetch}
-            onView={setSelectedId}
-            onEdit={(id) => {
-              setEditingId(id);
-              setCreating(false);
-              setSelectedId(null);
-            }}
+            onView={(id) => setCourseDialog({ mode: "view", courseId: id })}
+            onEdit={(id) => setCourseDialog({ mode: "edit", courseId: id })}
           />
         )}
 
-        {mainTab === "semester-courses" && <SemesterCoursesTab />}
-
-        {mainTab === "allocations" && <AllocationsTab />}
-
-        {mainTab === "enrollments" && <EnrollmentsTab />}
+        {mainTab === "curriculum" && <BatchCurriculumTab />}
+        {mainTab === "allocations" && <CourseAllocationTab />}
+        {mainTab === "enrollments" && <StudentEnrollmentsTab />}
       </div>
 
-      {creating && (
-        <CourseForm mode="create" onClose={() => setCreating(false)} />
-      )}
-      {editingId && (
+      {courseDialog && (
         <CourseForm
-          mode="edit"
-          courseId={editingId}
-          onClose={() => setEditingId(null)}
-        />
-      )}
-      {selectedId && !editingId && (
-        <CourseDetail
-          id={selectedId}
-          onClose={() => setSelectedId(null)}
-          onEdit={() => {
-            setEditingId(selectedId);
-            setSelectedId(null);
-          }}
+          key={`${courseDialog.mode}:${courseDialog.courseId ?? "new"}`}
+          mode={courseDialog.mode}
+          courseId={courseDialog.courseId}
+          onClose={() => setCourseDialog(null)}
         />
       )}
     </>

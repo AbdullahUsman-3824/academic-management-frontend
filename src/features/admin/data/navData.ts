@@ -18,7 +18,7 @@ export const adminPaths = {
   studentEdit: (id: string) => `/students/${id}/edit`,
   faculty: "/faculty",
   courses: "/courses",
-   batchCourses:  "/batch-courses",
+  batchCourses: "/batch-courses",
 };
 
 export const adminNavItems = [
@@ -27,5 +27,4 @@ export const adminNavItems = [
   { label: "Student Management", path: adminPaths.students },
   { label: "Faculty Management", path: adminPaths.faculty },
   { label: "Course Management", path: adminPaths.courses },
-    { label: "Batch Courses", path: adminPaths.batchCourses },
 ];

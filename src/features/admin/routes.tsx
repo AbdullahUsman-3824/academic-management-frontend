@@ -17,7 +17,6 @@ import BatchDetail from "./pages/academics/batches/BatchDetail";
 import BatchEdit from "./pages/academics/batches/BatchEdit";
 import AcademicsSetupPage from "./pages/academics/AcademicsSetupPage";
 import CoursesPage from "./pages/courses/CoursesPage";
-import BatchCourseManagementPage from "./pages/BatchCourseManagementPage";
 
 export const adminRoutes = {
   layout: AdminLayout,
@@ -50,7 +49,7 @@ export const adminRoutes = {
     { path: "faculty", element: <FacultyManagementPage /> },
 
     { path: "courses", element: <CoursesPage /> },
-    { path: "batch-courses", element: <BatchCourseManagementPage /> },
+    { path: "batch-courses", element: <Navigate to="/courses" replace /> },
 
   ],
 };

@@ -237,7 +237,6 @@
   border-radius: 6px;
   overflow: hidden;
 }
-.admin-portal .card + .card { margin-top: 20px; }
 
 .admin-portal .card-head {
   padding: 14px 18px;

@@ -31,7 +31,6 @@ export default function CourseDetail({ id, onClose, onEdit }: Props) {
               { label: "Code", value: course.code },
               { label: "Name", value: course.name },
               { label: "Credit hours", value: String(course.creditHours) },
-              { label: "Status", value: course.status },
               {
                 label: "Description",
                 value: course.description || "—",

@@ -1,41 +1,16 @@
 import  apiClient  from '../../../api/client'
-
-export type CourseStatus = 'active' | 'inactive'
-
-export interface Course {
-  id: string
-  code: string
-  name: string
-  description?: string | null
-  creditHours: number
-  status: CourseStatus
-  createdAt: string
-  updatedAt?: string | null
-}
-
-export interface CoursesListResult {
-  data: Course[]
-  meta: {
-    page: number
-    limit: number
-    total: number
-    totalPages: number
-  }
-}
-
-export interface CreateCoursePayload {
-  code: string
-  name: string
-  description?: string
-  creditHours: number
-}
-
-export interface UpdateCoursePayload {
-  code?: string
-  name?: string
-  description?: string
-  creditHours?: number
-}
+import type {
+  BatchCurriculumCopyPreviewResponse,
+  BatchCurriculumResponse,
+  Course,
+  CoursesListResult,
+  CreateCoursePayload,
+  CurrentSectionAllocationsResponse,
+  CurrentSessionGroupsResponse,
+  SaveBatchCurriculumPayload,
+  SectionAllocationHistoryResponse,
+  UpdateCoursePayload,
+} from "../types/course.types";
 
 type ApiList = {
   success: boolean
@@ -48,49 +23,88 @@ type ApiOne = {
   data: Course
 }
 
-export async function getCourses(params?: {
-  page?: number
-  limit?: number
-  search?: string
-  status?: CourseStatus
-}): Promise<CoursesListResult> {
-  const { data } = await apiClient.get<ApiList>('/courses', {
-    params: {
-      page: params?.page ?? 1,
-      limit: params?.limit ?? 20,
-      ...(params?.search ? { search: params.search } : {}),
-      ...(params?.status ? { status: params.status } : {}),
-    },
-  })
-  return { data: data.data, meta: data.meta }
+export const coursesApi = {
+  list: async (params?: {
+    page?: number
+    limit?: number
+    search?: string
+  }): Promise<CoursesListResult> => {
+    const { data } = await apiClient.get<ApiList>('/courses', {
+      params: {
+        page: params?.page ?? 1,
+        limit: params?.limit ?? 20,
+        ...(params?.search ? { search: params.search } : {}),
+      },
+    })
+    return { data: data.data, meta: data.meta }
+  },
+
+  get: async (id: string): Promise<Course> => {
+    const { data } = await apiClient.get<ApiOne>(`/courses/${id}`)
+    return data.data
+  },
+
+  create: async (payload: CreateCoursePayload): Promise<Course> => {
+    const { data } = await apiClient.post<ApiOne>('/courses', payload)
+    return data.data
+  },
+
+  update: async (
+    id: string,
+    payload: UpdateCoursePayload,
+  ): Promise<Course> => {
+    const { data } = await apiClient.patch<ApiOne>(`/courses/${id}`, payload)
+    return data.data
+  },
+
 }
 
-export async function getCourse(id: string): Promise<Course> {
-  const { data } = await apiClient.get<ApiOne>(`/courses/${id}`)
-  return data.data
-}
+export const batchCurriculumApi = {
+  get: (batchId: string) =>
+    apiClient
+      .get<BatchCurriculumResponse>(`/batches/${batchId}/curriculum`)
+      .then((response) => response.data),
 
-export async function createCourse(
-  payload: CreateCoursePayload,
-): Promise<Course> {
-  const { data } = await apiClient.post<ApiOne>('/courses', payload)
-  return data.data
-}
+  copyPreview: (
+    targetBatchId: string,
+    sourceBatchId: string,
+    semesterId?: string,
+  ) =>
+    apiClient
+      .get<BatchCurriculumCopyPreviewResponse>(
+        `/batches/${targetBatchId}/curriculum/copy-preview`,
+        {
+          params: {
+            sourceBatchId,
+            ...(semesterId ? { semesterId } : {}),
+          },
+        },
+      )
+      .then((response) => response.data),
 
-export async function updateCourse(
-  id: string,
-  payload: UpdateCoursePayload,
-): Promise<Course> {
-  const { data } = await apiClient.patch<ApiOne>(`/courses/${id}`, payload)
-  return data.data
-}
+  save: (batchId: string, payload: SaveBatchCurriculumPayload) =>
+    apiClient
+      .put<BatchCurriculumResponse>(`/batches/${batchId}/curriculum`, payload)
+      .then((response) => response.data),
+};
 
-export async function updateCourseStatus(
-  id: string,
-  status: CourseStatus,
-): Promise<Course> {
-  const { data } = await apiClient.patch<ApiOne>(`/courses/${id}/status`, {
-    status,
-  })
-  return data.data
-}
+export const allocationApis = {
+  getCurrentSessionGroups: () =>
+    apiClient
+      .get<CurrentSessionGroupsResponse>("/allocations/groups/current")
+      .then((response) => response.data),
+
+  getCurrentSectionAllocations: (sectionId: string) =>
+    apiClient
+      .get<CurrentSectionAllocationsResponse>(
+        `/allocations/current/${sectionId}`,
+      )
+      .then((response) => response.data),
+
+  getSectionAllocationHistory: (sectionId: string) =>
+    apiClient
+      .get<SectionAllocationHistoryResponse>(
+        `/allocations/history/${sectionId}`,
+      )
+      .then((response) => response.data),
+};

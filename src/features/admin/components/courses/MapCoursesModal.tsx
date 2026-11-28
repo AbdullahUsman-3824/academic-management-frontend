@@ -20,7 +20,7 @@ export default function MapCoursesModal({
   onClose,
 }: Props) {
   const [selections, setSelections] = useState<CourseSelection[]>([]);
-  const { data: coursesData, isLoading } = useCourses({ status: "active" });
+  const { data: coursesData, isLoading } = useCourses({});
   const bulkMutation = useBulkCreateSemesterCourses();
 
   const courses = coursesData?.data ?? [];
@@ -112,7 +112,7 @@ export default function MapCoursesModal({
 
         {!isLoading && availableCourses.length === 0 && (
           <p style={{ color: "var(--ink-faint)", fontStyle: "italic" }}>
-            All active courses are already mapped to this semester.
+            All courses are already mapped to this semester.
           </p>
         )}
 
