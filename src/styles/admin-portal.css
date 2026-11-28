@@ -809,11 +809,83 @@
   flex: 1;
 }
 
+/* ---------- Card head: toolbar variant (CourseAllocationTab) ---------- */
+.admin-portal .card-head--toolbar {
+  align-items: center;
+  gap: 14px;
+}
+
+/* Reuse .field-label but lay it out horizontally inside the toolbar */
+.admin-portal .card-head--toolbar .field-label {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 600;
+  max-width: none;
+  margin: 0;
+}
+
+/* Standalone select — same look as .filter-bar__select, usable anywhere */
+.admin-portal .select {
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 7px 30px 7px 10px;
+  font-size: 13px;
+  color: var(--ink);
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235c6b60'/%3E%3C/svg%3E") no-repeat right 10px center;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  min-width: 280px;
+  max-width: 100%;
+  transition: border-color 0.15s;
+}
+
+.admin-portal .select:focus {
+  outline: none;
+  border-color: var(--green-800);
+}
+
+.admin-portal .select:disabled {
+  background-color: #f6f6f4;
+  color: var(--ink-soft);
+  cursor: not-allowed;
+}
+
+.admin-portal .card-head-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-left: auto;
+}
+
 @media (max-width: 768px) {
   .admin-portal .overview-grid {
     grid-template-columns: 1fr;
   }
+
+    .admin-portal .card-head--toolbar {
+    align-items: stretch;
+    gap: 10px;
+  }
+  .admin-portal .card-head--toolbar .field-label {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  .admin-portal .select {
+    width: 100%;
+    min-width: 0;
+  }
+  .admin-portal .card-head-meta {
+    margin-left: 0;
+    width: 100%;
+  }
 }
+
 
 /* ---------- Underline nav tabs (AcademicNavTabs) ---------- */
 /* Override the global `.admin-portal nav { flex-direction: column }` rule */

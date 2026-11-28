@@ -84,6 +84,8 @@ export interface SaveBatchCurriculumPayload {
   }[];
 }
 
+export type AllocationRecordStatus = "active" | "inactive";
+
 export interface CurrentSessionGroupsResponse {
   session: {
     id: string;
@@ -92,7 +94,8 @@ export interface CurrentSessionGroupsResponse {
   groups: {
     batchId: string;
     batchName: string;
-    semester: number;
+    semester: number | null;
+    canAllocate: boolean;
     sections: {
       id: string;
       name: string;
@@ -107,6 +110,8 @@ export interface CurrentSectionAllocationsResponse {
     section: string;
   };
   courses: {
+    batchCourseAssignmentId: string;
+    isCompulsory: boolean;
     courseId: string;
     code: string;
     name: string;
@@ -115,9 +120,56 @@ export interface CurrentSectionAllocationsResponse {
       id: string;
       facultyId: string;
       facultyName: string;
-      status: string;
+      status: AllocationRecordStatus;
     } | null;
   }[];
+}
+
+export interface AllocationFacultyOption {
+  id: string;
+  employeeNumber: string;
+  name: string;
+  designation: string | null;
+  workload: number;
+  maxWorkload: number;
+  atCapacity: boolean;
+}
+
+export interface CreateAllocationPayload {
+  batchCourseAssignmentId: string;
+  facultyId: string;
+  sectionId: string;
+}
+
+export interface CreateAllocationResult {
+  id: string;
+  batchCourseAssignmentId: string;
+  courseId: string;
+  courseCode: string;
+  facultyId: string;
+  sectionId: string;
+  academicSessionId: string;
+  status: AllocationRecordStatus;
+  reactivated: boolean;
+  enrollment: {
+    enrolled: number;
+    reactivated: number;
+    skippedAlreadyEnrolled: number;
+    skippedCreditLimit: unknown[];
+  };
+}
+
+export interface UpdateAllocationPayload {
+  facultyId: string;
+}
+
+export interface UpdateAllocationResult {
+  id: string;
+  batchCourseAssignmentId: string;
+  courseCode: string;
+  facultyId: string;
+  facultyName: string;
+  status: AllocationRecordStatus;
 }
 
 export interface SectionAllocationHistoryResponse {
@@ -126,14 +178,17 @@ export interface SectionAllocationHistoryResponse {
   history: {
     semester: number;
     courses: {
+      batchCourseAssignmentId: string;
       courseId: string;
       code: string;
       name: string;
       creditHours: number;
+      courseStatus: AllocationRecordStatus;
       isCompulsory: boolean;
       allocations: {
         id: string;
-        status: string;
+        type: "REGULAR";
+        status: AllocationRecordStatus;
         createdAt: string;
         session: {
           id: string;

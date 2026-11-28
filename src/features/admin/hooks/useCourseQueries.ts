@@ -1,8 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { batchCurriculumApi, coursesApi } from "../api/courses";
+import {
+  allocationApis,
+  batchCurriculumApi,
+  coursesApi,
+} from "../api/courses";
 import type {
+  CreateAllocationPayload,
   CreateCoursePayload,
   SaveBatchCurriculumPayload,
+  UpdateAllocationPayload,
   UpdateCoursePayload,
 } from "../types/course.types";
 
@@ -29,6 +35,92 @@ export const courseKeys = {
       semesterId ?? null,
     ] as const,
 };
+
+export const allocationKeys = {
+  all: ["allocations"] as const,
+  currentSessionGroups: () =>
+    [...allocationKeys.all, "groups", "current"] as const,
+  facultyOptions: () => [...allocationKeys.all, "faculty-options"] as const,
+  currentSection: (sectionId: string) =>
+    [...allocationKeys.all, "current", sectionId] as const,
+  sectionHistory: (sectionId: string) =>
+    [...allocationKeys.all, "history", sectionId] as const,
+};
+
+export function useCurrentSessionGroups() {
+  return useQuery({
+    queryKey: allocationKeys.currentSessionGroups(),
+    queryFn: allocationApis.getCurrentSessionGroups,
+  });
+}
+
+export function useCurrentSectionAllocations(sectionId: string | null) {
+  return useQuery({
+    queryKey: allocationKeys.currentSection(sectionId ?? ""),
+    queryFn: () => allocationApis.getCurrentSectionAllocations(sectionId!),
+    enabled: !!sectionId,
+  });
+}
+
+export function useAllocationFacultyOptions() {
+  return useQuery({
+    queryKey: allocationKeys.facultyOptions(),
+    queryFn: allocationApis.getFacultyOptions,
+  });
+}
+
+export function useSectionAllocationHistory(sectionId: string | null) {
+  return useQuery({
+    queryKey: allocationKeys.sectionHistory(sectionId ?? ""),
+    queryFn: () => allocationApis.getSectionAllocationHistory(sectionId!),
+    enabled: !!sectionId,
+  });
+}
+
+export function useCreateAllocation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: CreateAllocationPayload) =>
+      allocationApis.createAllocation(payload),
+    onSuccess: (_data, payload) => {
+      qc.invalidateQueries({
+        queryKey: allocationKeys.currentSection(payload.sectionId),
+      });
+      qc.invalidateQueries({
+        queryKey: allocationKeys.facultyOptions(),
+      });
+      qc.invalidateQueries({
+        queryKey: allocationKeys.sectionHistory(payload.sectionId),
+      });
+    },
+  });
+}
+
+export function useUpdateAllocation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      payload,
+      sectionId,
+    }: {
+      id: string;
+      payload: UpdateAllocationPayload;
+      sectionId: string;
+    }) => allocationApis.updateAllocation(id, payload),
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({
+        queryKey: allocationKeys.currentSection(variables.sectionId),
+      });
+      qc.invalidateQueries({
+        queryKey: allocationKeys.facultyOptions(),
+      });
+      qc.invalidateQueries({
+        queryKey: allocationKeys.sectionHistory(variables.sectionId),
+      });
+    },
+  });
+}
 
 export function useCourses(filters: {
   page?: number;

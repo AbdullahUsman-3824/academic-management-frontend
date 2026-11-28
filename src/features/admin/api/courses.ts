@@ -4,11 +4,16 @@ import type {
   BatchCurriculumResponse,
   Course,
   CoursesListResult,
+  AllocationFacultyOption,
+  CreateAllocationPayload,
+  CreateAllocationResult,
   CreateCoursePayload,
   CurrentSectionAllocationsResponse,
   CurrentSessionGroupsResponse,
   SaveBatchCurriculumPayload,
   SectionAllocationHistoryResponse,
+  UpdateAllocationPayload,
+  UpdateAllocationResult,
   UpdateCoursePayload,
 } from "../types/course.types";
 
@@ -22,6 +27,12 @@ type ApiOne = {
   success: boolean
   data: Course
 }
+
+type ApiResponse<T> = {
+  success: boolean;
+  message?: string;
+  data: T;
+};
 
 export const coursesApi = {
   list: async (params?: {
@@ -101,10 +112,30 @@ export const allocationApis = {
       )
       .then((response) => response.data),
 
+  getFacultyOptions: () =>
+    apiClient
+      .get<ApiResponse<AllocationFacultyOption[]>>(
+        "/allocations/faculty-options",
+      )
+      .then((response) => response.data.data),
+
   getSectionAllocationHistory: (sectionId: string) =>
     apiClient
       .get<SectionAllocationHistoryResponse>(
         `/allocations/history/${sectionId}`,
       )
       .then((response) => response.data),
+
+  createAllocation: (payload: CreateAllocationPayload) =>
+    apiClient
+      .post<ApiResponse<CreateAllocationResult>>("/allocations", payload)
+      .then((response) => response.data.data),
+
+  updateAllocation: (id: string, payload: UpdateAllocationPayload) =>
+    apiClient
+      .patch<ApiResponse<UpdateAllocationResult>>(
+        `/allocations/${id}`,
+        payload,
+      )
+      .then((response) => response.data.data),
 };

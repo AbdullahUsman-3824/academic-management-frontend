@@ -1,105 +1,234 @@
-import { useState } from "react";
-import { courseManagementStore } from "../../data/courseManagementStore";
+import { useEffect, useMemo, useState } from "react";
+import AllocationFacultyModal from "./AllocationFacultyModal";
+import AllocationHistoryModal from "./AllocationHistoryModal";
+import {
+  useCurrentSectionAllocations,
+  useCurrentSessionGroups,
+} from "../../hooks/useCourseQueries";
 
 export default function CourseAllocationTab() {
-  const [sessionId, setSessionId] = useState(courseManagementStore.sessions[0].id);
-  const [batchId, setBatchId] = useState(courseManagementStore.batches[0].id);
-  const [semesterNumber, setSemesterNumber] = useState(2);
-  const [sectionId, setSectionId] = useState(courseManagementStore.sections[0].id);
-  const [, rerender] = useState(0);
+  const [sectionId, setSectionId] = useState("");
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const groupsQuery = useCurrentSessionGroups();
 
-  const curriculum = courseManagementStore.curricula.find((item) => item.batchId === batchId);
-  const semester = curriculum?.semesters.find((item) => item.semesterNumber === semesterNumber);
-  const courses = semester?.courses ?? [];
+  // Flat list: every option carries the full "batch · semester · section"
+  // identity, so the collapsed select never reads as just a section.
+  const sectionOptions = useMemo(
+    () =>
+      (groupsQuery.data?.groups ?? []).flatMap((group) =>
+        group.sections.map((section) => ({
+          id: section.id,
+          canAllocate: group.canAllocate,
+          label: `${group.batchName} - ${group.semester ?? "No current semester"} - ${section.name}`,
+        })),
+      ),
+    [groupsQuery.data],
+  );
 
-  const getAllocation = (courseId: string) =>
-    courseManagementStore.allocations.find((item) =>
-      item.academicSessionId === sessionId &&
-      item.batchId === batchId &&
-      item.semesterNumber === semesterNumber &&
-      item.sectionId === sectionId &&
-      item.courseId === courseId
-    );
+  const selectedSection = sectionOptions.find(
+    (section) => section.id === sectionId,
+  );
+  const allocationsQuery = useCurrentSectionAllocations(
+    selectedSection?.canAllocate ? sectionId : null,
+  );
+  const currentAllocations = allocationsQuery.data;
+  const courses = currentAllocations?.courses ?? [];
+  const selectedCourse = courses.find(
+    (course) => course.courseId === selectedCourseId,
+  );
+  const allocatedCount = courses.filter(
+    (course) => course.allocation !== null,
+  ).length;
 
-  const setFaculty = (courseId: string, facultyId: string) => {
-    const existing = getAllocation(courseId);
-    if (existing) {
-      existing.facultyId = facultyId || null;
-      existing.status = facultyId ? "allocated" : "unallocated";
-    } else if (facultyId) {
-      courseManagementStore.allocations.push({
-        id: `allocation-${Date.now()}`,
-        academicSessionId: sessionId,
-        batchId,
-        semesterNumber,
-        sectionId,
-        courseId,
-        facultyId,
-        status: "allocated",
-      });
+  useEffect(() => {
+    if (!sectionOptions.some((section) => section.id === sectionId)) {
+      setSectionId(
+        (sectionOptions.find((section) => section.canAllocate) ??
+          sectionOptions[0])
+          ?.id ?? "",
+      );
     }
-    rerender((value) => value + 1);
-  };
+  }, [sectionId, sectionOptions]);
 
-  const allocatedCount = courses.filter((course) => getAllocation(course.courseId)?.status === "allocated").length;
-
-  const saveAllocations = () => {
-    if (allocatedCount !== courses.length) {
-      window.alert("Every course must have an active faculty member before saving.");
-      return;
-    }
-    window.alert("Course allocations saved. Student course faculty information is now updated.");
-  };
+  const isSelectDisabled = groupsQuery.isLoading || sectionOptions.length === 0;
+  const selectPlaceholder = groupsQuery.isLoading
+    ? "Loading batch/semester/section…"
+    : groupsQuery.isError
+      ? "Unable to load batch/semester/section"
+      : sectionOptions.length === 0
+        ? "None available in current session"
+        : "Select batch · semester · section";
 
   return (
     <>
-      <div className="card-head" style={{ borderBottom: "1px solid var(--line)" }}>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <select aria-label="Academic session" value={sessionId} onChange={(event) => setSessionId(event.target.value)} style={{ padding: "6px 10px", borderRadius: 5, border: "1px solid var(--line)" }}>
-            {courseManagementStore.sessions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+      <div className="card-head card-head--toolbar">
+        <label className="field-label">
+          <select
+            className="select"
+            value={sectionId}
+            onChange={(event) => setSectionId(event.target.value)}
+            disabled={isSelectDisabled}
+            aria-busy={groupsQuery.isLoading}
+          >
+            <option value="" disabled>
+              {selectPlaceholder}
+            </option>
+            {sectionOptions.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.label}
+              </option>
+            ))}
           </select>
-          <select aria-label="Batch" value={batchId} onChange={(event) => { setBatchId(event.target.value); setSemesterNumber(1); }} style={{ padding: "6px 10px", borderRadius: 5, border: "1px solid var(--line)" }}>
-            {courseManagementStore.batches.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-          </select>
-          <select aria-label="Semester" value={semesterNumber} onChange={(event) => setSemesterNumber(Number(event.target.value))} style={{ padding: "6px 10px", borderRadius: 5, border: "1px solid var(--line)" }}>
-            {(curriculum?.semesters ?? []).map((item) => <option key={item.semesterNumber} value={item.semesterNumber}>Semester {item.semesterNumber}</option>)}
-          </select>
-          <select aria-label="Section" value={sectionId} onChange={(event) => setSectionId(event.target.value)} style={{ padding: "6px 10px", borderRadius: 5, border: "1px solid var(--line)" }}>
-            {courseManagementStore.sections.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-          </select>
+        </label>
+
+        {groupsQuery.data && (
+          <div className="card-head-meta">
+            <span className="tag">
+              Session: {groupsQuery.data.session.name}
+            </span>
+          </div>
+        )}
+        <button
+          type="button"
+          className="btn secondary"
+          onClick={() => setShowHistory(true)}
+        >
+          View Allocations History
+        </button>
+      </div>
+
+      {groupsQuery.isError && (
+        <div className="card-body" role="alert">
+          <p style={{ color: "var(--red)" }}>
+            {groupsQuery.error instanceof Error
+              ? groupsQuery.error.message
+              : "Unable to load current-session groups."}
+          </p>
+          <button
+            type="button"
+            className="btn secondary"
+            onClick={() => groupsQuery.refetch()}
+          >
+            Retry
+          </button>
         </div>
-      </div>
-      <div className="card-head" style={{ borderBottom: "1px solid var(--line)" }}>
-        <span className="meta">{courses.length} total · {allocatedCount} allocated · {Math.max(courses.length - allocatedCount, 0)} pending</span>
-        <button type="button" className="btn" onClick={saveAllocations}>Save Allocation</button>
-      </div>
-      <div className="table-scroll">
-        <table>
-          <thead><tr><th>Course</th><th>Code</th><th>Credit Hours</th><th>Faculty</th><th>Workload</th><th>Status</th></tr></thead>
-          <tbody>
-            {courses.map((course) => {
-              const allocation = getAllocation(course.courseId);
-              const selectedFaculty = courseManagementStore.faculty.find((item) => item.id === allocation?.facultyId);
-              return (
-                <tr key={course.courseId}>
-                  <td className="subj-title">{course.name}</td>
-                  <td>{course.code}</td>
-                  <td>{course.creditHours}</td>
-                  <td>
-                    <select value={allocation?.facultyId ?? ""} onChange={(event) => setFaculty(course.courseId, event.target.value)} style={{ padding: "6px 8px", borderRadius: 4, border: "1px solid var(--line)", maxWidth: 220 }}>
-                      <option value="">Select faculty</option>
-                      {courseManagementStore.faculty.filter((item) => item.status === "active").map((faculty) => <option key={faculty.id} value={faculty.id}>{faculty.name} · {faculty.employeeNumber} · {faculty.workload} classes</option>)}
-                    </select>
-                  </td>
-                  <td>{selectedFaculty ? `${selectedFaculty.workload} classes` : "—"}</td>
-                  <td><span className={`status ${allocation?.status === "allocated" ? "active" : "pending"}`}>{allocation?.status === "allocated" ? "Allocated" : "Unallocated"}</span></td>
+      )}
+
+      {!groupsQuery.isLoading &&
+        !groupsQuery.isError &&
+        sectionOptions.length === 0 && (
+          <div className="card-body meta">
+            No sections are available in the current session.
+          </div>
+        )}
+
+      {selectedSection && !selectedSection.canAllocate && (
+        <div className="card-body meta">
+          This batch has no current semester available for allocations.
+        </div>
+      )}
+
+      {allocationsQuery.isLoading && (
+        <div className="card-body meta">Loading section allocations...</div>
+      )}
+
+      {allocationsQuery.isError && (
+        <div className="card-body" role="alert">
+          <p style={{ color: "var(--red)" }}>
+            {allocationsQuery.error instanceof Error
+              ? allocationsQuery.error.message
+              : "Unable to load section allocations."}
+          </p>
+          <button
+            type="button"
+            className="btn secondary"
+            onClick={() => allocationsQuery.refetch()}
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {currentAllocations && (
+        <>
+          <div
+            className="card-head"
+            style={{ borderBottom: "1px solid var(--line)" }}
+          >
+            <span className="meta">
+              {courses.length} total · {allocatedCount} allocated ·{" "}
+              {Math.max(courses.length - allocatedCount, 0)} pending
+            </span>
+            <span className="meta">
+              {currentAllocations.group.batch} · Semester{" "}
+              {currentAllocations.group.semester} ·{" "}
+              {currentAllocations.group.section}
+            </span>
+          </div>
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Course</th>
+                  <th>Code</th>
+                  <th>Credit Hours</th>
+                  <th>Faculty</th>
+                  <th>Allocation Status</th>
+                  <th></th>
                 </tr>
-              );
-            })}
-            {courses.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--ink-faint)", padding: 32 }}>No curriculum courses are available for this context.</td></tr>}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody>
+                {courses.map((course) => (
+                  <tr key={course.courseId}>
+                    <td className="subj-title">{course.name}</td>
+                    <td>{course.code}</td>
+                    <td>{course.creditHours}</td>
+                    <td>{course.allocation?.facultyName ?? "—"}</td>
+                    <td>{course.allocation?.status ?? "Unallocated"}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className="btn secondary"
+                        style={{ padding: "4px 10px", fontSize: 12 }}
+                        onClick={() => setSelectedCourseId(course.courseId)}
+                      >
+                        {course.allocation ? "Change" : "Allocate"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {courses.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      style={{
+                        textAlign: "center",
+                        color: "var(--ink-faint)",
+                        padding: 32,
+                      }}
+                    >
+                      No curriculum courses are available for this section.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+      {selectedCourse && currentAllocations && (
+        <AllocationFacultyModal
+          key={`${sectionId}:${selectedCourse.courseId}`}
+          course={selectedCourse}
+          sectionId={sectionId}
+          group={currentAllocations.group}
+          onClose={() => setSelectedCourseId(null)}
+        />
+      )}
+      {showHistory && (
+        <AllocationHistoryModal onClose={() => setShowHistory(false)} />
+      )}
     </>
   );
 }
